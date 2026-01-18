@@ -1,0 +1,108 @@
+*** 1- Introduction ***
+---
+
+# Lecture Overview: Ultimate React Native Course – Introduction
+
+## Instructor
+
+* **Instructor:** Mosh
+* **Course Goal:** Teach React Native from scratch with a deep understanding of concepts and code.
+
+## Target Audience
+
+* Beginners with **no prior React Native knowledge**
+* Learners who want to understand:
+
+  * Every line of code
+  * Core principles behind React Native development
+
+## Course Approach
+
+* No simple or dummy applications (e.g., to-do apps or calculators)
+* Focus on building a **real, production-like mobile application**
+* Emphasis on:
+
+  * Performance
+  * Clean UI/UX
+  * Real-world features
+
+## Main Project: “Done With It” App
+
+A full-featured marketplace app for selling items you no longer need.
+
+### App Concept
+
+* A marketplace for listing and selling second-hand items
+* Users can browse, post, and manage listings
+
+## Core Features Demonstrated
+
+### Authentication
+
+* Login and registration screens
+* User accounts with personalized data
+
+### Listings
+
+* Display a list of items for sale
+* Example: Red jacket listed for $100
+* Data shown is dummy/generated for learning purposes
+
+### Item Details
+
+* Tap an item to view:
+
+  * Item description
+  * Seller information
+  * Item location displayed on a map
+
+### Messaging & Notifications
+
+* Users can send messages to sellers
+* Messages trigger **push notifications** on the recipient’s device
+
+### Gestures & Interactions
+
+* Pull down to close item details
+* Pull to refresh the listings
+* Swipe left to delete an item
+
+### Filtering
+
+* Filter listings by category (e.g., cameras)
+
+### Creating a New Listing
+
+Steps involved:
+
+1. Select images (up to 3 images)
+2. Enter a title
+3. Set a price (e.g., $99)
+4. Choose a category (e.g., furniture)
+5. Post the listing to the server
+
+### Upload Experience
+
+* Progress bar displayed during upload
+* Smooth animation upon completion
+
+### User Account Page
+
+* View personal listings
+* Access received messages
+* Manage posted items
+
+## Learning Outcome
+
+By the end of the course, students will:
+
+* Master React Native fundamentals
+* Build real-world mobile applications
+* Understand UI interactions commonly found in modern apps
+* Develop confidence in mobile app development
+
+## Conclusion
+
+* The course provides a complete, practical learning experience
+* Focused on real app behavior and professional development standards
+* Sets the foundation for building high-quality mobile apps with React Native
