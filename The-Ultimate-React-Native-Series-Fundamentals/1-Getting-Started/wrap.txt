@@ -496,3 +496,277 @@ These extensions are optional but strongly recommended.
 * The next step will involve:
 
   * Creating and running the first Expo-based React Native project
+
+
+*** 6- Your First App ***
+---
+
+# Lecture Notes: Creating and Running the First Expo Project
+
+## 1. Creating a New Expo Project
+
+### Initializing the Project
+
+* In the terminal, run:
+
+  -------------------code----------------------
+  expo init done-with-it
+  -------------------code----------------------
+
+  or if we want to use npm as package manger
+  -------------------code----------------------
+  expo init done-with-it --npm
+  -------------------code----------------------
+* `done-with-it` is the app name used in the course.
+* You can choose a different name if you prefer.
+
+## 2. Choosing a Workflow
+
+### Managed vs Bare Workflow
+
+#### Managed Workflow
+
+* Expo handles most of the underlying complexity.
+* No visible:
+
+  * iOS project
+  * Android project
+* Only JavaScript code is exposed.
+* Ideal for beginners.
+
+#### Bare Workflow
+
+* Creates a bare-bones React Native project.
+* Includes:
+
+  * iOS project
+  * Android project
+* Suitable for developers with native mobile experience.
+
+### Course Choice
+
+* The course uses:
+
+  * **Blank managed workflow**
+* A TypeScript template is available but not used:
+
+  * To avoid extra complexity early in the course.
+
+## 3. Opening the Project
+
+* Once project creation is complete:
+
+  * Navigate into the project folder.
+  * Open it in Visual Studio Code.
+
+## 4. Project Structure Overview
+
+### Assets Folder
+
+* Used for static resources such as:
+
+  * Images
+  * Audio files
+  * Videos
+* Any asset bundled with the app goes here.
+
+### `App.js`
+
+* The main entry point of the application.
+* Contains a basic React Native component.
+
+## 5. Understanding `App.js`
+
+### Imports
+
+* Imports React.
+* Imports core components from React Native.
+
+### Core Components
+
+* **View**
+
+  * Similar to a `div` in web development.
+* **Text**
+
+  * Used to display text on the screen.
+
+### No HTML in React Native
+
+* React Native does not use:
+
+  * `div`, `p`, `a`, etc.
+* Instead, it provides platform-agnostic components.
+
+### Function Components
+
+* React Native uses **function components by default**.
+* Advantages:
+
+  * Simpler
+  * More lightweight
+* Class components are supported but discouraged.
+
+### JSX Structure
+
+* The component returns JSX:
+
+  * A `View` as the container
+  * A `Text` component inside it
+
+## 6. Styling in React Native
+
+### StyleSheet
+
+* Styles are defined using `StyleSheet.create`.
+* Styles are plain JavaScript objects.
+
+### Example
+
+* `styles.container` references a style object.
+* Property names resemble CSS:
+
+  * `backgroundColor`, etc.
+* These are not CSS rules, but JavaScript properties.
+
+### How Styling Works Internally
+
+* During compilation:
+
+  * React Native maps components and styles to native widgets.
+* Examples:
+
+  * `View` → `UIView` on iOS
+  * `View` → Android `View` on Android
+* This abstraction allows:
+
+  * Platform-independent UI code
+  * Truly native apps
+
+## 7. Starting the Expo Development Server
+
+### Opening the Terminal in VS Code
+
+* Use:
+
+  * View → Terminal
+* Shortcut on macOS:
+
+  * `Ctrl + ` (backtick)
+
+### Starting the Server
+
+* Run:
+
+  -------------------code----------------------
+  npm start
+  -------------------code----------------------
+
+* This starts the Expo development server.
+
+* result:
+-------------------code----------------------
+> done-with-it@1.0.0 start
+> expo start
+
+Starting project at /Users/mahmouddabbbagh/moody/React-Native/The-Ultimate-React-Native-Series-Fundamentals/1-Getting-Started/done-with-it
+Starting Metro Bundler
+▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+█ ▄▄▄▄▄ █▄▄███  ███ ▄▄▄▄▄ █
+█ █   █ █ ▀█ ▄ █ ▀█ █   █ █
+█ █▄▄▄█ █▄ ▄▄▀ █▄▀█ █▄▄▄█ █
+█▄▄▄▄▄▄▄█▄▀▄▀▄█ ▀ █▄▄▄▄▄▄▄█
+█▄   ▀▀▄▀▄▀████▀▄▄▄██▄ ▄▀▄█
+██ ██ █▄▄ ██▀▀▀▄█ █ ▀██▀███
+██ █▄ ▀▄█▀ ▀ █ █ ▄█ ▄ █ █▀█
+█▀▄▄ ▀█▄█▀█▀█ ▄██ ▀▀█▀▀█ ▀█
+███▄█▄█▄█▀ █▄▀  ▄ ▄▄▄ ▀▄█▀█
+█ ▄▄▄▄▄ ███ ▄ ███ █▄█ █▄  █
+█ █   █ █▀ ▀▄  █▀▄▄   █▀ ▀█
+█ █▄▄▄█ █ ▀ ▄▄▄█▀▄▀▄█▄▄ ▄██
+█▄▄▄▄▄▄▄█▄▄▄█▄█▄▄██████▄▄▄█
+
+› Metro waiting on exp://192.168.1.6:8081
+› Scan the QR code above with Expo Go (Android) or the Camera app (iOS)
+
+› Using Expo Go
+› Press s │ switch to development build
+
+› Press a │ open Android
+› Press i │ open iOS simulator
+› Press w │ open web
+
+› Press j │ open debugger
+› Press r │ reload app
+› Press m │ toggle menu
+› shift+m │ more tools
+› Press o │ open project code in your editor
+
+› Press ? │ show all commands
+
+Logs for your project will appear below. Press Ctrl+C to exit.
+-------------------code----------------------
+
+
+## 8. Metro Bundler
+
+### What Is Metro Bundler?
+
+* The JavaScript bundler for React Native.
+* Responsibilities:
+
+  * Compiles all JavaScript files
+  * Bundles them into a single file
+
+### Browser Interface
+
+* A browser window opens automatically.
+* Port number may vary depending on the system.
+
+### Available Actions
+
+* Run the app on:
+
+  * Android device or emulator
+  * iOS simulator
+  * Web browser
+* Share the app via a link
+* Publish the app to Expo for testing
+
+## 9. Publishing with Expo (Development Only)
+
+* Publishing to Expo allows:
+
+  * Anyone to run the app using Expo Client
+* Much faster than app store deployment.
+* Intended for:
+
+  * Development
+  * Testing
+* Not for production use.
+* Production deployment is covered later in the course.
+
+## 10. Terminal Shortcuts and Logs
+
+### Running the App from the Terminal
+
+* While Metro Bundler is running:
+
+  * Press `A` to run on Android
+  * Press `I` to run on iOS
+
+### Logs and Debugging
+
+* The terminal displays:
+
+  * Logs
+  * Warnings
+  * Errors
+* This is the first place to check if something goes wrong.
+* The terminal should remain open at all times during development.
+
+## 11. What’s Next
+
+* The next lecture will demonstrate:
+
+  * Running the app on an iOS simulator
