@@ -1235,3 +1235,81 @@ export PATH=$PATH:$ANDROID_HOME/platform-tools
 
   * Use simulators for speed
   * Use physical devices for realism and final verification
+
+
+*** 10- Logging ***
+---
+
+# Lecture Notes: Debugging React Native Applications (Introduction)
+
+## 1. Debugging Overview
+
+* Over the next lessons, multiple tools and techniques for debugging React Native apps will be introduced.
+* There is no single best tool:
+
+  * The choice depends on what you are trying to debug.
+  * You can use one or combine multiple tools.
+
+## 2. Debugging with `console.log`
+
+### Basic Approach
+
+* The simplest debugging method is using `console.log`.
+* Example usage inside the `App` component:
+
+  -------------------code----------------------
+  console.log("App executed");
+  -------------------code----------------------
+
+### Viewing Logs
+
+* Save the file after adding the log.
+* Open the embedded terminal in VS Code.
+* Log output appears in the terminal connected to Metro Bundler.
+
+### Multiple Devices
+
+* If multiple devices are connected:
+
+  * Example: iOS simulator and Android emulator
+* The log appears once for each connected device.
+* Metro Bundler displays connected devices (e.g., iPhone and Android emulator).
+* You can select a specific device in Metro Bundler to view its logs.
+
+## 3. When to Use `console.log`
+
+### Advantages
+
+* Very easy to use
+* Quick feedback
+* No setup required
+
+### Disadvantages
+
+* Excessive logging can:
+
+  * Reduce app performance
+  * Clutter output
+* Logging should be used only during:
+
+  * Development
+  * Testing
+
+### Best Practice
+
+* Always remove `console.log` statements before:
+
+  * Building the app for production
+  * Publishing the app
+
+## 4. Summary
+
+* `console.log` is the fastest way to start debugging React Native apps
+* Works across all connected devices
+* Must be removed before production builds
+
+## What’s Next
+
+* The next lesson will cover:
+
+  * Debugging React Native applications using Chrome
