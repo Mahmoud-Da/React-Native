@@ -922,3 +922,244 @@ Logs for your project will appear below. Press Ctrl+C to exit.
 * The next lesson will cover:
 
   * Running the app on an Android virtual device
+
+
+*** 8- Running on an Android Emulator ***
+---
+
+# Lecture Notes: Setting Up an Android Virtual Device
+
+## 1. Why Use an Android Virtual Device
+
+* While you can run React Native apps on a physical phone, using a simulator or virtual device during development is easier.
+* Benefits:
+
+  * Faster testing
+  * No need to constantly interact with a physical phone
+  * Easier debugging and iteration
+
+## 2. Installing Android Studio
+
+### Download
+
+* Download **Android Studio** from:
+
+  * `developer.android.com/studio`
+* Install the latest version.
+
+### Initial Setup Wizard
+
+* Launch Android Studio after installation.
+* Follow the setup wizard:
+
+  * Click **Next**
+  * Choose **Standard Installation**
+
+    * This installs all required components automatically
+  * Theme selection (Light or Dark) does not matter
+  * Click **Next**, then **Finish**
+
+### Installed Components (Standard Installation)
+
+* Android Emulator
+* Android SDK Build Tools
+* Android SDK Platform
+* Android SDK Platform Tools
+* Intel x86 Emulator Accelerator
+* Other supporting tools required for virtual devices
+
+## 3. Verifying SDK Installation
+
+### SDK Manager
+
+* Open:
+
+  * **Configure → SDK Manager**
+
+#### SDK Platforms Tab
+
+* Ensure the latest stable Android version is installed
+
+  * At the time of recording: Android 10 (Q)
+
+#### SDK Tools Tab
+
+Ensure the following are installed:
+
+* Android SDK Build Tools
+
+* Android Emulator
+
+* Android SDK Platform Tools
+
+* Intel Emulator Accelerator
+
+* If anything is missing:
+
+  * Select it
+  * Click **OK**
+  * Android Studio will install it
+
+## 4. Extra Setup for macOS and Linux Users
+
+> Windows users can skip this section.
+
+### Add Android SDK to PATH
+
+* Go to Expo documentation:
+
+  * `docs.expo.dev`
+* Navigate to:
+
+  * Managed Workflow → Android Virtual Device setup
+
+### Edit Shell Configuration
+
+* Edit one of the following (depending on your shell):
+
+  * `~/.bash_profile`
+  * `~/.bashrc`
+  * `~/.zshrc`
+
+### Add Environment Variables
+
+Add the following export statements (paths must match your system):
+
+-------------------code----------------------
+export ANDROID_HOME=/path/to/Android/Sdk
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+-------------------code----------------------
+
+### Finding the SDK Path
+
+* In Android Studio:
+
+  * Open **Configure → SDK Manager**
+  * Copy the **Android SDK Location**
+* Replace `/path/to/Android/Sdk` with the actual path
+
+### Apply Changes
+
+* Save the file(s)
+* Restart the terminal
+* Test with:
+
+  -------------------code----------------------
+  adb
+  -------------------code----------------------
+* If the command is not found, one of the steps was missed
+
+## 5. Creating an Android Virtual Device (AVD)
+
+### Open AVD Manager
+
+* Go to:
+
+  * **Configure → AVD Manager**
+
+### Create a Virtual Device
+
+* Click **Create Virtual Device**
+* Choose a device:
+
+  * Pixel devices are recommended
+  * Example used: Pixel 3a (with Play Store)
+* Click **Next**
+
+### Choose System Image
+
+* Select an image from the **Recommended** tab
+* Prefer the latest stable version
+* Download the image if prompted
+
+### Finalize Device
+
+* Use the default device name
+* Click **Finish**
+
+### Run the Emulator
+
+* Click the **Play** button next to the virtual device
+* Resize and position the emulator as needed
+
+## 6. Running the App on the Android Emulator
+
+### Using Metro Bundler
+
+* In the Expo browser interface:
+
+  * Select **Run on Android device/emulator**
+
+### Using VS Code Terminal
+
+* Ensure the emulator is running
+* Press:
+
+  * `A` to launch the app on Android
+
+### Expo Client
+
+* Expo Client is automatically installed on the emulator
+* Metro Bundler builds the JavaScript bundle
+* The app launches inside Expo Client
+
+## 7. Fast Refresh in Action
+
+### Live Updates
+
+* Change text in `App.js`
+
+  * Example: “Hello World” → “Hello React Native”
+* Save the file
+
+### Result
+
+* The app refreshes immediately
+* No native rebuild required
+
+### Benefit
+
+* Fast Refresh significantly speeds up development
+* Immediate visual feedback after every save
+
+## 8. Developer Menu on Android Emulator
+
+### Open Developer Menu
+
+* macOS:
+
+  * `Command + M`
+* Windows:
+
+  * `Control + M`
+
+### Available Options
+
+* Reload app manually
+* Copy project link to clipboard
+* Go to Expo home
+* Access debugging tools (covered later)
+
+## 9. Expo Project Listing
+
+* Expo home shows:
+
+  * All active projects
+* Current project:
+
+  * `done-with-it`
+* Selecting it returns you to the running app
+
+## 10. Summary
+
+* Android Studio is required to create Android virtual devices
+* Standard installation covers most requirements
+* macOS and Linux users must configure environment variables
+* Expo makes running apps on Android emulators fast and simple
+* Fast Refresh enables instant updates during development
+
+## What’s Next
+
+* The next lesson will demonstrate:
+
+  * Running the app on a real physical device
