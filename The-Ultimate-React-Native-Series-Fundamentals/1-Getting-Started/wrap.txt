@@ -1163,3 +1163,75 @@ export PATH=$PATH:$ANDROID_HOME/platform-tools
 * The next lesson will demonstrate:
 
   * Running the app on a real physical device
+
+*** 9- Running on a Device ***
+# Lecture Notes: Running the App on a Physical Device
+
+## 1. Why Test on a Real Device
+
+* Simulators and virtual devices are useful during development, but they have limitations.
+* Differences from real devices:
+
+  * Some features are unavailable or behave differently
+  * Hardware-specific behaviors cannot be fully simulated
+* Testing on a real device ensures:
+
+  * More accurate behavior
+  * Better confidence before release
+
+## 2. Installing Expo Client (Expo Go)
+
+### What You Need
+
+* Install **Expo Client (Expo Go)** on your phone
+* Available on:
+
+  * Apple App Store (iOS)
+  * Google Play Store (Android)
+
+## 3. Running the App on Your Phone
+
+### Using the QR Code
+
+* Start Metro Bundler on your computer
+* In the Metro Bundler interface:
+
+  * Locate the QR code
+
+### Launching the App
+
+* Open the camera app on your phone
+* Point it at the QR code
+* Your phone will automatically open the app in Expo Client
+
+### Network Requirement
+
+* Your phone and computer must be connected to the **same wireless network**
+* If they are on different networks, the app will not run
+
+## 4. Developer Menu on a Physical Device
+
+### Opening the Developer Menu
+
+* Shake the phone while the app is running
+* The developer menu will appear
+
+### Developer Menu Features
+
+* Reload the app manually
+* Access development and debugging tools
+* Useful when automatic refresh does not work
+
+## 5. Summary
+
+* Real devices provide more accurate testing than simulators
+* Expo makes running apps on physical devices extremely simple
+* QR code scanning eliminates complex setup
+* Shaking the device opens the developer menu for quick access
+
+## Key Takeaway
+
+* During development:
+
+  * Use simulators for speed
+  * Use physical devices for realism and final verification
