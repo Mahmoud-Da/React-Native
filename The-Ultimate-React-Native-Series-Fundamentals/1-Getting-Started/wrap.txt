@@ -770,3 +770,155 @@ Logs for your project will appear below. Press Ctrl+C to exit.
 * The next lecture will demonstrate:
 
   * Running the app on an iOS simulator
+
+
+*** 7- Running on an iOS Simulator ***
+
+---
+
+# Lecture Notes: Running the App on an iOS Simulator
+
+## 1. Platform Requirements
+
+### macOS Requirement
+
+* Running an iOS simulator **requires a Mac**.
+* If you do not have a Mac:
+
+  * You can run the app on a physical phone (iOS or Android).
+  * You can run the app on an Android virtual device (covered in the next lesson).
+
+## 2. Installing Xcode
+
+### Download and Installation
+
+* Install **Xcode** from the macOS App Store.
+* Search for “Xcode” and install the latest version.
+* Installation may take **20–30 minutes**, depending on internet speed.
+
+### Post-Installation Setup
+
+* Launch Xcode after installation.
+* Go to:
+
+  * **Xcode → Preferences**
+* Open the **Locations** tab.
+* Ensure the **latest Command Line Tools** are installed.
+
+## 3. Starting the iOS Simulator
+
+### Launching the Simulator
+
+* In Xcode, go to:
+
+  * **Xcode → Open Developer Tool → Simulator**
+
+### Simulator Usage
+
+* The simulator window can be:
+
+  * Moved
+  * Resized
+* You can change the simulated device by:
+
+  * **File → Open Device**
+  * Selecting a device under the iOS section (e.g., iPhone 8, iPhone 11)
+
+### Note on Multiple Simulators
+
+* At the time of recording:
+
+  * Running multiple iOS simulators can cause issues
+* Recommendation:
+
+  * Use only one simulator at a time
+  * Example used: iPhone 11
+
+## 4. Running the App on the iOS Simulator
+
+### From Metro Bundler
+
+* In the Expo browser interface:
+
+  * Select the option to run on iOS simulator
+
+### From VS Code Terminal
+
+* While Metro Bundler is running:
+
+  * Press `I` to launch the app on the iOS simulator
+
+## 5. Expo Client on the Simulator
+
+### First Launch
+
+* The first time the app runs:
+
+  * A prompt appears asking to open the app in Expo
+* Select **Open in Expo**
+
+### App Output
+
+* The Expo client launches
+* The app renders the initial text in the center of the screen
+
+## 6. Fast Refresh
+
+### Live Code Updates
+
+* Modify the text in `App.js` (e.g., change it to “Hello World”)
+* Save the file
+
+### Result
+
+* The app refreshes immediately
+* No need to rebuild the native app
+
+### Key Benefit
+
+* This feature is called **Fast Refresh**
+* Allows instant feedback while coding
+
+## 7. Developer Menu in iOS Simulator
+
+### Opening the Developer Menu
+
+* Standard shortcut:
+
+  * `Command + D`
+* If it does not work:
+
+  * Press `Control + D` first
+  * Then press `Command + D`
+
+### Developer Menu Features
+
+* Reload the app manually
+* Copy the project link to the clipboard
+* Go to the Expo home screen
+* View other Expo projects
+
+### When to Use Reload
+
+* If Fast Refresh does not work correctly
+* To reset the app state
+
+## 8. Navigating Expo Projects
+
+* The Expo home screen shows:
+
+  * All Expo projects currently available
+* You can easily switch back to the active project
+
+## 9. Summary
+
+* Xcode is required to run an iOS simulator
+* The Expo app runs seamlessly inside the simulator
+* Fast Refresh provides immediate visual feedback
+* The developer menu allows manual control and debugging
+
+## What’s Next
+
+* The next lesson will cover:
+
+  * Running the app on an Android virtual device
