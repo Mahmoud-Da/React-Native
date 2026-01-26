@@ -1681,3 +1681,180 @@ Steps to cleanly exit debugging:
   * Stop remote debugging after finishing
 
 ---
+
+*** 13- Publishing ***
+---
+
+# Lecture Notes: Publishing a React Native App with Expo
+
+## 1. Problem with Local Development
+
+* So far, the app is served from:
+
+  * `localhost:19002`
+* This means:
+
+  * If the computer is turned off, the app stops working
+  * If Expo CLI is stopped, the app cannot be opened in Expo Client
+* The app is only accessible on the local network
+
+## 2. What Is Expo Publishing?
+
+* Expo allows you to **publish your app to their servers**
+* After publishing:
+
+  * The app gets a **public and permanent URL**
+  * Anyone can open the app using **Expo Client**
+* Similar concept to:
+
+  * Publishing packages to NPM
+* This avoids:
+
+  * App Store submission
+  * Complex build and review processes
+
+### Important Note
+
+* Expo publishing is:
+
+  * For **development and testing only**
+* Production apps must still go through:
+
+  * Apple App Store
+  * Google Play Store
+
+## 3. Ways to Publish an Expo App
+
+You can publish in two ways:
+
+1. From **Metro Bundler UI**
+
+   * Click **Publish or Republish Project**
+2. From the terminal:
+
+   * Run:
+
+     -------------------code----------------------
+     expo publish
+     -------------------code----------------------
+
+Both methods use the same process internally.
+
+## 4. App Configuration (`app.json`)
+
+* Expo reads app metadata from `app.json`
+* Important fields include:
+
+  * `name`: Display name of the app
+  * `slug`: URL-friendly identifier
+  * `description`: App description (optional)
+
+### URL Structure
+
+Published apps follow this format:
+
+-------------------code----------------------
+https://expo.io/@username/slug
+-------------------code----------------------
+
+Where:
+
+* `username` = Expo account username
+* `slug` = value from `app.json`
+
+## 5. Publishing Process
+
+* When publishing:
+
+  * Expo asks for authentication
+  * You can:
+
+    * Log in to an existing Expo account
+    * Create a new Expo account
+* Required information:
+
+  * Email
+  * Username
+  * Password
+
+## 6. Build Step
+
+* Expo builds:
+
+  * JavaScript bundle
+  * iOS bundle (and Android internally)
+* Assets are:
+
+  * Optimized
+  * Minified
+  * Compressed (enabled by default)
+
+## 7. Published App Page
+
+After publishing:
+
+* Expo provides:
+
+  * Public app URL
+  * QR code
+* Anyone can:
+
+  * Scan the QR code
+  * Open the app using Expo Client
+* No App Store approval required
+
+### Missing Icon
+
+* If no app icon is set:
+
+  * A blank placeholder appears
+* This will be fixed later in the course
+
+## 8. Updating (Republishing) the App
+
+* You can republish the app at any time
+* Example:
+
+  * Add a description
+* Steps:
+
+  1. Click **Publish** again
+  2. Enter a description
+  3. Publish
+
+## 9. Automatic Updates to `app.json`
+
+* When publishing with a description:
+
+  * Expo updates `app.json`
+* The new description appears under:
+
+  * `"description"` field
+
+## 10. Result After Republishing
+
+* App page updates automatically
+* Description is visible on Expo
+* Same URL is reused
+* Users always get the latest published version
+
+## 11. Key Advantages of Expo Publishing
+
+* Extremely fast sharing
+* No app store complexity
+* Ideal for:
+
+  * Testing
+  * Demos
+  * Client previews
+  * Team collaboration
+
+## 12. Summary
+
+* Local Expo apps depend on your machine
+* Publishing creates a permanent public link
+* Publishing is simple and fast
+* Perfect for development and testing
+* Production deployment is covered later
+
+---
