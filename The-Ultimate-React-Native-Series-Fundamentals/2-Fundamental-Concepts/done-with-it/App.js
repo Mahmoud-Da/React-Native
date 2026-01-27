@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, SafeAreaView, Image } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, Image, TouchableWithoutFeedback, TouchableOpacity } from 'react-native';
 
 export default function App() {
   const handlePress = () => {
@@ -14,16 +14,18 @@ export default function App() {
         Click me
       </Text>
       {/* <Image source={require('./assets/icon.png')} /> */}
+      <TouchableOpacity onPress={() => console.log('Image tapped')}>
+        <Image
+          blurRadius={10}
+          source={{
+            uri: 'https://picsum.photos/200/300',
+            width: 200,
+            height: 300,
+          }}
+          loadingIndicatorSource={require('./assets/icon.png')}
+        />
+      </TouchableOpacity>
 
-      <Image
-        blurRadius={10}
-        source={{
-          uri: 'https://picsum.photos/200/300',
-          width: 200,
-          height: 300,
-        }}
-        loadingIndicatorSource={require('./assets/icon.png')}
-      />
       <StatusBar style="auto" />
     </SafeAreaView>
   );

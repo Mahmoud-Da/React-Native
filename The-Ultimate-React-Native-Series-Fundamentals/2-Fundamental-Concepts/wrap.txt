@@ -598,3 +598,211 @@ Example use cases:
 * Consult the official documentation to explore all available props.
 
 ---
+
+
+*** 5- Touchables ***
+---
+
+## React Native Fundamentals: Touchable Components
+
+### 1. Goal of the Lesson
+
+* In the previous lesson, an image was added to the app.
+* The goal now is to **make the image tappable**.
+* Unlike the `Text` component, the `Image` component **does not support `onPress`**.
+* To handle touch interactions, React Native provides **Touchable components**.
+
+---
+
+### 2. What Are Touchable Components?
+
+* Touchable components allow **any UI element** to respond to touch events.
+* They wrap other components (Image, View, Text, etc.).
+* The type of touchable used depends on the **visual feedback** you want to give the user.
+
+---
+
+### 3. Main Touchable Components in React Native
+
+#### Cross-platform (iOS + Android)
+
+1. `TouchableWithoutFeedback`
+2. `TouchableOpacity`
+3. `TouchableHighlight`
+
+#### Android-only
+
+4. `TouchableNativeFeedback`
+
+---
+
+### 4. Making an Image Touchable
+
+#### a. Importing a Touchable Component
+
+* Example: `TouchableWithoutFeedback`
+* Use editor shortcuts to speed up imports instead of typing full names.
+
+-------------------code----------------------
+import { TouchableWithoutFeedback } from 'react-native';
+-------------------code----------------------
+
+---
+
+#### b. Wrapping the Image
+
+* To make an image touchable, **wrap it inside a touchable component**.
+
+-------------------code----------------------
+<TouchableWithoutFeedback onPress={() => console.log('Image tapped')}>
+  <Image source={...} />
+</TouchableWithoutFeedback>
+-------------------code----------------------
+
+---
+
+### 5. `TouchableWithoutFeedback`
+
+#### Features
+
+* Supports:
+
+  * `onPress`
+  * `onLongPress`
+* Provides **no visual feedback** to the user.
+
+#### Behavior
+
+* Tapping the image triggers the event.
+* No animation or visual indication appears.
+* Useful when:
+
+  * You want full control over feedback
+  * Feedback is handled elsewhere
+
+---
+
+### 6. `TouchableOpacity`
+
+#### Description
+
+* Reduces the opacity of the wrapped component briefly when pressed.
+* Gives a clear visual cue that the component is tappable.
+
+#### Example
+
+-------------------code----------------------
+import { TouchableOpacity } from 'react-native';
+
+<TouchableOpacity onPress={() => console.log('Image tapped')}>
+  <Image source={...} />
+</TouchableOpacity>
+-------------------code----------------------
+
+#### Result
+
+* Image becomes semi-transparent momentarily on tap.
+
+---
+
+### 7. `TouchableHighlight`
+
+#### Description
+
+* Darkens the background of the wrapped component briefly.
+* Commonly used when the wrapped element has a visible background.
+
+#### Example
+
+-------------------code----------------------
+import { TouchableHighlight } from 'react-native';
+
+<TouchableHighlight onPress={() => console.log('Image tapped')}>
+  <Image source={...} />
+</TouchableHighlight>
+-------------------code----------------------
+
+#### Result
+
+* A dark overlay appears momentarily when pressed.
+
+---
+
+### 8. `TouchableNativeFeedback` (Android Only)
+
+#### Description
+
+* Provides native Android ripple feedback.
+* Not supported on iOS.
+
+#### iOS Behavior
+
+* Using it on iOS shows a red error screen:
+
+  * “TouchableNativeFeedback is not supported on this platform.”
+
+---
+
+### 9. Limitation of `TouchableNativeFeedback`
+
+* Does **not work properly with `Image`**.
+* Requires a component with:
+
+  * A background color
+  * Typically a `View`
+
+---
+
+### 10. Using `TouchableNativeFeedback` Correctly
+
+#### a. Wrap a `View` Instead of an Image
+
+-------------------code----------------------
+import { View, TouchableNativeFeedback } from 'react-native';
+
+<TouchableNativeFeedback onPress={() => console.log('Pressed')}>
+  <View
+    style={{
+      width: 200,
+      height: 70,
+      backgroundColor: 'dodgerblue',
+    }}
+  />
+</TouchableNativeFeedback>
+-------------------code----------------------
+
+#### b. Result on Android
+
+* Shows the native ripple feedback.
+* Works only on Android devices or emulators.
+
+---
+
+### 11. Platform Differences
+
+* Some touchables are platform-specific.
+* Later, platform detection can be used to:
+
+  * Use `TouchableOpacity` on iOS
+  * Use `TouchableNativeFeedback` on Android
+
+---
+
+### 12. Summary
+
+* `Image` does not support `onPress` directly.
+* Touchable components enable interaction for any UI element.
+* Choose the touchable based on:
+
+  * Desired visual feedback
+  * Platform compatibility
+* `TouchableNativeFeedback` is Android-only and works best with `View`.
+
+---
+
+### 13. What’s Next
+
+* The next lesson will introduce **Buttons**.
+* Buttons build on the same interaction concepts covered here.
+
+---
