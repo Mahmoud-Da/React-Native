@@ -2,9 +2,15 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, SafeAreaView } from 'react-native';
 
 export default function App() {
+  const handlePress = () => {
+    console.log('Text pressed');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
+      <Text onPress={handlePress}>
+        Click me
+      </Text>
       <StatusBar style="auto" />
     </SafeAreaView>
   );
