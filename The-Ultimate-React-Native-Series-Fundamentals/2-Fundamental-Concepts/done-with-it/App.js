@@ -9,7 +9,7 @@ export default function App() {
   console.log(require('./assets/icon.png'));
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, containerStyle]}>
       <Text onPress={handlePress}>
         Click me
       </Text>
@@ -84,6 +84,10 @@ export default function App() {
     </SafeAreaView>
   );
 }
+
+const containerStyle = {
+  backgroundColor: 'orange',
+};
 
 const styles = StyleSheet.create({
   container: {
