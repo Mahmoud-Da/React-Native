@@ -1142,3 +1142,375 @@ Example:
 * **Real-world apps**: Prefer touchable-based custom buttons
 
 ---
+
+
+*** 7- Alert  ***
+---
+
+## React Native Fundamentals: Alert API
+
+### 1. Goal of the Lesson
+
+* Improve user interaction by displaying **native alert dialogs**.
+* Replace `console.log` with visual feedback.
+* Learn how alerts behave differently on iOS and Android.
+
+---
+
+### 2. Basic Alert Usage
+
+#### Using the Global `alert()` Function
+
+* The browser-style `alert()` function also works in React Native.
+
+-------------------code----------------------
+alert('Button tapped');
+-------------------code----------------------
+
+#### Behavior
+
+* Displays a native alert dialog.
+* Default properties:
+
+  * Title: `Alert`
+  * Message: Provided string
+  * Button: `OK`
+* Appearance differs by platform:
+
+  * iOS shows an iOS-style alert
+  * Android shows an Android-style dialog
+
+---
+
+### 3. Using the `Alert` API
+
+#### Importing the API
+
+* `Alert` is **not a visual component**.
+* It is an **API object** with methods.
+
+-------------------code----------------------
+import { Alert } from 'react-native';
+-------------------code----------------------
+
+---
+
+### 4. `Alert.alert()` Method
+
+#### Method Signature
+
+-------------------code----------------------
+Alert.alert(title, message, buttonsArray);
+-------------------code----------------------
+
+#### Parameters
+
+1. **Title**: String displayed at the top of the alert
+2. **Message**: Main alert message
+3. **Buttons Array**: Array of button configurations
+
+---
+
+#### Custom Alert Example
+
+-------------------code----------------------
+Alert.alert(
+  'My Title',
+  'My Message',
+  [
+    { text: 'Yes' },
+    { text: 'No' },
+  ]
+);
+-------------------code----------------------
+
+#### Result
+
+* Custom title
+* Custom message
+* Multiple buttons
+
+---
+
+### 5. Handling Button Press Events
+
+* Each button object supports an `onPress` handler.
+
+-------------------code----------------------
+Alert.alert(
+  'My Title',
+  'My Message',
+  [
+    {
+      text: 'Yes',
+      onPress: () => console.log('Yes'),
+    },
+    {
+      text: 'No',
+      onPress: () => console.log('No'),
+    },
+  ]
+);
+-------------------code----------------------
+
+#### Behavior
+
+* The corresponding callback executes when the button is tapped.
+* Useful for confirmations and user decisions.
+
+---
+
+### 6. `Alert.prompt()` Method
+
+#### Purpose
+
+* Displays an alert with a **text input field**.
+* Used to ask the user for input.
+
+#### Example
+
+-------------------code----------------------
+Alert.prompt(
+  'My Title',
+  'Enter something',
+  text => console.log(text)
+);
+-------------------code----------------------
+
+#### Behavior on iOS
+
+* Shows an input field
+* Passes user input to the callback when OK is pressed
+
+---
+
+### 7. Platform Limitation of `Alert.prompt()`
+
+* At the time of recording:
+
+  * Supported **only on iOS**
+  * Not supported on Android
+* On Android:
+
+  * Tapping the button does nothing
+* This may change in future React Native versions.
+
+---
+
+### 8. Summary
+
+* `alert()` provides a quick, default alert.
+* `Alert.alert()` allows full customization:
+
+  * Title
+  * Message
+  * Buttons
+  * Button handlers
+* `Alert.prompt()` allows user input but is iOS-only.
+* Alerts are mapped to **native dialogs**, so UI differs per platform.
+
+---
+
+### 9. Best Practices
+
+* Use alerts for:
+
+  * Confirmations
+  * Warnings
+  * Simple user input
+* Avoid overusing alerts as they interrupt user flow.
+* For complex forms, use custom modals instead.
+
+---
+
+### 10. What’s Next
+
+* Next topics typically include:
+
+  * Modal components
+  * State handling
+  * Styling and layout
+
+---
+
+
+* Create an **Alert vs Modal comparison**
+
+Below is a **clear, structured comparison** between **Alert** and **Modal** in React Native, written in a study-note style and **without emojis**, consistent with your previous notes.
+
+---
+
+## Alert vs Modal in React Native
+
+### 1. Overview
+
+| Aspect            | Alert                 | Modal                           |
+| ----------------- | --------------------- | ------------------------------- |
+| Purpose           | Simple system dialogs | Fully custom overlay UI         |
+| Native mapping    | Yes (iOS / Android)   | No (custom React Native UI)     |
+| Customization     | Very limited          | Full control                    |
+| Blocking behavior | Blocks interaction    | Can be blocking or non-blocking |
+| Complexity        | Very simple           | More complex                    |
+
+---
+
+### 2. Alert
+
+#### What It Is
+
+* A **native dialog** provided by the operating system.
+* Implemented using the `Alert` API.
+* Automatically styled according to platform guidelines.
+
+#### Key Characteristics
+
+* System-controlled UI
+* Consistent with OS behavior
+* Minimal developer effort
+
+#### Pros
+
+* Extremely easy to use
+* Native look and feel
+* Built-in accessibility
+* Good for critical messages
+
+#### Cons
+
+* Very limited styling
+* Cannot embed custom components
+* Platform limitations:
+
+  * `Alert.prompt()` works only on iOS
+* Interrupts user flow
+
+#### Common Use Cases
+
+* Error messages
+* Confirmation dialogs
+* Critical warnings
+* Simple user decisions (Yes / No)
+
+---
+
+### 3. Modal
+
+#### What It Is
+
+* A **React Native component** that renders content above the current screen.
+* Fully customizable using standard components (`View`, `Text`, `Button`, etc.).
+
+#### Key Characteristics
+
+* Custom UI and layout
+* Works the same across platforms
+* Can contain complex interactions
+
+#### Pros
+
+* Full styling control
+* Can include:
+
+  * Forms
+  * Images
+  * Custom buttons
+  * Animations
+* Platform-consistent UI
+
+#### Cons
+
+* More code to write
+* Must manage:
+
+  * Visibility state
+  * Dismiss behavior
+  * Accessibility manually
+
+#### Common Use Cases
+
+* Login or signup dialogs
+* Custom confirmations
+* In-app forms
+* Bottom sheets
+* Feature walkthroughs
+
+---
+
+### 4. Customization Comparison
+
+| Feature        | Alert               | Modal              |
+| -------------- | ------------------- | ------------------ |
+| Title styling  | Not customizable    | Fully customizable |
+| Layout         | Fixed               | Flexible           |
+| Buttons        | System buttons only | Fully custom       |
+| Animations     | System default      | Custom             |
+| Icons / Images | Not supported       | Supported          |
+
+---
+
+### 5. Interaction & Behavior
+
+| Aspect                 | Alert          | Modal        |
+| ---------------------- | -------------- | ------------ |
+| Background interaction | Blocked        | Optional     |
+| Dismiss control        | Limited        | Full control |
+| Multiple inputs        | Not supported  | Supported    |
+| Keyboard handling      | System-managed | Manual       |
+
+---
+
+### 6. Accessibility
+
+#### Alert
+
+* Automatically accessible
+* Screen reader support out of the box
+* Focus management handled by OS
+
+#### Modal
+
+* Requires manual setup:
+
+  * `accessible`
+  * `accessibilityRole`
+  * Focus management
+* More responsibility on the developer
+
+---
+
+### 7. Performance Considerations
+
+* Alerts are lightweight and efficient.
+* Modals are safe for most use cases but:
+
+  * Should be used thoughtfully
+  * Avoid deep nesting or heavy content
+
+---
+
+### 8. When to Use Which
+
+#### Use Alert When
+
+* You need a quick confirmation
+* The message is critical
+* Native UI is preferred
+* Minimal customization is needed
+
+#### Use Modal When
+
+* You need full UI control
+* The interaction is complex
+* Branding and design matter
+* You need multiple inputs or actions
+
+---
+
+### 9. Rule of Thumb
+
+* **Alerts** are for interruption.
+* **Modals** are for interaction.
+
+---
+
+
