@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, SafeAreaView, Image, TouchableWithoutFeedback, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, Image, TouchableWithoutFeedback, TouchableOpacity, Button } from 'react-native';
 
 export default function App() {
   const handlePress = () => {
@@ -25,6 +25,12 @@ export default function App() {
           loadingIndicatorSource={require('./assets/icon.png')}
         />
       </TouchableOpacity>
+
+      <Button
+        title="Click me"
+        color="orange"
+        onPress={() => console.log('Button tapped')}
+      />
 
       <StatusBar style="auto" />
     </SafeAreaView>
