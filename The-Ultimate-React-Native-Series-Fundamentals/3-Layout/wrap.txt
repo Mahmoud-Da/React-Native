@@ -226,3 +226,237 @@ The `Dimensions` API **does not automatically update** when the device orientati
 
 ---
 
+
+*** 3- Detecting Orientation Changes ***
+
+---
+
+## Detecting Screen Orientation in React Native
+
+### 1. Why Screen Orientation Matters
+
+Sometimes we need to resize components based on whether the device is in **portrait** or **landscape** mode.
+
+#### Example Scenario: Video Player
+
+* Width: `100%`
+* Height:
+
+  * `30%` in portrait mode
+  * `100%` in landscape mode
+
+In portrait mode, the video player appears at the top.
+In landscape mode, it should take the entire screen.
+
+Using a fixed percentage alone is not enough because it does not change when the device rotates.
+
+---
+
+### 2. Enabling Multiple Orientations
+
+By default, React Native apps support **portrait mode only**.
+
+#### Update `app.json`
+
+-------------------code----------------------
+{
+  "expo": {
+    "orientation": "default"
+  }
+}
+-------------------code----------------------
+
+Available values:
+
+* `"portrait"`: portrait only (default)
+* `"landscape"`: landscape only
+* `"default"`: supports both portrait and landscape
+
+To support orientation changes, we must use `"default"`.
+
+---
+
+### 3. Rotating the Simulator
+
+* iOS Simulator (Mac): `Command + Left / Right Arrow`
+* Android Emulator:
+
+  * Use the rotation buttons in the toolbar
+  * Keyboard shortcuts may differ by OS
+
+---
+
+### 4. Why the Built-in `Dimensions` API Is Not Enough
+
+The `Dimensions` API from `react-native`:
+
+* Does **not** update automatically when orientation changes
+* Returns static values unless manually handled
+
+To solve this, we use **React Native Community Hooks**.
+
+---
+
+### 5. Installing React Native Community Hooks
+
+In the terminal:
+
+-------------------code----------------------
+npm install @react-native-community/hooks
+-------------------code----------------------
+
+This library provides hooks that automatically respond to changes such as:
+
+* Screen dimensions
+* Device orientation
+
+---
+
+### 6. Using `useDimensions` Hook
+
+#### Importing the Hook
+
+-------------------code----------------------
+import { useDimensions } from "@react-native-community/hooks";
+-------------------code----------------------
+
+#### Using It in a Component
+
+-------------------code----------------------
+import React from "react";
+import { SafeAreaView, View } from "react-native";
+import { useDimensions } from "@react-native-community/hooks";
+
+export default function App() {
+  const { width, height } = useDimensions().screen;
+
+  console.log(width, height);
+
+  return (
+    <SafeAreaView>
+      <View
+        style={{
+          backgroundColor: "black",
+          width: "100%",
+          height: "30%",
+        }}
+      />
+    </SafeAreaView>
+  );
+}
+-------------------code----------------------
+
+Key points:
+
+* `useDimensions()` always returns **updated values**
+* Width and height change automatically when the device rotates
+* This is the preferred way to read screen size when supporting multiple orientations
+
+---
+
+### 7. Detecting Orientation with `useDeviceOrientation`
+
+#### Importing the Hook
+
+-------------------code----------------------
+import { useDeviceOrientation } from "@react-native-community/hooks";
+-------------------code----------------------
+
+#### Using the Hook
+
+-------------------code----------------------
+const orientation = useDeviceOrientation();
+console.log(orientation);
+-------------------code----------------------
+
+Returned object:
+
+-------------------code----------------------
+{
+  portrait: true,
+  landscape: false
+}
+-------------------code----------------------
+
+When the device rotates, the values update automatically.
+
+---
+
+### 8. Dynamically Resizing a Component Based on Orientation
+
+We can now combine `useDeviceOrientation` with conditional styling.
+
+#### Example: Responsive Video Player
+
+-------------------code----------------------
+import React from "react";
+import { SafeAreaView, View } from "react-native";
+import { useDeviceOrientation } from "@react-native-community/hooks";
+
+export default function App() {
+  const { landscape } = useDeviceOrientation();
+
+  return (
+    <SafeAreaView>
+      <View
+        style={{
+          backgroundColor: "black",
+          width: "100%",
+          height: landscape ? "100%" : "30%",
+        }}
+      />
+    </SafeAreaView>
+  );
+}
+-------------------code----------------------
+
+Behavior:
+
+* Portrait mode → height is `30%`
+* Landscape mode → height is `100%`
+
+This makes the component fully responsive to orientation changes.
+
+---
+
+### 9. Safe Area Consideration
+
+When using `SafeAreaView`:
+
+* The component may not cover the entire screen in landscape mode
+* This creates empty edges on some devices
+
+For elements like video players, it may be better **not** to wrap them in `SafeAreaView`.
+
+This detail is outside the scope of this lesson.
+
+---
+
+### 10. Final Configuration for This Course
+
+Since the app built in this course does **not** support landscape mode:
+
+#### Reset `app.json`
+
+-------------------code----------------------
+{
+  "expo": {
+    "orientation": "portrait"
+  }
+}
+-------------------code----------------------
+
+---
+
+## Summary
+
+* Orientation-aware layouts require detecting screen rotation
+* `Dimensions` API does not update on rotation
+* `@react-native-community/hooks` provides:
+
+  * `useDimensions` for responsive screen size
+  * `useDeviceOrientation` for orientation detection
+* Orientation-based styling enables dynamic layouts
+* App orientation support is controlled via `app.json`
+
+---
