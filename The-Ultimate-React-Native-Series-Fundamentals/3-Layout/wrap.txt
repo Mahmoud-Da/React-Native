@@ -59,3 +59,170 @@ This section focuses on building layouts in React Native and marks the start of 
 ## Section Goal
 
 By the end of this section, you should feel comfortable creating responsive, well-structured layouts in React Native using flexbox, dimensions, orientation handling, and positioning techniques.
+
+
+*** 2- Dimensions ***
+---
+
+## Component Dimensions in React Native
+
+### 1. Using Fixed Dimensions with `View`
+
+In React Native, we control the size of components using **density-independent pixels (DIPs)** rather than raw pixels.
+
+#### Example Setup
+
+We start by importing `View` and rendering it inside a `SafeAreaView`.
+
+-------------------code----------------------
+import React from "react";
+import { SafeAreaView, View } from "react-native";
+
+export default function App() {
+  return (
+    <SafeAreaView>
+      <View
+        style={{
+          backgroundColor: "dodgerblue",
+          width: 150,
+          height: 70,
+        }}
+      />
+    </SafeAreaView>
+  );
+}
+-------------------code----------------------
+
+* `width: 150` and `height: 70` are expressed in **density-independent pixels (DIPs)**.
+* DIPs allow components to appear at nearly the same physical size across different devices.
+
+---
+
+### 2. What Are Density-Independent Pixels (DIPs)?
+
+* DIPs are **abstract units**, not actual pixels.
+* The real pixel size depends on the device’s **scale factor**.
+
+#### Example: iPhone 4
+
+* Screen size: `320 × 480` points
+* Scale factor: `2x`
+* Actual resolution: `640 × 960` pixels
+
+If a view has:
+
+-------------------code----------------------
+width: 150
+-------------------code----------------------
+
+Actual pixel width:
+
+-------------------code----------------------
+150 × 2 = 300 pixels
+-------------------code----------------------
+
+This is roughly half the screen width.
+
+#### Example: iPhone 11 Pro Max
+
+* Screen size: `414 × 896` points
+* Scale factor: `3x`
+
+Actual pixel width:
+
+-------------------code----------------------
+150 × 3 = 450 pixels
+-------------------code----------------------
+
+Again, roughly half the screen width, though it may appear slightly smaller relative to the screen.
+
+#### Key Takeaway
+
+You do **not** need to memorize device sizes or scale factors.
+
+By using DIPs, React Native ensures that components look almost the same size across different devices.
+
+---
+
+### 3. Using Percentage-Based Dimensions
+
+If you want a component to take **exactly half of the screen width**, you can use percentage values.
+
+-------------------code----------------------
+<View
+  style={{
+    backgroundColor: "dodgerblue",
+    width: "50%",
+    height: 70,
+  }}
+/>
+-------------------code----------------------
+
+Important notes:
+
+* Percentage values must be written as **strings**.
+* This guarantees proportional sizing regardless of device width.
+
+---
+
+### 4. Getting Screen Dimensions with the `Dimensions` API
+
+In some cases, you may need to adjust layout based on the actual screen size.
+
+#### Importing `Dimensions`
+
+-------------------code----------------------
+import { Dimensions } from "react-native";
+-------------------code----------------------
+
+#### Accessing Screen Size
+
+-------------------code----------------------
+const screen = Dimensions.get("screen");
+console.log(screen);
+-------------------code----------------------
+
+* The argument can be:
+
+  * `"screen"`: total screen size
+  * `"window"`: visible application window
+
+#### Difference Between `screen` and `window`
+
+* On **iOS**: `screen` and `window` are usually the same.
+* On **Android**: `window` is slightly smaller due to system UI elements.
+
+#### Example Output
+
+-------------------code----------------------
+{
+  width: 414,
+  height: 896,
+  scale: 3,
+  fontScale: 1
+}
+-------------------code----------------------
+
+* `scale: 3` means each point equals 3 physical pixels.
+
+---
+
+### 5. Limitation of the `Dimensions` API
+
+The `Dimensions` API **does not automatically update** when the device orientation changes.
+
+* If the user rotates the device, the width and height values remain the same.
+* Handling orientation changes requires additional APIs, which will be covered in the next lesson.
+
+---
+
+## Summary
+
+* React Native uses **density-independent pixels (DIPs)** instead of raw pixels.
+* DIPs help maintain consistent component sizing across devices.
+* Use **percentages** when you need exact proportional sizing.
+* Use the **Dimensions API** to read screen or window size.
+* `Dimensions.get()` does **not** respond to orientation changes by default.
+
+---
+
