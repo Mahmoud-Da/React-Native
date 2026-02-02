@@ -12,7 +12,7 @@ export default function App() {
       flexWrap: 'nowrap',
 
     }}>
-      <View style={{ backgroundColor: 'dodgerblue', width: 100, height: 100 }} />
+      <View style={{ backgroundColor: 'dodgerblue', width: 100, height: 100, flex: -1 }} />
       <View style={{ backgroundColor: 'gold', width: 100, height: 100 }} />
       <View style={{ backgroundColor: 'tomato', width: 100, height: 100 }} />
       <View style={{ backgroundColor: 'gray', width: 100, height: 100 }} />
