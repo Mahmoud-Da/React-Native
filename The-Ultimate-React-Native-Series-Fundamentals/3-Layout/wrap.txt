@@ -881,3 +881,191 @@ If you want, I can:
 * Draw mental diagrams for axis directions
 * Convert CSS layouts to React Native
 * Create flexbox exercises with answers
+
+*** 5- Flexbox- Direction  ***
+
+---
+
+# Flex Direction and Fixed Sizes in React Native
+
+## 1. Giving Views a Fixed Size
+
+Instead of using `flex`, we can give views **explicit width and height**.
+
+### Example: Fixed Size Views
+
+-------------------code----------------------
+export default function App() {
+  return (
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
+      <View style={{ backgroundColor: 'dodgerblue', width: 100, height: 100 }} />
+      <View style={{ backgroundColor: 'gold', width: 100, height: 100 }} />
+      <View style={{ backgroundColor: 'tomato', width: 100, height: 100 }} />
+    </View>
+  );
+}
+-------------------code----------------------
+
+### Result
+
+* Each view has a fixed size of `100 x 100`
+* Views are stacked **vertically**
+
+---
+
+## 2. Default Layout Direction in React Native
+
+By default, React Native lays out items in a container using:
+
+-------------------code----------------------
+flexDirection: 'column'
+-------------------code----------------------
+
+### Why Column Is the Default
+
+* Mobile devices are usually held in **portrait mode**
+* Vertical scrolling and stacking is more natural for mobile apps
+* This differs from CSS Flexbox
+
+---
+
+## 3. Difference from CSS Flexbox
+
+| Platform     | Default Direction   |
+| ------------ | ------------------- |
+| React Native | Vertical (`column`) |
+| CSS Flexbox  | Horizontal (`row`)  |
+
+This is one of the most important differences to remember when switching between web and mobile.
+
+---
+
+## 4. Changing Layout to Horizontal (`row`)
+
+To arrange views horizontally, set `flexDirection` on the container.
+
+### Example: Row Layout
+
+-------------------code----------------------
+export default function App() {
+  return (
+    <View style={{ flex: 1, backgroundColor: 'white', flexDirection: 'row' }}>
+      <View style={{ backgroundColor: 'dodgerblue', width: 100, height: 100 }} />
+      <View style={{ backgroundColor: 'gold', width: 100, height: 100 }} />
+      <View style={{ backgroundColor: 'tomato', width: 100, height: 100 }} />
+    </View>
+  );
+}
+-------------------code----------------------
+
+### Result
+
+* Views are laid out **from left to right**
+* Each view keeps its fixed size
+
+---
+
+## 5. Reverse Directions
+
+React Native supports reversed layout directions.
+
+### Row Reverse (Right to Left)
+
+-------------------code----------------------
+flexDirection: 'row-reverse'
+-------------------code----------------------
+
+Result:
+
+* Items are laid out horizontally from **right to left**
+
+---
+
+### Column Reverse (Bottom to Top)
+
+-------------------code----------------------
+flexDirection: 'column-reverse'
+-------------------code----------------------
+
+Result:
+
+* Items are stacked vertically from **bottom to top**
+
+---
+
+## 6. Valid `flexDirection` Values
+
+Allowed values for `flexDirection` are:
+
+* `column` (default)
+* `column-reverse`
+* `row`
+* `row-reverse`
+
+In VS Code, you can see available values by:
+
+* Removing the value
+* Pressing `Ctrl + Space`
+
+---
+
+## 7. Main Axis and Cross Axis
+
+When using Flexbox, layout is based on two axes.
+
+### With `flexDirection: 'row'`
+
+* **Main axis**: Horizontal
+* **Cross axis**: Vertical
+
+-------------------code----------------------
+flexDirection: 'row'
+-------------------code----------------------
+
+---
+
+### With `flexDirection: 'column'`
+
+* **Main axis**: Vertical
+* **Cross axis**: Horizontal
+
+-------------------code----------------------
+flexDirection: 'column'
+-------------------code----------------------
+
+---
+
+## 8. Why Axes Matter
+
+Many Flexbox properties depend on axes:
+
+* `justifyContent` works on the **main axis**
+* `alignItems` works on the **cross axis**
+
+Understanding axes is critical and will be reused constantly in future lessons.
+
+---
+
+## 9. Key Takeaways
+
+* Fixed sizes override flexible growth
+* React Native defaults to vertical layout
+* `flexDirection` controls layout direction
+* Main axis and cross axis change depending on direction
+* Axis understanding is essential for alignment
+
+---
+
+## 10. What’s Next
+
+The next lesson will focus on:
+
+* Aligning items using Flexbox
+* `justifyContent`
+* `alignItems`
+
+If you want, I can:
+
+* Add axis diagrams in text form
+* Compare row vs column with alignment examples
+* Turn this into revision notes combined with previous flex lessons
