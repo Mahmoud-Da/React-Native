@@ -2981,3 +2981,169 @@ If you want, I can also:
 * Refactor this using reusable icon components
 * Replace placeholders with vector icons
 * Convert this into a production-ready screen structure
+
+
+*** 13- Refactoring ***
+---
+
+## Extracting and Centralizing Colors (Improving Maintainability)
+
+### 1. Problem: Hard-Coded Color Duplication
+
+* The same color values are repeated in multiple places.
+* This makes future changes difficult.
+* If the app is rebranded, multiple files would need updates.
+
+**Goal:**
+Create a single source of truth for all application colors.
+
+---
+
+### 2. Creating a Central Color Configuration
+
+#### 2.1 Folder Structure
+
+* Inside the `app` folder, create a new folder:
+
+  -------------------code----------------------
+  config
+  -------------------code----------------------
+* Inside `config`, create a new file:
+
+  -------------------code----------------------
+  colors.js
+  -------------------code----------------------
+
+---
+
+### 3. Defining the Color Palette
+
+* Export a default object containing all app colors.
+* Start with primary and secondary colors.
+
+-------------------code----------------------
+export default {
+  primary: "#fc5c65",
+  secondary: "#4ecdc4",
+};
+-------------------code----------------------
+
+**Why this matters**
+
+* All colors are defined in one place.
+* Rebranding becomes easy: modify a single file.
+
+---
+
+### 4. Importing Colors into `ViewImageScreen`
+
+* Import the color palette at the top of the file.
+* Keep third-party imports separate from local imports for readability.
+
+-------------------code----------------------
+import React from "react";
+import { View, Image, StyleSheet } from "react-native";
+
+import colors from "../config/colors";
+-------------------code----------------------
+
+---
+
+### 5. Replacing Hard-Coded Color Values
+
+* Replace inline color values with references from `colors`.
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  closeIcon: {
+    backgroundColor: colors.primary,
+    height: 50,
+    left: 30,
+    position: "absolute",
+    top: 40,
+    width: 50,
+  },
+  deleteIcon: {
+    backgroundColor: colors.secondary,
+    height: 50,
+    position: "absolute",
+    right: 30,
+    top: 40,
+    width: 50,
+  },
+});
+-------------------code----------------------
+
+* Result: UI remains unchanged.
+* Code is now more maintainable and scalable.
+
+---
+
+### 6. Including Neutral Colors in the Palette
+
+* Even colors like black or white should not be hard-coded.
+* Future rebranding may replace pure black with a softer dark tone.
+
+#### 6.1 Updating `colors.js`
+
+-------------------code----------------------
+export default {
+  black: "#000",
+  primary: "#fc5c65",
+  secondary: "#4ecdc4",
+};
+-------------------code----------------------
+
+---
+
+### 7. Updating the Container Background
+
+* Replace the hard-coded black color.
+
+-------------------code----------------------
+container: {
+  backgroundColor: colors.black,
+  flex: 1,
+},
+-------------------code----------------------
+
+---
+
+### 8. Resulting Benefits
+
+* A single, centralized color palette.
+* Easier rebranding and theming.
+* Cleaner and more professional codebase.
+* Consistent design across the app.
+
+---
+
+### 9. Note on Style Duplication
+
+* Both icon placeholders share:
+
+  * `width: 50`
+  * `height: 50`
+* These could be extracted into a shared style.
+
+**Why it’s not done now**
+
+* These `View` components are temporary.
+* They will later be replaced with real icon components.
+* Refactoring now would add unnecessary complexity.
+
+---
+
+### 10. Summary
+
+* Color values should never be scattered across the codebase.
+* Configuration files improve maintainability and scalability.
+* Separating concerns early leads to cleaner architecture later.
+
+---
+
+If you want, I can next:
+
+* Refactor shared styles properly
+* Introduce a theme system
+* Replace placeholders with vector icons and clean up layout
