@@ -1,0 +1,3149 @@
+*** 1- Introduction ***
+## Section Overview: Creating Layouts in React Native
+
+This section focuses on building layouts in React Native and marks the start of implementing real application screens. You will apply these concepts directly when building the first two screens of the app.
+
+---
+
+## What You Will Learn
+
+### 1. Layout Fundamentals
+
+* How layouts work in React Native
+* Differences between React Native layouts and web (CSS) layouts
+
+### 2. Dimensions
+
+* Working with screen width and height
+* Using the `Dimensions` API
+* Adapting layouts to different device sizes
+
+### 3. Device Orientation
+
+* Handling portrait and landscape modes
+* Responding to orientation changes
+* Designing responsive layouts across orientations
+
+### 4. Flexbox in React Native
+
+* Core flexbox concepts
+* `flexDirection`, `justifyContent`, and `alignItems`
+* Building flexible and adaptive UI layouts
+
+### 5. Positioning
+
+* Relative positioning (default behavior)
+* Absolute positioning
+* When and why to use each positioning method
+
+---
+
+## Practical Application
+
+* You will use all these concepts to build:
+
+  * The first screen of the app
+  * The second screen of the app
+* These topics are essential for completing the exercises at the end of this section
+
+---
+
+## Notes
+
+* Pay close attention to each lesson
+* Take notes as these concepts are foundational
+* Expect to reuse these layout techniques throughout the course
+
+---
+
+## Section Goal
+
+By the end of this section, you should feel comfortable creating responsive, well-structured layouts in React Native using flexbox, dimensions, orientation handling, and positioning techniques.
+
+
+*** 2- Dimensions ***
+---
+
+## Component Dimensions in React Native
+
+### 1. Using Fixed Dimensions with `View`
+
+In React Native, we control the size of components using **density-independent pixels (DIPs)** rather than raw pixels.
+
+#### Example Setup
+
+We start by importing `View` and rendering it inside a `SafeAreaView`.
+
+-------------------code----------------------
+import React from "react";
+import { SafeAreaView, View } from "react-native";
+
+export default function App() {
+  return (
+    <SafeAreaView>
+      <View
+        style={{
+          backgroundColor: "dodgerblue",
+          width: 150,
+          height: 70,
+        }}
+      />
+    </SafeAreaView>
+  );
+}
+-------------------code----------------------
+
+* `width: 150` and `height: 70` are expressed in **density-independent pixels (DIPs)**.
+* DIPs allow components to appear at nearly the same physical size across different devices.
+
+---
+
+### 2. What Are Density-Independent Pixels (DIPs)?
+
+* DIPs are **abstract units**, not actual pixels.
+* The real pixel size depends on the device’s **scale factor**.
+
+#### Example: iPhone 4
+
+* Screen size: `320 × 480` points
+* Scale factor: `2x`
+* Actual resolution: `640 × 960` pixels
+
+If a view has:
+
+-------------------code----------------------
+width: 150
+-------------------code----------------------
+
+Actual pixel width:
+
+-------------------code----------------------
+150 × 2 = 300 pixels
+-------------------code----------------------
+
+This is roughly half the screen width.
+
+#### Example: iPhone 11 Pro Max
+
+* Screen size: `414 × 896` points
+* Scale factor: `3x`
+
+Actual pixel width:
+
+-------------------code----------------------
+150 × 3 = 450 pixels
+-------------------code----------------------
+
+Again, roughly half the screen width, though it may appear slightly smaller relative to the screen.
+
+#### Key Takeaway
+
+You do **not** need to memorize device sizes or scale factors.
+
+By using DIPs, React Native ensures that components look almost the same size across different devices.
+
+---
+
+### 3. Using Percentage-Based Dimensions
+
+If you want a component to take **exactly half of the screen width**, you can use percentage values.
+
+-------------------code----------------------
+<View
+  style={{
+    backgroundColor: "dodgerblue",
+    width: "50%",
+    height: 70,
+  }}
+/>
+-------------------code----------------------
+
+Important notes:
+
+* Percentage values must be written as **strings**.
+* This guarantees proportional sizing regardless of device width.
+
+---
+
+### 4. Getting Screen Dimensions with the `Dimensions` API
+
+In some cases, you may need to adjust layout based on the actual screen size.
+
+#### Importing `Dimensions`
+
+-------------------code----------------------
+import { Dimensions } from "react-native";
+-------------------code----------------------
+
+#### Accessing Screen Size
+
+-------------------code----------------------
+const screen = Dimensions.get("screen");
+console.log(screen);
+-------------------code----------------------
+
+* The argument can be:
+
+  * `"screen"`: total screen size
+  * `"window"`: visible application window
+
+#### Difference Between `screen` and `window`
+
+* On **iOS**: `screen` and `window` are usually the same.
+* On **Android**: `window` is slightly smaller due to system UI elements.
+
+#### Example Output
+
+-------------------code----------------------
+{
+  width: 414,
+  height: 896,
+  scale: 3,
+  fontScale: 1
+}
+-------------------code----------------------
+
+* `scale: 3` means each point equals 3 physical pixels.
+
+---
+
+### 5. Limitation of the `Dimensions` API
+
+The `Dimensions` API **does not automatically update** when the device orientation changes.
+
+* If the user rotates the device, the width and height values remain the same.
+* Handling orientation changes requires additional APIs, which will be covered in the next lesson.
+
+---
+
+## Summary
+
+* React Native uses **density-independent pixels (DIPs)** instead of raw pixels.
+* DIPs help maintain consistent component sizing across devices.
+* Use **percentages** when you need exact proportional sizing.
+* Use the **Dimensions API** to read screen or window size.
+* `Dimensions.get()` does **not** respond to orientation changes by default.
+
+---
+
+
+*** 3- Detecting Orientation Changes ***
+
+---
+
+## Detecting Screen Orientation in React Native
+
+### 1. Why Screen Orientation Matters
+
+Sometimes we need to resize components based on whether the device is in **portrait** or **landscape** mode.
+
+#### Example Scenario: Video Player
+
+* Width: `100%`
+* Height:
+
+  * `30%` in portrait mode
+  * `100%` in landscape mode
+
+In portrait mode, the video player appears at the top.
+In landscape mode, it should take the entire screen.
+
+Using a fixed percentage alone is not enough because it does not change when the device rotates.
+
+---
+
+### 2. Enabling Multiple Orientations
+
+By default, React Native apps support **portrait mode only**.
+
+#### Update `app.json`
+
+-------------------code----------------------
+{
+  "expo": {
+    "orientation": "default"
+  }
+}
+-------------------code----------------------
+
+Available values:
+
+* `"portrait"`: portrait only (default)
+* `"landscape"`: landscape only
+* `"default"`: supports both portrait and landscape
+
+To support orientation changes, we must use `"default"`.
+
+---
+
+### 3. Rotating the Simulator
+
+* iOS Simulator (Mac): `Command + Left / Right Arrow`
+* Android Emulator:
+
+  * Use the rotation buttons in the toolbar
+  * Keyboard shortcuts may differ by OS
+
+---
+
+### 4. Why the Built-in `Dimensions` API Is Not Enough
+
+The `Dimensions` API from `react-native`:
+
+* Does **not** update automatically when orientation changes
+* Returns static values unless manually handled
+
+To solve this, we use **React Native Community Hooks**.
+
+---
+
+### 5. Installing React Native Community Hooks
+
+In the terminal:
+
+-------------------code----------------------
+npm install @react-native-community/hooks
+-------------------code----------------------
+
+This library provides hooks that automatically respond to changes such as:
+
+* Screen dimensions
+* Device orientation
+
+---
+
+### 6. Using `useDimensions` Hook
+
+#### Importing the Hook
+
+-------------------code----------------------
+import { useDimensions } from "@react-native-community/hooks";
+-------------------code----------------------
+
+#### Using It in a Component
+
+-------------------code----------------------
+import React from "react";
+import { SafeAreaView, View } from "react-native";
+import { useDimensions } from "@react-native-community/hooks";
+
+export default function App() {
+  const { width, height } = useDimensions().screen;
+
+  console.log(width, height);
+
+  return (
+    <SafeAreaView>
+      <View
+        style={{
+          backgroundColor: "black",
+          width: "100%",
+          height: "30%",
+        }}
+      />
+    </SafeAreaView>
+  );
+}
+-------------------code----------------------
+
+Key points:
+
+* `useDimensions()` always returns **updated values**
+* Width and height change automatically when the device rotates
+* This is the preferred way to read screen size when supporting multiple orientations
+
+---
+
+### 7. Detecting Orientation with `useDeviceOrientation`
+
+#### Importing the Hook
+
+-------------------code----------------------
+import { useDeviceOrientation } from "@react-native-community/hooks";
+-------------------code----------------------
+
+#### Using the Hook
+
+-------------------code----------------------
+const orientation = useDeviceOrientation();
+console.log(orientation);
+-------------------code----------------------
+
+Returned object:
+
+-------------------code----------------------
+{
+  portrait: true,
+  landscape: false
+}
+-------------------code----------------------
+
+When the device rotates, the values update automatically.
+
+---
+
+### 8. Dynamically Resizing a Component Based on Orientation
+
+We can now combine `useDeviceOrientation` with conditional styling.
+
+#### Example: Responsive Video Player
+
+-------------------code----------------------
+import React from "react";
+import { SafeAreaView, View } from "react-native";
+import { useDeviceOrientation } from "@react-native-community/hooks";
+
+export default function App() {
+  const { landscape } = useDeviceOrientation();
+
+  return (
+    <SafeAreaView>
+      <View
+        style={{
+          backgroundColor: "black",
+          width: "100%",
+          height: landscape ? "100%" : "30%",
+        }}
+      />
+    </SafeAreaView>
+  );
+}
+-------------------code----------------------
+
+Behavior:
+
+* Portrait mode → height is `30%`
+* Landscape mode → height is `100%`
+
+This makes the component fully responsive to orientation changes.
+
+---
+
+### 9. Safe Area Consideration
+
+When using `SafeAreaView`:
+
+* The component may not cover the entire screen in landscape mode
+* This creates empty edges on some devices
+
+For elements like video players, it may be better **not** to wrap them in `SafeAreaView`.
+
+This detail is outside the scope of this lesson.
+
+---
+
+### 10. Final Configuration for This Course
+
+Since the app built in this course does **not** support landscape mode:
+
+#### Reset `app.json`
+
+-------------------code----------------------
+{
+  "expo": {
+    "orientation": "portrait"
+  }
+}
+-------------------code----------------------
+
+---
+
+## Summary
+
+* Orientation-aware layouts require detecting screen rotation
+* `Dimensions` API does not update on rotation
+* `@react-native-community/hooks` provides:
+
+  * `useDimensions` for responsive screen size
+  * `useDeviceOrientation` for orientation detection
+* Orientation-based styling enables dynamic layouts
+* App orientation support is controlled via `app.json`
+
+---
+
+*** 4- Flexbox ***
+---
+
+## Flexbox in React Native — Organized Notes
+
+### 1. What is Flex (Flexbox)
+
+* Flexbox is a layout system used to build responsive and consistent layouts.
+* React Native uses Flexbox by default.
+* The concept is similar to CSS Flexbox, but there are **important differences**, so prior CSS knowledge is helpful but not enough.
+* Flexbox helps layouts adapt to different screen sizes easily.
+
+---
+
+### 2. Basic Setup
+
+We start by removing all previous code and importing only the `View` component.
+
+-------------------code----------------------
+import { View } from 'react-native';
+-------------------code----------------------
+
+---
+
+### 3. Using `flex` to Fill the Screen
+
+Inside the `App` component, return a single `View`.
+
+-------------------code----------------------
+export default function App() {
+  return (
+    <View style={{ backgroundColor: 'dodgerblue', flex: 1 }} />
+  );
+}
+-------------------code----------------------
+
+#### Explanation
+
+* `flex: 1` means the view expands to take **all available free space**.
+* This makes the view fill the entire screen.
+
+---
+
+### 4. Changing the Flex Value
+
+If we change the flex value:
+
+-------------------code----------------------
+<View style={{ backgroundColor: 'dodgerblue', flex: 0.5 }} />
+-------------------code----------------------
+
+#### Result
+
+* The view takes **half of the screen** instead of the full screen.
+
+---
+
+### 5. Flex as a Container
+
+In most layouts:
+
+* One `View` acts as a **container**
+* Child views are aligned inside it
+
+Let’s turn our main view into a container.
+
+-------------------code----------------------
+export default function App() {
+  return (
+    <View style={{ backgroundColor: 'white', flex: 1 }}>
+      <View style={{ backgroundColor: 'dodgerblue', flex: 1 }} />
+    </View>
+  );
+}
+-------------------code----------------------
+
+#### Explanation
+
+* The white view fills the screen.
+* The blue child view expands to fill the container.
+* Result: the screen still looks fully blue because the child occupies all available space.
+
+---
+
+### 6. Multiple Child Views
+
+Now we add more child views.
+
+-------------------code----------------------
+export default function App() {
+  return (
+    <View style={{ backgroundColor: 'white', flex: 1 }}>
+      <View style={{ backgroundColor: 'dodgerblue', flex: 1 }} />
+      <View style={{ backgroundColor: 'gold', flex: 1 }} />
+      <View style={{ backgroundColor: 'tomato', flex: 1 }} />
+    </View>
+  );
+}
+-------------------code----------------------
+
+#### Result
+
+* The screen is divided into **three equal sections**
+* Each child view takes **one-third of the screen**
+* This happens because all children have `flex: 1`
+
+---
+
+### 7. Unequal Space Distribution
+
+Now change the first view’s flex value.
+
+-------------------code----------------------
+export default function App() {
+  return (
+    <View style={{ backgroundColor: 'white', flex: 1 }}>
+      <View style={{ backgroundColor: 'dodgerblue', flex: 2 }} />
+      <View style={{ backgroundColor: 'gold', flex: 1 }} />
+      <View style={{ backgroundColor: 'tomato', flex: 1 }} />
+    </View>
+  );
+}
+-------------------code----------------------
+
+#### Explanation
+
+* Total flex units: `2 + 1 + 1 = 4`
+* Blue view gets **2 out of 4 units**
+* Gold and tomato views get **1 out of 4 each**
+
+#### Result
+
+* Blue view takes **half of the screen**
+* The other two each take **one quarter**
+
+---
+
+### 8. Key Takeaways
+
+* `flex` controls how much space a view takes relative to its siblings
+* Flex values are **relative**, not fixed sizes
+* Parent views act as containers
+* Child views divide available space based on their flex values
+
+---
+
+### 9. What’s Next
+
+* More Flexbox properties will be covered next
+* Including alignment, direction, and spacing
+
+
+* Compare React Native flex vs CSS flexbox
+
+Below is a **clear, structured comparison** between **React Native Flex** and **CSS Flexbox**, written as study notes with examples and no emojis.
+
+---
+
+# React Native Flex vs CSS Flexbox
+
+## 1. Default Behavior
+
+| Feature                | React Native    | CSS                   |
+| ---------------------- | --------------- | --------------------- |
+| Default `display`      | `flex` (always) | `block`               |
+| Need to enable flexbox | No              | Yes (`display: flex`) |
+
+### Example
+
+**React Native**
+
+-------------------code----------------------
+<View style={{ flex: 1 }} />
+-------------------code----------------------
+
+**CSS**
+
+-------------------code----------------------
+.container {
+  display: flex;
+}
+-------------------code----------------------
+
+---
+
+## 2. Default Flex Direction
+
+| Property        | React Native | CSS   |
+| --------------- | ------------ | ----- |
+| `flexDirection` | `column`     | `row` |
+
+### Example
+
+**React Native**
+
+-------------------code----------------------
+<View style={{ flexDirection: 'column' }}>
+  <View />
+  <View />
+</View>
+-------------------code----------------------
+
+**CSS**
+
+-------------------code----------------------
+.container {
+  display: flex;
+  flex-direction: row;
+}
+-------------------code----------------------
+
+This difference causes the most confusion for beginners.
+
+---
+
+## 3. Measurement Units
+
+| Feature     | React Native               | CSS                    |
+| ----------- | -------------------------- | ---------------------- |
+| Units       | Density-independent pixels | px, %, em, rem, vh, vw |
+| Percentages | Limited support            | Fully supported        |
+
+### Example
+
+**React Native**
+
+-------------------code----------------------
+width: 100,
+height: 50
+-------------------code----------------------
+
+**CSS**
+
+-------------------code----------------------
+width: 100px;
+height: 50px;
+-------------------code----------------------
+
+React Native numbers are not pixels but **logical units** that scale across screen densities.
+
+---
+
+## 4. Flex Value Meaning
+
+| Behavior          | React Native         | CSS            |
+| ----------------- | -------------------- | -------------- |
+| `flex: 1`         | Take available space | Grow factor    |
+| Shorthand support | Simplified           | Full shorthand |
+
+### Example
+
+**React Native**
+
+-------------------code----------------------
+<View style={{ flex: 2 }} />
+-------------------code----------------------
+
+**CSS**
+
+-------------------code----------------------
+.item {
+  flex: 2 1 auto;
+}
+-------------------code----------------------
+
+In CSS:
+
+* `flex-grow`
+* `flex-shrink`
+* `flex-basis`
+
+In React Native:
+
+* `flex` mainly controls growth
+
+---
+
+## 5. Axis Alignment
+
+| Property         | React Native | CSS        |
+| ---------------- | ------------ | ---------- |
+| `justifyContent` | Main axis    | Main axis  |
+| `alignItems`     | Cross axis   | Cross axis |
+| `alignSelf`      | Cross axis   | Cross axis |
+
+Behavior is mostly the same, but **axis direction differs due to default flexDirection**.
+
+---
+
+## 6. Gap Support
+
+| Feature            | React Native             | CSS             |
+| ------------------ | ------------------------ | --------------- |
+| `gap`              | Limited / newer versions | Fully supported |
+| Common alternative | Margins                  | Gap             |
+
+### Example (RN workaround)
+
+-------------------code----------------------
+<View style={{ marginBottom: 10 }} />
+-------------------code----------------------
+
+---
+
+## 7. Wrapping Behavior
+
+| Feature    | React Native | CSS       |
+| ---------- | ------------ | --------- |
+| `flexWrap` | Supported    | Supported |
+| Default    | `nowrap`     | `nowrap`  |
+
+### Example
+
+-------------------code----------------------
+<View style={{ flexWrap: 'wrap' }} />
+-------------------code----------------------
+
+---
+
+## 8. Positioning
+
+| Feature    | React Native           | CSS                                       |
+| ---------- | ---------------------- | ----------------------------------------- |
+| `position` | `relative`, `absolute` | `static`, `relative`, `absolute`, `fixed` |
+| `fixed`    | Not supported          | Supported                                 |
+
+React Native does not support `position: fixed`.
+
+---
+
+## 9. Layout Engine
+
+| Feature   | React Native | CSS                   |
+| --------- | ------------ | --------------------- |
+| Engine    | Yoga         | Browser layout engine |
+| Rendering | Native views | DOM elements          |
+
+React Native layout is calculated **before rendering**, not by a browser.
+
+---
+
+## 10. Styling Method
+
+| Feature        | React Native       | CSS                               |
+| -------------- | ------------------ | --------------------------------- |
+| Style format   | JavaScript objects | CSS files                         |
+| Dynamic styles | Very easy          | Requires classes or inline styles |
+
+### Example
+
+**React Native**
+
+-------------------code----------------------
+style={{ flex: isActive ? 1 : 0 }}
+-------------------code----------------------
+
+**CSS**
+
+-------------------code----------------------
+.active {
+  flex: 1;
+}
+-------------------code----------------------
+
+---
+
+## 11. Unsupported CSS Features in React Native
+
+React Native **does not support**:
+
+* `float`
+* `grid`
+* `z-index` behavior like web
+* Pseudo-classes (`:hover`, `:focus`)
+* Media queries (handled differently)
+
+---
+
+## 12. Mental Model Difference
+
+### CSS Flexbox
+
+* Document-based layout
+* Browser-controlled rendering
+* Many legacy behaviors
+
+### React Native Flex
+
+* App-based layout
+* Predictable and strict
+* Optimized for performance
+
+---
+
+## 13. Summary Table
+
+| Topic             | React Native  | CSS            |
+| ----------------- | ------------- | -------------- |
+| Default direction | Column        | Row            |
+| Units             | Logical units | Multiple units |
+| Layout engine     | Yoga          | Browser        |
+| Flex shorthand    | Simplified    | Full           |
+| Platform          | Mobile apps   | Web            |
+
+---
+
+## Final Advice
+
+If you know CSS Flexbox:
+
+* Forget defaults
+* Think in columns first
+* Always define container size
+* Rely on `flex` more than fixed widths
+
+If you want, I can:
+
+* Draw mental diagrams for axis directions
+* Convert CSS layouts to React Native
+* Create flexbox exercises with answers
+
+*** 5- Flexbox- Direction  ***
+
+---
+
+# Flex Direction and Fixed Sizes in React Native
+
+## 1. Giving Views a Fixed Size
+
+Instead of using `flex`, we can give views **explicit width and height**.
+
+### Example: Fixed Size Views
+
+-------------------code----------------------
+export default function App() {
+  return (
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
+      <View style={{ backgroundColor: 'dodgerblue', width: 100, height: 100 }} />
+      <View style={{ backgroundColor: 'gold', width: 100, height: 100 }} />
+      <View style={{ backgroundColor: 'tomato', width: 100, height: 100 }} />
+    </View>
+  );
+}
+-------------------code----------------------
+
+### Result
+
+* Each view has a fixed size of `100 x 100`
+* Views are stacked **vertically**
+
+---
+
+## 2. Default Layout Direction in React Native
+
+By default, React Native lays out items in a container using:
+
+-------------------code----------------------
+flexDirection: 'column'
+-------------------code----------------------
+
+### Why Column Is the Default
+
+* Mobile devices are usually held in **portrait mode**
+* Vertical scrolling and stacking is more natural for mobile apps
+* This differs from CSS Flexbox
+
+---
+
+## 3. Difference from CSS Flexbox
+
+| Platform     | Default Direction   |
+| ------------ | ------------------- |
+| React Native | Vertical (`column`) |
+| CSS Flexbox  | Horizontal (`row`)  |
+
+This is one of the most important differences to remember when switching between web and mobile.
+
+---
+
+## 4. Changing Layout to Horizontal (`row`)
+
+To arrange views horizontally, set `flexDirection` on the container.
+
+### Example: Row Layout
+
+-------------------code----------------------
+export default function App() {
+  return (
+    <View style={{ flex: 1, backgroundColor: 'white', flexDirection: 'row' }}>
+      <View style={{ backgroundColor: 'dodgerblue', width: 100, height: 100 }} />
+      <View style={{ backgroundColor: 'gold', width: 100, height: 100 }} />
+      <View style={{ backgroundColor: 'tomato', width: 100, height: 100 }} />
+    </View>
+  );
+}
+-------------------code----------------------
+
+### Result
+
+* Views are laid out **from left to right**
+* Each view keeps its fixed size
+
+---
+
+## 5. Reverse Directions
+
+React Native supports reversed layout directions.
+
+### Row Reverse (Right to Left)
+
+-------------------code----------------------
+flexDirection: 'row-reverse'
+-------------------code----------------------
+
+Result:
+
+* Items are laid out horizontally from **right to left**
+
+---
+
+### Column Reverse (Bottom to Top)
+
+-------------------code----------------------
+flexDirection: 'column-reverse'
+-------------------code----------------------
+
+Result:
+
+* Items are stacked vertically from **bottom to top**
+
+---
+
+## 6. Valid `flexDirection` Values
+
+Allowed values for `flexDirection` are:
+
+* `column` (default)
+* `column-reverse`
+* `row`
+* `row-reverse`
+
+In VS Code, you can see available values by:
+
+* Removing the value
+* Pressing `Ctrl + Space`
+
+---
+
+## 7. Main Axis and Cross Axis
+
+When using Flexbox, layout is based on two axes.
+
+### With `flexDirection: 'row'`
+
+* **Main axis**: Horizontal
+* **Cross axis**: Vertical
+
+-------------------code----------------------
+flexDirection: 'row'
+-------------------code----------------------
+
+---
+
+### With `flexDirection: 'column'`
+
+* **Main axis**: Vertical
+* **Cross axis**: Horizontal
+
+-------------------code----------------------
+flexDirection: 'column'
+-------------------code----------------------
+
+---
+
+## 8. Why Axes Matter
+
+Many Flexbox properties depend on axes:
+
+* `justifyContent` works on the **main axis**
+* `alignItems` works on the **cross axis**
+
+Understanding axes is critical and will be reused constantly in future lessons.
+
+---
+
+## 9. Key Takeaways
+
+* Fixed sizes override flexible growth
+* React Native defaults to vertical layout
+* `flexDirection` controls layout direction
+* Main axis and cross axis change depending on direction
+* Axis understanding is essential for alignment
+
+---
+
+## 10. What’s Next
+
+The next lesson will focus on:
+
+* Aligning items using Flexbox
+* `justifyContent`
+* `alignItems`
+
+If you want, I can:
+
+* Add axis diagrams in text form
+* Compare row vs column with alignment examples
+* Turn this into revision notes combined with previous flex lessons
+
+
+*** 6- Flexbox- justifyContent, alignItems and alignSelf ***
+---
+
+# Aligning Items in React Native Flexbox
+
+## 1. Initial Layout State
+
+By default, items appear at the **top-left corner** of the container.
+
+This happens because:
+
+* `flexDirection` defaults to `column`
+* `justifyContent` defaults to `flex-start`
+* `alignItems` defaults to `stretch`
+
+---
+
+## 2. Base Setup Used in This Lesson
+
+-------------------code----------------------
+export default function App() {
+  return (
+    <View style={{ flex: 1, flexDirection: 'row', backgroundColor: 'white' }}>
+      <View style={{ backgroundColor: 'dodgerblue', width: 100, height: 100 }} />
+      <View style={{ backgroundColor: 'gold', width: 100, height: 100 }} />
+      <View style={{ backgroundColor: 'tomato', width: 100, height: 100 }} />
+    </View>
+  );
+}
+-------------------code----------------------
+
+* `flexDirection: 'row'`
+* Main axis: horizontal
+* Cross axis: vertical
+
+---
+
+## 3. `justifyContent` — Aligning Along the Main Axis
+
+`justifyContent` controls alignment **along the main axis**.
+
+### Main Axis Depends on `flexDirection`
+
+| flexDirection | Main Axis  |
+| ------------- | ---------- |
+| row           | Horizontal |
+| column        | Vertical   |
+
+---
+
+### 3.1 Center Items on the Main Axis
+
+-------------------code----------------------
+justifyContent: 'center'
+-------------------code----------------------
+
+* Items move to the center of the main axis
+
+---
+
+### 3.2 Change Main Axis by Switching Direction
+
+-------------------code----------------------
+flexDirection: 'column'
+justifyContent: 'center'
+-------------------code----------------------
+
+* Items are centered **vertically**
+* Vertical axis is now the main axis
+
+---
+
+### 3.3 Other `justifyContent` Values
+
+#### `flex-start` (default)
+
+-------------------code----------------------
+justifyContent: 'flex-start'
+-------------------code----------------------
+
+* Items align at the start of the main axis
+
+---
+
+#### `flex-end`
+
+-------------------code----------------------
+justifyContent: 'flex-end'
+-------------------code----------------------
+
+* Items align at the end of the main axis
+
+---
+
+### 3.4 Distributing Space
+
+#### `space-around`
+
+-------------------code----------------------
+justifyContent: 'space-around'
+-------------------code----------------------
+
+* Equal space between items
+* Less space at the edges
+
+---
+
+#### `space-evenly`
+
+-------------------code----------------------
+justifyContent: 'space-evenly'
+-------------------code----------------------
+
+* Equal space between items and edges
+
+---
+
+#### `space-between`
+
+-------------------code----------------------
+justifyContent: 'space-between'
+-------------------code----------------------
+
+* First and last items touch the edges
+* Remaining space distributed between items
+
+---
+
+## 4. `alignItems` — Aligning Along the Cross Axis
+
+`alignItems` controls alignment **along the secondary (cross) axis**.
+
+With `flexDirection: 'row'`:
+
+* Cross axis is vertical
+
+---
+
+### 4.1 Center on the Cross Axis
+
+-------------------code----------------------
+alignItems: 'center'
+-------------------code----------------------
+
+* Items appear centered vertically
+
+---
+
+### 4.2 `baseline`
+
+To see `baseline`, item heights must differ.
+
+-------------------code----------------------
+<View style={{ backgroundColor: 'dodgerblue', width: 100, height: 300 }} />
+<View style={{ backgroundColor: 'gold', width: 100, height: 200 }} />
+-------------------code----------------------
+
+-------------------code----------------------
+alignItems: 'baseline'
+-------------------code----------------------
+
+* Items align based on their text baseline
+
+---
+
+### 4.3 `flex-end`
+
+-------------------code----------------------
+alignItems: 'flex-end'
+-------------------code----------------------
+
+* Items align at the end of the cross axis
+
+---
+
+### 4.4 `flex-start`
+
+-------------------code----------------------
+alignItems: 'flex-start'
+-------------------code----------------------
+
+* Items align at the start of the cross axis
+
+---
+
+### 4.5 `stretch` (Default)
+
+-------------------code----------------------
+alignItems: 'stretch'
+-------------------code----------------------
+
+* Items stretch to fill the cross axis
+* Only visible if height (or width) is not set
+
+Example:
+
+-------------------code----------------------
+<View style={{ backgroundColor: 'dodgerblue', width: 100 }} />
+-------------------code----------------------
+
+* The view stretches vertically
+
+If `alignItems` is removed entirely, the behavior is the same.
+
+---
+
+## 5. `alignSelf` — Aligning a Single Item
+
+`alignSelf` overrides `alignItems` **for one specific item**.
+
+### Example: Move Only the Blue View
+
+-------------------code----------------------
+<View
+  style={{
+    backgroundColor: 'dodgerblue',
+    width: 100,
+    height: 100,
+    alignSelf: 'flex-start'
+  }}
+/>
+-------------------code----------------------
+
+* Applied to **individual items**
+* Does not affect siblings
+
+---
+
+## 6. Key Concept Summary
+
+| Property       | Applied To  | Axis       |
+| -------------- | ----------- | ---------- |
+| justifyContent | Container   | Main axis  |
+| alignItems     | Container   | Cross axis |
+| alignSelf      | Single item | Cross axis |
+
+---
+
+## 7. Common Beginner Confusion
+
+* Names are not intuitive at first
+* You must always ask:
+
+  * What is my `flexDirection`?
+  * What is my main axis?
+  * What is my cross axis?
+
+With practice, these properties become automatic.
+-------------------code----------------------
+export default function App() {
+  return (
+    <View style={{
+      flex: 1,
+      backgroundColor: 'white',
+      flexDirection: 'column',
+      justifyContent: 'center', // primary Axis react-native main=column, CSS main=row
+      alignItems: 'center', // secondary Axis react-native main=row, CSS main=column
+
+    }}>
+      <View style={{ backgroundColor: 'dodgerblue', width: 100, height: 100 }} />
+      <View style={{ backgroundColor: 'gold', width: 100, height: 100 }} />
+      <View style={{ backgroundColor: 'tomato', width: 100, height: 100 }} />
+    </View>
+  );
+}
+-------------------code----------------------
+
+---
+
+## 8. Final Takeaways
+
+* `justifyContent` aligns items along the main axis
+* `alignItems` aligns items along the cross axis
+* `alignSelf` overrides alignment for a single view
+* Default alignment often explains unexpected layouts
+
+---
+
+## 9. What’s Next
+
+Next lesson focuses on:
+
+* Wrapping items
+* `flexWrap`
+* Handling overflow layouts
+
+If you want, I can:
+
+* Create an axis cheat sheet
+* Show common alignment recipes
+* Combine all flex lessons into one master reference
+
+
+*** 7- Flexbox- flexWrap and alignContent ***
+
+---
+
+# Wrapping Items in React Native Flexbox
+
+## 1. Initial Setup
+
+We start with a horizontal layout and fixed-size views.
+
+-------------------code----------------------
+export default function App() {
+  return (
+    <View
+      style={{
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'white',
+      }}
+    >
+      <View style={{ backgroundColor: 'dodgerblue', width: 100, height: 100 }} />
+      <View style={{ backgroundColor: 'gold', width: 100, height: 100 }} />
+      <View style={{ backgroundColor: 'tomato', width: 100, height: 100 }} />
+      <View style={{ backgroundColor: 'gray', width: 100, height: 100 }} />
+    </View>
+  );
+}
+-------------------code----------------------
+
+At this point, everything fits on one line.
+
+---
+
+## 2. What Happens When Items Overflow
+
+Now we add another view that exceeds the available horizontal space.
+
+-------------------code----------------------
+<View style={{ backgroundColor: 'green', width: 100, height: 100 }} />
+-------------------code----------------------
+
+### Result (Default Behavior)
+
+* Items **do not wrap**
+* One or more items **shrink**
+* This allows all items to fit on a single line
+
+This happens because:
+
+-------------------code----------------------
+flexWrap: 'nowrap' // default
+-------------------code----------------------
+
+---
+
+## 3. Enabling Wrapping
+
+To prevent shrinking and allow items to move to a new line, we enable wrapping on the container.
+
+-------------------code----------------------
+flexWrap: 'wrap'
+-------------------code----------------------
+
+### Updated Container
+
+-------------------code----------------------
+<View
+  style={{
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    backgroundColor: 'white',
+  }}
+>
+-------------------code----------------------
+
+### Result
+
+* Items wrap onto a second line
+* No items are shrunk
+* Layout no longer looks vertically centered
+
+This is where confusion often starts.
+
+---
+
+## 4. Why Alignment Looks Broken After Wrapping
+
+When `flexWrap: 'wrap'` is enabled:
+
+* The container now has **multiple lines**
+* `alignItems` changes behavior
+
+### Important Rule
+
+`alignItems` aligns items **within each line**, not the entire group.
+
+---
+
+## 5. Understanding `alignItems` with Wrapping
+
+Let’s exaggerate the difference by changing item heights.
+
+-------------------code----------------------
+<View style={{ backgroundColor: 'dodgerblue', width: 100, height: 300 }} />
+<View style={{ backgroundColor: 'gold', width: 100, height: 100 }} />
+<View style={{ backgroundColor: 'tomato', width: 100, height: 100 }} />
+-------------------code----------------------
+
+-------------------code----------------------
+alignItems: 'center'
+-------------------code----------------------
+
+### Result
+
+* Items inside **each row** are vertically centered
+* The second line is still positioned near the top
+
+This confirms:
+
+* `alignItems` works **per line**
+
+---
+
+## 6. Aligning the Entire Content with `alignContent`
+
+To align **all wrapped lines together**, we use `alignContent`.
+
+-------------------code----------------------
+alignContent: 'center'
+-------------------code----------------------
+
+### Updated Container
+
+-------------------code----------------------
+<View
+  style={{
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignContent: 'center',
+    flexWrap: 'wrap',
+    backgroundColor: 'white',
+  }}
+>
+-------------------code----------------------
+
+### Result
+
+* All rows are centered vertically
+* The entire group behaves as one unit
+
+---
+
+## 7. Difference Between `alignItems` and `alignContent`
+
+| Property     | What It Aligns         | Requirement       |
+| ------------ | ---------------------- | ----------------- |
+| alignItems   | Items inside each line | Always works      |
+| alignContent | All lines together     | Requires wrapping |
+
+Important:
+
+* `alignContent` has **no effect** if `flexWrap` is not enabled
+
+---
+
+## 8. Mental Model
+
+When wrapping is enabled:
+
+* Think in terms of **rows (or columns)**
+* `alignItems` → alignment inside each row
+* `alignContent` → alignment of rows themselves
+
+---
+
+## 9. Key Takeaways
+
+* Default behavior shrinks items instead of wrapping
+* `flexWrap: 'wrap'` allows items to move to new lines
+* Wrapping changes how alignment behaves
+* `alignItems` aligns items within a line
+* `alignContent` aligns the entire wrapped content
+* `alignContent` only works with wrapping
+
+---
+
+## 10. What’s Next
+
+Next topics usually include:
+
+* `flexShrink` and `flexGrow`
+* Responsive layouts
+* Practical layout challenges
+
+If you want, I can:
+
+* Create a wrapping comparison table (wrap vs nowrap)
+* Show real UI patterns using wrap
+* Combine alignment and wrapping into one cheat sheet
+
+
+*** what the meaning of Items inside each line in simple way? ***
+Good question — this part confuses a lot of people at first.
+Here’s the **simple, human explanation**.
+
+---
+
+## What does “items inside each line” mean?
+
+When **wrapping is OFF**:
+
+* All items are on **one single line**
+* There is no “each line” concept
+
+When **wrapping is ON (`flexWrap: 'wrap'`)**:
+
+* Items can move to **multiple lines (rows or columns)**
+* Each row is called **a line**
+
+So:
+
+> **A line = one row of items after wrapping**
+
+---
+
+## Simple mental picture
+
+Imagine shelves.
+
+* Each shelf is **one line**
+* Boxes on the same shelf are **items inside that line**
+
+-------------------code----------------------
+[ blue ][ gold ][ tomato ]   ← line 1
+[ gray ][ green ]            ← line 2
+-------------------code----------------------
+
+---
+
+## What `alignItems` does (simple)
+
+`alignItems` controls **how items are positioned *inside each line***.
+
+It does **NOT** move the lines themselves.
+
+Example:
+
+-------------------code----------------------
+alignItems: 'center'
+-------------------code----------------------
+
+Means:
+
+* Inside line 1 → items are centered vertically
+* Inside line 2 → items are centered vertically
+
+But:
+
+* Line 1 and line 2 stay where they are
+
+---
+
+## Why people get confused
+
+They expect:
+
+> “Center everything on the screen”
+
+But `alignItems` actually means:
+
+> “Center items **within their own row**”
+
+---
+
+## What moves the whole group of lines?
+
+That’s **`alignContent`**.
+
+-------------------code----------------------
+alignContent: 'center'
+-------------------code----------------------
+
+This means:
+
+* Take all lines together
+* Move them as a group to the center
+
+---
+
+## One-sentence summary
+
+* **Line** = one wrapped row of items
+* **alignItems** = aligns items *inside each row*
+* **alignContent** = aligns *all rows together*
+
+---
+
+## Ultra-short cheat line
+
+> alignItems = inside the row
+> alignContent = the rows themselves
+
+If you want, I can also explain this using:
+
+* A real-life example (tables, shelves, parking spots)
+* A one-glance diagram
+* A common bug example and how to fix it
+
+
+*** 8- Flexbox- flexBasis, flexGrow and flexShrink ***
+---
+
+# Advanced Flex Properties in React Native
+
+These properties are used less often, but they are important to understand when reading or maintaining other people’s code.
+
+The three properties are:
+
+* `flexBasis`
+* `flexGrow`
+* `flexShrink`
+
+---
+
+## 1. Base Setup Used in This Lesson
+
+-------------------code----------------------
+export default function App() {
+  return (
+    <View
+      style={{
+        flex: 1,
+        flexDirection: 'row',
+        backgroundColor: 'white',
+      }}
+    >
+      <View style={{ backgroundColor: 'dodgerblue' }} />
+      <View style={{ backgroundColor: 'orange', width: 100 }} />
+    </View>
+  );
+}
+-------------------code----------------------
+
+* `flexDirection: 'row'`
+* Main (primary) axis: horizontal
+* Cross axis: vertical
+
+---
+
+## 2. `flexBasis`
+
+### What `flexBasis` Means
+
+`flexBasis` sets the **initial size of an item along the main axis**.
+
+* If the main axis is horizontal → acts like `width`
+* If the main axis is vertical → acts like `height`
+
+---
+
+### Example: Horizontal Main Axis
+
+-------------------code----------------------
+<View
+  style={{
+    backgroundColor: 'dodgerblue',
+    flexBasis: 100,
+  }}
+/>
+-------------------code----------------------
+
+This is equivalent to:
+
+-------------------code----------------------
+<View
+  style={{
+    backgroundColor: 'dodgerblue',
+    width: 100,
+  }}
+/>
+-------------------code----------------------
+
+---
+
+### When the Main Axis Is Vertical
+
+-------------------code----------------------
+flexDirection: 'column'
+-------------------code----------------------
+
+-------------------code----------------------
+flexBasis: 100
+-------------------code----------------------
+
+This becomes equivalent to:
+
+-------------------code----------------------
+height: 100
+-------------------code----------------------
+
+---
+
+### Key Idea
+
+`flexBasis` maps to **width or height depending on the main axis**.
+
+---
+
+## 3. `flexGrow`
+
+### What `flexGrow` Means
+
+`flexGrow` controls **how much an item grows to fill available space**.
+
+---
+
+### Example
+
+-------------------code----------------------
+<View
+  style={{
+    backgroundColor: 'dodgerblue',
+    flexGrow: 1,
+  }}
+/>
+-------------------code----------------------
+
+Result:
+
+* The view expands to fill available free space along the main axis
+
+---
+
+### Relation to `flex`
+
+-------------------code----------------------
+flexGrow: 1
+-------------------code----------------------
+
+Is equivalent to:
+
+-------------------code----------------------
+flex: 1
+-------------------code----------------------
+
+In practice:
+
+* `flex` is a shorthand
+* `flexGrow` is more explicit
+
+---
+
+### Important Note
+
+Sometimes the simulator does not immediately reflect changes.
+
+* Manual refresh may be required
+* Behavior is still correct
+
+---
+
+## 4. `flexShrink`
+
+### What `flexShrink` Means
+
+`flexShrink` controls **whether an item is allowed to shrink when there is not enough space**.
+
+It is the **opposite of `flexGrow`**.
+
+---
+
+### Example Without Shrinking
+
+-------------------code----------------------
+<View
+  style={{
+    backgroundColor: 'dodgerblue',
+    width: 400,
+  }}
+/>
+-------------------code----------------------
+
+Result:
+
+* The item overflows
+* Other items cannot fit
+
+---
+
+### Allow the Item to Shrink
+
+-------------------code----------------------
+<View
+  style={{
+    backgroundColor: 'dodgerblue',
+    width: 400,
+    flexShrink: 1,
+  }}
+/>
+-------------------code----------------------
+
+Result:
+
+* The blue view shrinks
+* Other items fit on the screen
+
+---
+
+### Real Meaning
+
+You are telling React Native:
+
+> If space is tight, this item is allowed to shrink.
+
+---
+
+## 5. `flex` as a Shorthand
+
+The `flex` property combines:
+
+* `flexGrow`
+* `flexShrink`
+
+### Example
+
+-------------------code----------------------
+flex: 1
+-------------------code----------------------
+
+Is equivalent to:
+
+* Grow to fill space
+* Shrink if needed
+
+---
+
+### Negative `flex` Values
+
+-------------------code----------------------
+flex: -1
+-------------------code----------------------
+
+Behaves like:
+
+-------------------code----------------------
+flexShrink: 1
+-------------------code----------------------
+
+This means:
+
+* Do not grow
+* Shrink when space is limited
+
+Again, manual refresh may be required to see the result.
+
+---
+
+## 6. Summary Table
+
+| Property   | Purpose                   | Axis      |
+| ---------- | ------------------------- | --------- |
+| flexBasis  | Initial size              | Main axis |
+| flexGrow   | Expand to fill space      | Main axis |
+| flexShrink | Shrink when overflowing   | Main axis |
+| flex       | Shorthand for grow/shrink | Main axis |
+
+---
+
+## 7. Practical Advice
+
+* Most layouts only need `flex`
+* Use `flexBasis` when you want a starting size
+* Use `flexGrow` when you want controlled expansion
+* Use `flexShrink` when overflow causes layout issues
+* Expect to see these more in advanced or older codebases
+
+---
+
+## 8. One-Line Mental Model
+
+* `flexBasis` = starting size
+* `flexGrow` = can grow
+* `flexShrink` = can shrink
+
+---
+
+If you want, I can:
+
+* Show a visual comparison of grow vs shrink
+* Convert confusing layouts into simple `flex` usage
+* Create a single flexbox cheat sheet covering everything you’ve studied so far
+
+
+*** 9- Absolute and Relative Positioning ***
+---
+
+# Relative and Absolute Positioning in React Native
+
+## 1. Initial Setup
+
+We start with a container that holds three views.
+
+-------------------code----------------------
+export default function App() {
+  return (
+    <View
+      style={{
+        flex: 1,
+        flexDirection: 'row',
+        backgroundColor: 'white',
+      }}
+    >
+      <View style={{ backgroundColor: 'dodgerblue', width: 100, height: 100 }} />
+      <View style={{ backgroundColor: 'gold', width: 100, height: 100 }} />
+      <View style={{ backgroundColor: 'tomato', width: 100, height: 100 }} />
+    </View>
+  );
+}
+-------------------code----------------------
+
+---
+
+## 2. Relative Positioning (Default)
+
+In React Native:
+
+* All components are `position: 'relative'` by default
+
+### What Relative Positioning Means
+
+* The component keeps its place in the layout
+* You can move it visually using `top`, `bottom`, `left`, `right`
+* Other components **do not move**
+
+---
+
+### Example: Moving a View Down
+
+-------------------code----------------------
+<View
+  style={{
+    backgroundColor: 'gold',
+    width: 100,
+    height: 100,
+    top: 20,
+  }}
+/>
+-------------------code----------------------
+
+Result:
+
+* Gold view moves **20 units down**
+* Blue and red views stay exactly where they were
+
+---
+
+### Negative Values
+
+-------------------code----------------------
+top: -20
+-------------------code----------------------
+
+Moves the view **up** by 20 units.
+
+Equivalent alternatives:
+
+-------------------code----------------------
+bottom: 20
+left: 20
+right: 20
+-------------------code----------------------
+
+---
+
+## 3. Why Other Views Don’t Move
+
+Because relative positioning:
+
+* Offsets the view from its **original position**
+* Does **not** remove it from the layout flow
+
+This behavior matches CSS.
+
+---
+
+## 4. Absolute Positioning
+
+To use absolute positioning, explicitly set:
+
+-------------------code----------------------
+position: 'absolute'
+-------------------code----------------------
+
+---
+
+### Example: Absolute Positioning
+
+-------------------code----------------------
+<View
+  style={{
+    position: 'absolute',
+    backgroundColor: 'gold',
+    width: 100,
+    height: 100,
+    top: 20,
+    left: 20,
+  }}
+/>
+-------------------code----------------------
+
+---
+
+### What Happens
+
+* The view is positioned relative to its **parent container**
+* The parent here is the full-screen container
+* The view is **removed from the normal layout flow**
+* Other views **reposition themselves**
+
+---
+
+## 5. Visual Difference Summary
+
+### Relative Positioning
+
+* Moves relative to original position
+* Does not affect siblings
+* Default behavior
+
+### Absolute Positioning
+
+* Moves relative to parent
+* Affects layout of siblings
+* Removed from normal flow
+
+---
+
+## 6. Switching Back and Forth
+
+### Relative
+
+-------------------code----------------------
+position: 'relative'
+-------------------code----------------------
+
+* Blue and red views remain fixed
+
+---
+
+### Absolute
+
+-------------------code----------------------
+position: 'absolute'
+-------------------code----------------------
+
+* Gold view floats
+* Other views shift to fill the gap
+
+---
+
+## 7. Key Recap
+
+| Position | Relative To       | Affects Layout |
+| -------- | ----------------- | -------------- |
+| relative | Original position | No             |
+| absolute | Parent container  | Yes            |
+
+---
+
+## 8. Common Use Cases
+
+### Relative Positioning
+
+* Small visual adjustments
+* Fine-tuning spacing
+* Nudging elements
+
+### Absolute Positioning
+
+* Floating buttons
+* Badges
+* Overlays
+* Custom UI effects
+
+---
+
+## 9. One-Sentence Summary
+
+* **Relative**: move the item without disturbing others
+* **Absolute**: pull the item out and position it freely
+
+---
+
+If you want, I can:
+
+* Compare RN positioning with CSS positioning
+* Show common bugs and how to fix them
+* Combine flexbox and absolute positioning in real layouts
+
+
+*** 10- Exercises ***
+---
+
+# Flexbox Layout Exercise — Welcome & View Image Screens
+
+## Goal of This Exercise
+
+You are asked to implement **two screens**:
+
+1. Welcome Screen
+2. View Image Screen
+
+The goal is **layout only**:
+
+* Position components correctly
+* Ignore spacing, font sizes, colors, and polish
+* Use placeholders instead of real buttons/icons
+
+Styling will be handled later.
+
+---
+
+## 1. Welcome Screen — Layout Requirements
+
+### Visual Structure (Conceptual)
+
+* Full-screen background image
+* Logo near the top
+* App name text under the logo
+* Two placeholders at the bottom:
+
+  * Login button
+  * Register button
+
+---
+
+## 2. Welcome Screen — Layout Breakdown
+
+### Main Layout Decisions
+
+* Use a full-screen container
+* Use `ImageBackground` for the background image
+* Use `flex` to position elements
+* Buttons placed at the bottom using flexbox
+
+---
+
+### Welcome Screen — Example Layout Code
+
+-------------------code----------------------
+import { View, Text, Image, ImageBackground, StyleSheet } from 'react-native';
+
+export default function WelcomeScreen() {
+  return (
+    <ImageBackground
+      source={require('./assets/background.jpg')}
+      style={styles.background}
+    >
+      {/* Logo Section */}
+      <View style={styles.logoContainer}>
+        <Image
+          source={require('./assets/logo.png')}
+          style={styles.logo}
+        />
+        <Text>Welcome</Text>
+      </View>
+
+      {/* Buttons Section */}
+      <View style={styles.buttonsContainer}>
+        <View style={styles.loginButton} />
+        <View style={styles.registerButton} />
+      </View>
+    </ImageBackground>
+  );
+}
+
+const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+  },
+  logoContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logo: {
+    width: 100,
+    height: 100,
+  },
+  buttonsContainer: {
+    paddingBottom: 20,
+  },
+  loginButton: {
+    height: 50,
+    backgroundColor: 'red',
+  },
+  registerButton: {
+    height: 50,
+    backgroundColor: 'green',
+  },
+});
+-------------------code----------------------
+
+---
+
+## 3. View Image Screen — Layout Requirements
+
+### Visual Structure (Conceptual)
+
+* Full-screen image
+* Close icon placeholder (top-left)
+* Delete icon placeholder (top-right)
+
+Icons are **placeholders only**, not real icons.
+
+---
+
+## 4. View Image Screen — Layout Breakdown
+
+### Main Layout Decisions
+
+* Full-screen container
+* Image fills the screen
+* Icons positioned using **absolute positioning**
+
+---
+
+### View Image Screen — Example Layout Code
+
+-------------------code----------------------
+import { View, Image, StyleSheet } from 'react-native';
+
+export default function ViewImageScreen() {
+  return (
+    <View style={styles.container}>
+      <View style={styles.closeIcon} />
+      <View style={styles.deleteIcon} />
+
+      <Image
+        source={require('./assets/chair.jpg')}
+        style={styles.image}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'black',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  closeIcon: {
+    position: 'absolute',
+    top: 40,
+    left: 30,
+    width: 50,
+    height: 50,
+    backgroundColor: 'white',
+    zIndex: 1,
+  },
+  deleteIcon: {
+    position: 'absolute',
+    top: 40,
+    right: 30,
+    width: 50,
+    height: 50,
+    backgroundColor: 'white',
+    zIndex: 1,
+  },
+});
+-------------------code----------------------
+
+---
+
+## 5. What You Are *Not* Expected to Do
+
+* Fine-tune spacing
+* Adjust font sizes
+* Style buttons
+* Add icons or interactions
+* Make it look perfect
+
+This is **pure layout practice**.
+
+---
+
+## 6. Concepts Being Tested
+
+This exercise reinforces:
+
+* `flex: 1`
+* `justifyContent`
+* `alignItems`
+* `ImageBackground`
+* Absolute positioning
+* Screen-level layout thinking
+
+---
+
+## 7. How to Judge Your Solution
+
+You did it right if:
+
+* Elements are roughly in the correct positions
+* Layout adapts to screen size
+* You used flexbox, not hard-coded screen math
+
+---
+
+## 8. What Comes Next
+
+In the next section:
+
+* Buttons will replace placeholders
+* Icons will be added
+* Styling and spacing will be refined
+
+If you want, I can:
+
+* Review your solution line by line
+* Explain why the instructor’s solution is structured this way
+* Show common layout mistakes people make in this exercise
+
+
+*** 11- Building the Welcome Screen ***
+---
+
+## Lecture Summary: Building the Welcome Screen Layout (React Native)
+
+### 1. Project Structure Best Practice
+
+* Create an `app/` folder at the project root.
+* Move **all application code** into `app/`.
+* This separates:
+
+  * Tooling-generated files
+  * Your actual app code
+* If the project breaks later, you can reuse the `app/` folder easily.
+
+**Structure**
+
+-------------------code----------------------
+app/
+ ├─ assets/
+ ├─ screens/
+ └─ ...
+-------------------code----------------------
+
+* Update `app.json` asset paths:
+
+-------------------code----------------------
+app/assets/...
+-------------------code----------------------
+
+---
+
+### 2. Screens Folder Convention
+
+* Create `app/screens/`
+* Each screen lives in its own file.
+* Naming convention:
+
+-------------------code----------------------
+WelcomeScreen.js
+ViewImageScreen.js
+-------------------code----------------------
+
+This is a common (but optional) React Native convention.
+
+---
+
+### 3. Creating a Screen Component
+
+* Use a **function component**
+* Tools like *React Native Snippets* help scaffold code quickly.
+* Example shortcut:
+
+  * `rsf` → React Stateless Function
+
+---
+
+### 4. Using `ImageBackground`
+
+* Replace `div` (web-only) with React Native components.
+* Use `ImageBackground` for full-screen background images.
+
+Key points:
+
+* `source` uses `require()`
+* Path is relative to the current file
+* Style it with:
+
+-------------------code----------------------
+flex: 1
+-------------------code----------------------
+
+This makes it fill the entire screen.
+
+---
+
+### 5. Styling with `StyleSheet`
+
+* Avoid inline styles
+* Use:
+
+-------------------code----------------------
+StyleSheet.create({})
+-------------------code----------------------
+
+* Keeps code clean and maintainable
+
+---
+
+### 6. Adding Buttons (Layout Only)
+
+* Use `View` as a placeholder for buttons
+* Fixed sizes:
+
+  * Width: `100%`
+  * Height: `70`
+
+At this stage:
+
+* Ignore spacing, fonts, polish
+* Focus only on **layout positioning**
+
+---
+
+### 7. Understanding Flex Direction (Important)
+
+* Default in React Native:
+
+-------------------code----------------------
+flexDirection: 'column'
+-------------------code----------------------
+
+* This matches phone portrait layout
+* Primary axis: **vertical**
+* Cross axis: **horizontal**
+
+---
+
+### 8. Positioning Buttons at the Bottom
+
+* Buttons appear at the top because:
+
+-------------------code----------------------
+justifyContent: 'flex-start'
+-------------------code----------------------
+
+To push them down:
+
+-------------------code----------------------
+justifyContent: 'flex-end'
+-------------------code----------------------
+
+**Rule**
+
+* `justifyContent` → aligns items on the **primary axis**
+
+---
+
+### 9. Adding the Logo
+
+* Use `Image`
+* Resize it manually (e.g. 100×100)
+
+Problem:
+
+* Logo gets pushed down because of `justifyContent: 'flex-end'`
+
+Solution:
+
+* Use **absolute positioning**
+
+-------------------code----------------------
+position: 'absolute'
+top: 70
+-------------------code----------------------
+
+This removes it from the normal layout flow.
+
+---
+
+### 10. Centering the Logo Horizontally
+
+* Primary axis: vertical
+* Secondary axis: horizontal
+
+To center horizontally:
+
+-------------------code----------------------
+alignItems: 'center'
+-------------------code----------------------
+
+**Rule**
+
+* `alignItems` → aligns items on the **cross axis**
+
+---
+
+### 11. Grouping Logo + Text
+
+* Wrap logo and tagline in a container `View`
+* Apply absolute positioning **to the container**, not each item
+
+Why?
+
+* Keeps layout predictable
+* Easier to manage grouped elements
+
+If alignment breaks:
+
+* Containers default to `alignItems: 'flex-start'`
+* Fix it:
+
+-------------------code----------------------
+alignItems: 'center'
+-------------------code----------------------
+
+---
+
+### 12. Key Flexbox Rules Recap (React Native)
+
+* Default direction: `column`
+* `justifyContent` → primary axis
+* `alignItems` → secondary axis
+* Absolute positioning removes elements from flex layout
+* Containers reset alignment unless explicitly set
+
+---
+
+### Final Goal of This Exercise
+
+* Practice **layout only**
+* Ignore:
+
+  * Fonts
+  * Spacing precision
+  * Colors perfection
+* Styling comes later
+
+---
+
+If you want next:
+
+* A **visual mental model** of axes
+* A **comparison with CSS flex**
+* Or a **step-by-step checklist to rebuild this screen from scratch**
+
+Here is the **complete `WelcomeScreen.js`** exactly matching the lecture logic and layout (clean, production-style, no extra styling beyond what was taught).
+
+-------------------code----------------------javascript
+import React from "react";
+import {
+  View,
+  Text,
+  Image,
+  ImageBackground,
+  StyleSheet,
+} from "react-native";
+
+function WelcomeScreen() {
+  return (
+    <ImageBackground
+      style={styles.background}
+      source={require("../assets/background.jpg")}
+    >
+      {/* Logo + Tagline */}
+      <View style={styles.logoContainer}>
+        <Image
+          style={styles.logo}
+          source={require("../assets/logo-red.png")}
+        />
+        <Text>Sell What You Don’t Need</Text>
+      </View>
+
+      {/* Login Button Placeholder */}
+      <View style={styles.loginButton} />
+
+      {/* Register Button Placeholder */}
+      <View style={styles.registerButton} />
+    </ImageBackground>
+  );
+}
+
+const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    justifyContent: "flex-end",
+    alignItems: "center",
+  },
+
+  logoContainer: {
+    position: "absolute",
+    top: 70,
+    alignItems: "center",
+  },
+
+  logo: {
+    width: 100,
+    height: 100,
+  },
+
+  loginButton: {
+    width: "100%",
+    height: 70,
+    backgroundColor: "#fc5c65",
+  },
+
+  registerButton: {
+    width: "100%",
+    height: 70,
+    backgroundColor: "#4ecdc4",
+  },
+});
+
+export default WelcomeScreen;
+-------------------code----------------------
+
+---
+
+### What this file demonstrates (important)
+
+* Proper folder-relative `require()` paths
+* Default **column flex direction**
+* `justifyContent` controlling **vertical alignment**
+* `alignItems` controlling **horizontal alignment**
+* **Absolute positioning** for logo section
+* Clean separation of layout vs styling
+
+If you want next:
+
+* `ViewImageScreen.js`
+* A **diagram of primary vs cross axis**
+* Or refactor this to use reusable Button components
+
+
+*** 12- Building the View Image Screen ***
+---
+
+## ViewImageScreen – Displaying and Styling an Image in React Native
+
+### 1. Creating the Screen Component
+
+* Inside the `screens` folder, create a new file:
+
+  -------------------code----------------------
+  view-image-screen.js
+  -------------------code----------------------
+* Create a **function component** named `ViewImageScreen`.
+
+---
+
+### 2. Rendering an Image
+
+* Import the `Image` component.
+* Load the image using `require` from the `assets` folder (`chair.jpg`).
+
+-------------------code----------------------
+import React from "react";
+import { Image } from "react-native";
+
+function ViewImageScreen() {
+  return (
+    <Image source={require("../assets/chair.jpg")} />
+  );
+}
+
+export default ViewImageScreen;
+-------------------code----------------------
+
+---
+
+### 3. Testing the Screen
+
+* Open `App.js`
+* Render `ViewImageScreen`
+
+-------------------code----------------------
+import ViewImageScreen from "./screens/view-image-screen";
+
+export default function App() {
+  return <ViewImageScreen />;
+}
+-------------------code----------------------
+
+* Result: a whitish screen appears because the image is **larger than the screen**.
+
+---
+
+### 4. Styling the Image
+
+#### 4.1 Creating a Stylesheet
+
+* Import `StyleSheet`
+* Create a `styles` object
+
+-------------------code----------------------
+import React from "react";
+import { Image, StyleSheet } from "react-native";
+
+function ViewImageScreen() {
+  return (
+    <Image
+      source={require("../assets/chair.jpg")}
+      style={styles.image}
+    />
+  );
+}
+
+const styles = StyleSheet.create({
+  image: {
+    width: "100%",
+    height: "100%",
+  },
+});
+
+export default ViewImageScreen;
+-------------------code----------------------
+
+* The image now fills the screen.
+* Problem: **edges of the image are cut off**.
+
+---
+
+### 5. Fixing Image Cropping with `resizeMode`
+
+* The default resize mode causes cropping.
+* Set `resizeMode` to `contain`.
+
+-------------------code----------------------
+<Image
+  source={require("../assets/chair.jpg")}
+  style={styles.image}
+  resizeMode="contain"
+/>
+-------------------code----------------------
+
+* The image now fits perfectly.
+* New issue: **white background is visible**.
+
+---
+
+### 6. Adding a Container View
+
+* Wrap the image inside a `View`.
+* This container will control the background.
+
+-------------------code----------------------
+import React from "react";
+import { View, Image, StyleSheet } from "react-native";
+
+function ViewImageScreen() {
+  return (
+    <View style={styles.container}>
+      <Image
+        source={require("../assets/chair.jpg")}
+        style={styles.image}
+        resizeMode="contain"
+      />
+    </View>
+  );
+}
+-------------------code----------------------
+
+---
+
+### 7. Container Styling
+
+* Use `flex: 1` to fill the screen.
+* Set background color to black.
+* Styles are sorted alphabetically for maintainability.
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: "black",
+    flex: 1,
+  },
+  image: {
+    height: "100%",
+    width: "100%",
+  },
+});
+-------------------code----------------------
+
+---
+
+### 8. Adding a Close Icon Placeholder
+
+* Add another `View` inside the container.
+* This will represent a close button placeholder.
+
+-------------------code----------------------
+<View style={styles.closeIcon} />
+-------------------code----------------------
+
+#### Styles
+
+-------------------code----------------------
+closeIcon: {
+  backgroundColor: "#FC5C65",
+  height: 50,
+  width: 50,
+}
+-------------------code----------------------
+
+* The icon appears, but its position is not correct.
+
+---
+
+### 9. Positioning with Absolute Layout
+
+* Use `position: "absolute"` to place the icon relative to the container.
+* Position it:
+
+  * 40 pixels from the top
+  * 30 pixels from the left
+
+-------------------code----------------------
+closeIcon: {
+  backgroundColor: "#FC5C65",
+  height: 50,
+  left: 30,
+  position: "absolute",
+  top: 40,
+  width: 50,
+}
+-------------------code----------------------
+
+---
+
+### 10. Adding a Delete Icon Placeholder
+
+* Duplicate the close icon view.
+* Rename it to `deleteIcon`.
+
+-------------------code----------------------
+<View style={styles.deleteIcon} />
+-------------------code----------------------
+
+#### Styles
+
+-------------------code----------------------
+deleteIcon: {
+  backgroundColor: "#4ECDC4",
+  height: 50,
+  position: "absolute",
+  right: 30,
+  top: 40,
+  width: 50,
+}
+-------------------code----------------------
+
+* Note: Code duplication is temporary and will be refactored later.
+
+---
+
+### 11. Final Styles Object
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  closeIcon: {
+    backgroundColor: "#FC5C65",
+    height: 50,
+    left: 30,
+    position: "absolute",
+    top: 40,
+    width: 50,
+  },
+  container: {
+    backgroundColor: "black",
+    flex: 1,
+  },
+  deleteIcon: {
+    backgroundColor: "#4ECDC4",
+    height: 50,
+    position: "absolute",
+    right: 30,
+    top: 40,
+    width: 50,
+  },
+  image: {
+    height: "100%",
+    width: "100%",
+  },
+});
+-------------------code----------------------
+
+---
+
+### 12. Notes on Best Practices
+
+* Sorting style properties alphabetically improves readability.
+* ESLint can automate this, but it was disabled in the course to reduce friction.
+* Placeholder views will later be replaced with real icon components.
+* Code refactoring will be done in later stages of the course.
+
+---
+
+If you want, I can also:
+
+* Refactor this using reusable icon components
+* Replace placeholders with vector icons
+* Convert this into a production-ready screen structure
+
+
+*** 13- Refactoring ***
+---
+
+## Extracting and Centralizing Colors (Improving Maintainability)
+
+### 1. Problem: Hard-Coded Color Duplication
+
+* The same color values are repeated in multiple places.
+* This makes future changes difficult.
+* If the app is rebranded, multiple files would need updates.
+
+**Goal:**
+Create a single source of truth for all application colors.
+
+---
+
+### 2. Creating a Central Color Configuration
+
+#### 2.1 Folder Structure
+
+* Inside the `app` folder, create a new folder:
+
+  -------------------code----------------------
+  config
+  -------------------code----------------------
+* Inside `config`, create a new file:
+
+  -------------------code----------------------
+  colors.js
+  -------------------code----------------------
+
+---
+
+### 3. Defining the Color Palette
+
+* Export a default object containing all app colors.
+* Start with primary and secondary colors.
+
+-------------------code----------------------
+export default {
+  primary: "#fc5c65",
+  secondary: "#4ecdc4",
+};
+-------------------code----------------------
+
+**Why this matters**
+
+* All colors are defined in one place.
+* Rebranding becomes easy: modify a single file.
+
+---
+
+### 4. Importing Colors into `ViewImageScreen`
+
+* Import the color palette at the top of the file.
+* Keep third-party imports separate from local imports for readability.
+
+-------------------code----------------------
+import React from "react";
+import { View, Image, StyleSheet } from "react-native";
+
+import colors from "../config/colors";
+-------------------code----------------------
+
+---
+
+### 5. Replacing Hard-Coded Color Values
+
+* Replace inline color values with references from `colors`.
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  closeIcon: {
+    backgroundColor: colors.primary,
+    height: 50,
+    left: 30,
+    position: "absolute",
+    top: 40,
+    width: 50,
+  },
+  deleteIcon: {
+    backgroundColor: colors.secondary,
+    height: 50,
+    position: "absolute",
+    right: 30,
+    top: 40,
+    width: 50,
+  },
+});
+-------------------code----------------------
+
+* Result: UI remains unchanged.
+* Code is now more maintainable and scalable.
+
+---
+
+### 6. Including Neutral Colors in the Palette
+
+* Even colors like black or white should not be hard-coded.
+* Future rebranding may replace pure black with a softer dark tone.
+
+#### 6.1 Updating `colors.js`
+
+-------------------code----------------------
+export default {
+  black: "#000",
+  primary: "#fc5c65",
+  secondary: "#4ecdc4",
+};
+-------------------code----------------------
+
+---
+
+### 7. Updating the Container Background
+
+* Replace the hard-coded black color.
+
+-------------------code----------------------
+container: {
+  backgroundColor: colors.black,
+  flex: 1,
+},
+-------------------code----------------------
+
+---
+
+### 8. Resulting Benefits
+
+* A single, centralized color palette.
+* Easier rebranding and theming.
+* Cleaner and more professional codebase.
+* Consistent design across the app.
+
+---
+
+### 9. Note on Style Duplication
+
+* Both icon placeholders share:
+
+  * `width: 50`
+  * `height: 50`
+* These could be extracted into a shared style.
+
+**Why it’s not done now**
+
+* These `View` components are temporary.
+* They will later be replaced with real icon components.
+* Refactoring now would add unnecessary complexity.
+
+---
+
+### 10. Summary
+
+* Color values should never be scattered across the codebase.
+* Configuration files improve maintainability and scalability.
+* Separating concerns early leads to cleaner architecture later.
+
+---
+
+If you want, I can next:
+
+* Refactor shared styles properly
+* Introduce a theme system
+* Replace placeholders with vector icons and clean up layout
