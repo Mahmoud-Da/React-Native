@@ -17,6 +17,18 @@ export default function App() {
           borderWidth: 10,
           borderColor: "royalblue",
           borderRadius: 50,
+
+          // iOS Shadow
+          shadowColor: "gray",
+          shadowOffset: {
+            width: 0,
+            height: 10,
+          },
+          shadowOpacity: 0.5,
+          shadowRadius: 10,
+
+          // Android Shadow
+          elevation: 20,
         }}
       />
     </View>

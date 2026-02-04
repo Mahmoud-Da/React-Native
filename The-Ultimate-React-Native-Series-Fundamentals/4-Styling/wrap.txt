@@ -359,3 +359,336 @@ This lecture introduced:
 * Understanding independent pixels in React Native.
 
 Next Topic: Implementing Shadows in React Native Styling.
+
+
+*** 3- Shadows ***
+### Lecture Notes: Shadows in React Native
+
+---
+
+## 1. Overview of Shadows
+
+Shadows help create depth and visual hierarchy in user interfaces. In React Native, shadow implementation differs between iOS and Android.
+
+* iOS supports detailed shadow customization.
+* Android supports shadows using a single property called `elevation`.
+
+In this lecture, styling continues using the same centered blue box.
+
+---
+
+## 2. Base Setup (Blue Box in Center)
+
+### Step 1: Create the Container and Box
+
+#### Code
+
+-------------------code----------------------
+import { View } from "react-native";
+
+export default function App() {
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <View
+        style={{
+          backgroundColor: "dodgerblue",
+          width: 100,
+          height: 100,
+          borderWidth: 10,
+          borderColor: "royalblue",
+          borderRadius: 50,
+        }}
+      />
+    </View>
+  );
+}
+-------------------code----------------------
+
+---
+
+# iOS Shadow Properties
+
+To apply shadows on iOS, at least three properties must be used.
+
+---
+
+## 3. Shadow Color
+
+### Concept
+
+Defines the color of the shadow.
+
+### Step 2: Add Shadow Color
+
+#### Code
+
+-------------------code----------------------
+shadowColor: "gray",
+-------------------code----------------------
+
+---
+
+## 4. Shadow Offset
+
+### Concept
+
+Controls the position or direction of the shadow.
+
+It accepts an object with two properties:
+
+* `width` moves the shadow horizontally
+* `height` moves the shadow vertically
+
+---
+
+### Step 3: Add Shadow Offset
+
+#### Code
+
+-------------------code----------------------
+shadowOffset: {
+  width: 10,
+  height: 10,
+},
+-------------------code----------------------
+
+### Result
+
+* Moves shadow diagonally to the bottom-right.
+
+---
+
+### Step 4: Modify Offset Position
+
+#### Example 1: Move Shadow Vertically Only
+
+-------------------code----------------------
+shadowOffset: {
+  width: 0,
+  height: 10,
+},
+-------------------code----------------------
+
+#### Example 2: Move Shadow to the Opposite Direction
+
+-------------------code----------------------
+shadowOffset: {
+  width: -10,
+  height: 10,
+},
+-------------------code----------------------
+
+---
+
+## 5. Shadow Opacity
+
+### Concept
+
+Controls how dark or transparent the shadow appears.
+
+* Value ranges from `0` to `1`
+* `0` means invisible
+* `1` means fully visible
+
+---
+
+### Step 5: Add Shadow Opacity
+
+#### Code
+
+-------------------code----------------------
+shadowOpacity: 0.5,
+-------------------code----------------------
+
+---
+
+## 6. Shadow Radius
+
+### Concept
+
+Controls the softness or blur of the shadow edges.
+
+---
+
+### Step 6: Add Shadow Radius
+
+#### Code
+
+-------------------code----------------------
+shadowRadius: 10,
+-------------------code----------------------
+
+### Result
+
+* Creates a softer and more natural shadow.
+
+---
+
+## 7. Full iOS Shadow Example
+
+#### Code
+
+-------------------code----------------------
+<View
+  style={{
+    backgroundColor: "dodgerblue",
+    width: 100,
+    height: 100,
+    borderWidth: 10,
+    borderColor: "royalblue",
+    borderRadius: 50,
+    shadowColor: "gray",
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+  }}
+/>
+-------------------code----------------------
+
+---
+
+# Android Shadow Property
+
+Android handles shadows differently and provides limited customization.
+
+---
+
+## 8. Elevation Property
+
+### Concept
+
+* `elevation` adds depth and shadow automatically.
+* Accepts a numeric value.
+* Higher values produce stronger shadows.
+* Android does not support custom shadow color, offset, opacity, or radius.
+
+---
+
+### Step 7: Add Elevation
+
+#### Code
+
+-------------------code----------------------
+elevation: 20,
+-------------------code----------------------
+
+---
+
+## 9. Full Android Shadow Example
+
+#### Code
+
+-------------------code----------------------
+<View
+  style={{
+    backgroundColor: "dodgerblue",
+    width: 100,
+    height: 100,
+    borderWidth: 10,
+    borderColor: "royalblue",
+    borderRadius: 50,
+    elevation: 20,
+  }}
+/>
+-------------------code----------------------
+
+---
+
+# 10. Cross-Platform Shadow Example
+
+To support both iOS and Android, combine all shadow properties.
+
+---
+
+## Step 8: Apply Cross-Platform Shadow
+
+#### Code
+
+-------------------code----------------------
+import { View } from "react-native";
+
+export default function App() {
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <View
+        style={{
+          backgroundColor: "dodgerblue",
+          width: 100,
+          height: 100,
+          borderWidth: 10,
+          borderColor: "royalblue",
+          borderRadius: 50,
+
+          // iOS Shadow
+          shadowColor: "gray",
+          shadowOffset: {
+            width: 0,
+            height: 10,
+          },
+          shadowOpacity: 0.5,
+          shadowRadius: 10,
+
+          // Android Shadow
+          elevation: 20,
+        }}
+      />
+    </View>
+  );
+}
+-------------------code----------------------
+
+---
+
+## 11. Important Differences Between Platforms
+
+### iOS
+
+* Supports detailed shadow control:
+
+  * Color
+  * Offset
+  * Opacity
+  * Blur radius
+
+### Android
+
+* Supports only `elevation`
+* Limited customization options
+* Shadow appearance depends on system rendering
+
+---
+
+## 12. Best Practices
+
+* Use combined styling to ensure cross-platform consistency.
+* Test shadow appearance on both platforms.
+* Use moderate shadow values to avoid visual clutter.
+
+---
+
+## Summary
+
+This lecture introduced:
+
+* Shadow styling in React Native.
+* iOS shadow properties and customization.
+* Android elevation-based shadow system.
+* Cross-platform shadow implementation.
+* Understanding visual depth using shadows.
+
+Next Topic: Padding and Margin in React Native.
