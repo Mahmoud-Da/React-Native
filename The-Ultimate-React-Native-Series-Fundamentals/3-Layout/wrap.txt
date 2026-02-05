@@ -1,0 +1,61 @@
+*** 1- Introduction ***
+## Section Overview: Creating Layouts in React Native
+
+This section focuses on building layouts in React Native and marks the start of implementing real application screens. You will apply these concepts directly when building the first two screens of the app.
+
+---
+
+## What You Will Learn
+
+### 1. Layout Fundamentals
+
+* How layouts work in React Native
+* Differences between React Native layouts and web (CSS) layouts
+
+### 2. Dimensions
+
+* Working with screen width and height
+* Using the `Dimensions` API
+* Adapting layouts to different device sizes
+
+### 3. Device Orientation
+
+* Handling portrait and landscape modes
+* Responding to orientation changes
+* Designing responsive layouts across orientations
+
+### 4. Flexbox in React Native
+
+* Core flexbox concepts
+* `flexDirection`, `justifyContent`, and `alignItems`
+* Building flexible and adaptive UI layouts
+
+### 5. Positioning
+
+* Relative positioning (default behavior)
+* Absolute positioning
+* When and why to use each positioning method
+
+---
+
+## Practical Application
+
+* You will use all these concepts to build:
+
+  * The first screen of the app
+  * The second screen of the app
+* These topics are essential for completing the exercises at the end of this section
+
+---
+
+## Notes
+
+* Pay close attention to each lesson
+* Take notes as these concepts are foundational
+* Expect to reuse these layout techniques throughout the course
+
+---
+
+## Section Goal
+
+By the end of this section, you should feel comfortable creating responsive, well-structured layouts in React Native using flexbox, dimensions, orientation handling, and positioning techniques.
