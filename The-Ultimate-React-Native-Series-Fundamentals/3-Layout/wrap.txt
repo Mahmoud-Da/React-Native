@@ -2397,3 +2397,317 @@ If you want, I can:
 * Review your solution line by line
 * Explain why the instructor’s solution is structured this way
 * Show common layout mistakes people make in this exercise
+
+
+*** 11- Building the Welcome Screen ***
+---
+
+## Lecture Summary: Building the Welcome Screen Layout (React Native)
+
+### 1. Project Structure Best Practice
+
+* Create an `app/` folder at the project root.
+* Move **all application code** into `app/`.
+* This separates:
+
+  * Tooling-generated files
+  * Your actual app code
+* If the project breaks later, you can reuse the `app/` folder easily.
+
+**Structure**
+
+-------------------code----------------------
+app/
+ ├─ assets/
+ ├─ screens/
+ └─ ...
+-------------------code----------------------
+
+* Update `app.json` asset paths:
+
+-------------------code----------------------
+app/assets/...
+-------------------code----------------------
+
+---
+
+### 2. Screens Folder Convention
+
+* Create `app/screens/`
+* Each screen lives in its own file.
+* Naming convention:
+
+-------------------code----------------------
+WelcomeScreen.js
+ViewImageScreen.js
+-------------------code----------------------
+
+This is a common (but optional) React Native convention.
+
+---
+
+### 3. Creating a Screen Component
+
+* Use a **function component**
+* Tools like *React Native Snippets* help scaffold code quickly.
+* Example shortcut:
+
+  * `rsf` → React Stateless Function
+
+---
+
+### 4. Using `ImageBackground`
+
+* Replace `div` (web-only) with React Native components.
+* Use `ImageBackground` for full-screen background images.
+
+Key points:
+
+* `source` uses `require()`
+* Path is relative to the current file
+* Style it with:
+
+-------------------code----------------------
+flex: 1
+-------------------code----------------------
+
+This makes it fill the entire screen.
+
+---
+
+### 5. Styling with `StyleSheet`
+
+* Avoid inline styles
+* Use:
+
+-------------------code----------------------
+StyleSheet.create({})
+-------------------code----------------------
+
+* Keeps code clean and maintainable
+
+---
+
+### 6. Adding Buttons (Layout Only)
+
+* Use `View` as a placeholder for buttons
+* Fixed sizes:
+
+  * Width: `100%`
+  * Height: `70`
+
+At this stage:
+
+* Ignore spacing, fonts, polish
+* Focus only on **layout positioning**
+
+---
+
+### 7. Understanding Flex Direction (Important)
+
+* Default in React Native:
+
+-------------------code----------------------
+flexDirection: 'column'
+-------------------code----------------------
+
+* This matches phone portrait layout
+* Primary axis: **vertical**
+* Cross axis: **horizontal**
+
+---
+
+### 8. Positioning Buttons at the Bottom
+
+* Buttons appear at the top because:
+
+-------------------code----------------------
+justifyContent: 'flex-start'
+-------------------code----------------------
+
+To push them down:
+
+-------------------code----------------------
+justifyContent: 'flex-end'
+-------------------code----------------------
+
+**Rule**
+
+* `justifyContent` → aligns items on the **primary axis**
+
+---
+
+### 9. Adding the Logo
+
+* Use `Image`
+* Resize it manually (e.g. 100×100)
+
+Problem:
+
+* Logo gets pushed down because of `justifyContent: 'flex-end'`
+
+Solution:
+
+* Use **absolute positioning**
+
+-------------------code----------------------
+position: 'absolute'
+top: 70
+-------------------code----------------------
+
+This removes it from the normal layout flow.
+
+---
+
+### 10. Centering the Logo Horizontally
+
+* Primary axis: vertical
+* Secondary axis: horizontal
+
+To center horizontally:
+
+-------------------code----------------------
+alignItems: 'center'
+-------------------code----------------------
+
+**Rule**
+
+* `alignItems` → aligns items on the **cross axis**
+
+---
+
+### 11. Grouping Logo + Text
+
+* Wrap logo and tagline in a container `View`
+* Apply absolute positioning **to the container**, not each item
+
+Why?
+
+* Keeps layout predictable
+* Easier to manage grouped elements
+
+If alignment breaks:
+
+* Containers default to `alignItems: 'flex-start'`
+* Fix it:
+
+-------------------code----------------------
+alignItems: 'center'
+-------------------code----------------------
+
+---
+
+### 12. Key Flexbox Rules Recap (React Native)
+
+* Default direction: `column`
+* `justifyContent` → primary axis
+* `alignItems` → secondary axis
+* Absolute positioning removes elements from flex layout
+* Containers reset alignment unless explicitly set
+
+---
+
+### Final Goal of This Exercise
+
+* Practice **layout only**
+* Ignore:
+
+  * Fonts
+  * Spacing precision
+  * Colors perfection
+* Styling comes later
+
+---
+
+If you want next:
+
+* A **visual mental model** of axes
+* A **comparison with CSS flex**
+* Or a **step-by-step checklist to rebuild this screen from scratch**
+
+Here is the **complete `WelcomeScreen.js`** exactly matching the lecture logic and layout (clean, production-style, no extra styling beyond what was taught).
+
+-------------------code----------------------javascript
+import React from "react";
+import {
+  View,
+  Text,
+  Image,
+  ImageBackground,
+  StyleSheet,
+} from "react-native";
+
+function WelcomeScreen() {
+  return (
+    <ImageBackground
+      style={styles.background}
+      source={require("../assets/background.jpg")}
+    >
+      {/* Logo + Tagline */}
+      <View style={styles.logoContainer}>
+        <Image
+          style={styles.logo}
+          source={require("../assets/logo-red.png")}
+        />
+        <Text>Sell What You Don’t Need</Text>
+      </View>
+
+      {/* Login Button Placeholder */}
+      <View style={styles.loginButton} />
+
+      {/* Register Button Placeholder */}
+      <View style={styles.registerButton} />
+    </ImageBackground>
+  );
+}
+
+const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    justifyContent: "flex-end",
+    alignItems: "center",
+  },
+
+  logoContainer: {
+    position: "absolute",
+    top: 70,
+    alignItems: "center",
+  },
+
+  logo: {
+    width: 100,
+    height: 100,
+  },
+
+  loginButton: {
+    width: "100%",
+    height: 70,
+    backgroundColor: "#fc5c65",
+  },
+
+  registerButton: {
+    width: "100%",
+    height: 70,
+    backgroundColor: "#4ecdc4",
+  },
+});
+
+export default WelcomeScreen;
+-------------------code----------------------
+
+---
+
+### What this file demonstrates (important)
+
+* Proper folder-relative `require()` paths
+* Default **column flex direction**
+* `justifyContent` controlling **vertical alignment**
+* `alignItems` controlling **horizontal alignment**
+* **Absolute positioning** for logo section
+* Clean separation of layout vs styling
+
+If you want next:
+
+* `ViewImageScreen.js`
+* A **diagram of primary vs cross axis**
+* Or refactor this to use reusable Button components
