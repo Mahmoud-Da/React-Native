@@ -1313,3 +1313,173 @@ export PATH=$PATH:$ANDROID_HOME/platform-tools
 * The next lesson will cover:
 
   * Debugging React Native applications using Chrome
+
+
+*** 11- Debugging in Chrome ***
+---
+
+# Lecture Notes: Debugging React Native Apps with Chrome
+
+## 1. Creating a Bug for Demonstration
+
+* A bug is intentionally introduced in the `App` component:
+
+  * A variable `x` is declared but not initialized.
+  * `x.toString()` is called.
+* This causes a runtime error.
+export default function App() {
+-------------------code----------------------
+  let x;
+  x.toString()
+  return (
+    <View style={styles.container}>
+      <Text>Open up App.js to start working on your app!</Text>
+      <StatusBar style="auto" />
+    </View>
+  );
+}
+-------------------code----------------------
+
+### Error Display (Red Box)
+
+* A red error screen appears in the app.
+* Error message:
+
+  * `Undefined is not an object (evaluating x.toString)`
+* The error screen shows:
+
+  * The error message
+  * The component where the error occurred (App component)
+
+## 2. Dismissing the Error Screen
+
+* Press `Esc` to dismiss the red error screen.
+
+## 3. Opening the Developer Menu
+
+Methods to open the developer menu:
+
+* **Real device**: Shake the device
+* **Android emulator**:
+
+  * macOS: `Cmd + M`
+  * Windows: `Ctrl + M`
+* **iOS simulator**:
+
+  * `Cmd + D` (may require `Ctrl + D` then `Cmd + D` on some machines)
+
+## 4. Enabling Remote Debugging
+
+* From the developer menu, select **Debug Remote JS**
+* This causes:
+
+  * JavaScript code to execute in Chrome instead of the device
+  * A new Chrome tab opens at `localhost/debugger-ui`
+* Important:
+
+  * Remote debugging slows down the app
+  * Always disable it after finishing debugging
+
+## 5. Using Chrome Developer Tools
+
+### Console Tab
+
+* Shows:
+
+  * `console.log` output
+  * Runtime errors
+* Example error shown:
+
+  * `Cannot read property 'toString' of undefined`
+
+### Sources Tab
+
+* Used for step-by-step debugging
+* Enable:
+
+  * **Pause on exceptions**
+  * **Pause on caught exceptions**
+* When enabled:
+
+  * Chrome pauses execution at the exact line where the exception occurs
+
+## 6. Breakpoints
+
+* You can click on any line number to add a breakpoint.
+* When the app reloads:
+
+  * Execution pauses at the breakpoint
+* Allows inspection of code execution flow.
+
+## 7. Stepping Through Code
+
+Available controls:
+
+* **Step over**: Execute the current line and move to the next one
+* **Step into**: Enter a function call and debug it line by line
+* **Step out**: Exit the current function and return to the caller
+
+### Keyboard Shortcuts
+
+* Using shortcuts is faster than clicking icons:
+
+  * Windows: `F10` (step over)
+  * macOS: `Cmd + '` (step over)
+
+## 8. Inspecting Variables
+
+* Variables can be inspected directly:
+
+  * Hover over variables
+  * Use the **Watch** panel
+* Watch panel:
+
+  * Click `+`
+  * Enter variable name (e.g., `x`)
+  * View its current value
+* In this example:
+
+  * `x` is `undefined`, which explains the error
+
+## 9. Fixing the Bug
+
+* Remove the buggy lines from the code.
+* Save changes.
+* Reload the app.
+* The error disappears.
+
+## 10. Cleaning Up
+
+* Remove any breakpoints.
+* Stop remote debugging:
+
+  * Open developer menu
+  * Disable **Debug Remote JS**
+* Reason:
+
+  * Remote debugging significantly slows down the app
+
+## 11. Other Chrome DevTools Tabs
+
+### Network Tab
+
+* Used to inspect API requests and responses
+* Will be important later when working with backend APIs
+
+### Elements Tab
+
+* Not useful for React Native UI inspection
+* Shows debugger UI elements, not app components
+* Unlike web apps, React Native elements cannot be inspected this way
+
+## 12. Summary
+
+* Chrome debugging allows:
+
+  * Pausing on errors
+  * Step-by-step code execution
+  * Variable inspection
+* Very powerful, but should only be used during development
+* Always disable remote debugging after use
+
+---
