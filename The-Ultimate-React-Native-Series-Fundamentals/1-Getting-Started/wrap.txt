@@ -1483,3 +1483,201 @@ Available controls:
 * Always disable remote debugging after use
 
 ---
+
+
+*** 12- Debugging in VSCode ***
+---
+
+# Lecture Notes: Debugging React Native Apps with VS Code
+
+## 1. Overview
+
+* React Native apps can be debugged directly inside **VS Code**
+* This provides a similar debugging experience to Chrome:
+
+  * Breakpoints
+  * Step-by-step execution
+  * Variable inspection
+* JavaScript code is executed remotely during debugging
+
+## 2. Enabling Remote Debugging
+
+* Open the **developer menu**
+* Enable **Remote Debugging**
+* This normally opens a Chrome debugger window
+* Important:
+
+  * Close the Chrome debugger window
+  * You can debug **either in Chrome or VS Code**, not both at the same time
+
+## 3. Installing Required VS Code Extension
+
+* Open the **Extensions** panel in VS Code
+* Search for **React Native**
+* Install **React Native Tools**
+* This extension provides:
+
+  * Debug configurations
+  * Integration with React Native packager
+
+## 4. Creating `launch.json`
+
+* Open the **Debug** panel
+* VS Code suggests creating `launch.json`
+* Click the link to create it
+* Select **React Native** from the dropdown
+
+### Important Notes
+
+* Sometimes VS Code skips the dropdown and creates the file automatically
+* This is normal—continue without concern
+
+## 5. Debug Configurations
+
+* The `launch.json` file stores debug configurations
+* These configurations are added by **React Native Tools**
+* Without the extension, these options will not appear
+
+### Recommended Configuration
+
+* **Attach to packager**
+* This is the primary configuration used in the course
+
+### Adding More Configurations
+
+You can add configurations by:
+
+* Clicking **Add Configuration**
+* Or via **Run → Add Configuration**
+
+Examples:
+
+* Attach to packager
+* Debug Android
+
+## 6. Location of `launch.json`
+
+* The file is stored in:
+
+  * `.vscode/launch.json`
+
+## 7. Preparing for Debugging
+
+* Open `App.js`
+* Declare a test variable:
+
+  * Example: `let x = 1`
+* Insert a breakpoint on that line
+
+## 8. Starting the Debugger
+
+* Open the **Debug** panel
+* Select **Attach to packager**
+* Click the **Play** button
+
+## 9. Common Errors and Fixes
+
+### Error 1: Cannot Attach to Packager
+
+**Message:**
+
+* Cannot attach to packager
+* Are you sure it is running on port 8081?
+
+**Cause:**
+
+* Expo uses port **19001**
+* VS Code defaults to **8081**
+
+**Fix:**
+
+* Go to:
+
+  * Code → Preferences → Settings
+* Search for:
+
+  * `react-native.packager.port`
+* Change the value:
+
+  * From `8081` to `19001`
+
+### Error 2: Another Debugger Is Already Connected
+
+**Cause:**
+
+* Chrome debugger window is still open
+
+**Fix:**
+
+* Close the Chrome debugger tab
+* Only one debugger can connect at a time
+
+## 10. Successful Debugging Session
+
+* After fixing errors, start the debugger again
+* Connection is established
+* Reload the app from the developer menu
+* The breakpoint is hit in `App.js`
+
+## 11. Debugging Tools in VS Code
+
+VS Code provides the same debugging tools as Chrome:
+
+### Execution Controls
+
+* Step over (shortcut: `F10`)
+* Step into
+* Step out
+* Resume execution
+* Disconnect debugger
+
+### Variable Inspection
+
+* Variables in scope are automatically shown
+* Example:
+
+  * `x = 1`
+* Watch window:
+
+  * Manually add variables to monitor their values
+
+## 12. Ending the Debugging Session
+
+Steps to cleanly exit debugging:
+
+1. Disconnect the debugger in VS Code
+2. Open developer menu in the app
+3. Stop remote debugging
+4. Reload the app
+
+### Possible Warning
+
+* Error: runtime is not ready for debugging
+* Solution:
+
+  * Reload the app
+  * macOS shortcut: `Cmd + R`
+
+## 13. Final State
+
+* App runs normally again
+* JavaScript execution returns to the device
+* Debugging session is fully terminated
+
+## 14. Summary
+
+* VS Code debugging offers:
+
+  * Breakpoints
+  * Variable inspection
+  * Step-by-step execution
+* Requires:
+
+  * React Native Tools extension
+  * Correct packager port
+* Always:
+
+  * Close Chrome debugger if using VS Code
+  * Stop remote debugging after finishing
+
+---
