@@ -1858,3 +1858,122 @@ After publishing:
 * Production deployment is covered later
 
 ---
+
+*** 14- Fixing the Auto Import Issue ***
+
+---
+
+# Lecture Notes: Fixing Auto Import Issues in VS Code
+
+## 1. Auto Import in VS Code
+
+* VS Code has a built-in **auto import** feature
+* It automatically adds import statements when:
+
+  * You reference a component, function, or module
+* Most of the time:
+
+  * It works perfectly
+* Sometimes:
+
+  * It fails or behaves inconsistently
+
+## 2. Why Auto Import Sometimes Fails
+
+* On the instructor’s machine:
+
+  * The issue was **not VS Code itself**
+  * It was caused by **old extensions and project configuration**
+* These issues were discovered **after recording the course**
+
+## 3. Step 1: Check Installed Extensions
+
+* Go to **Extensions** in VS Code
+* Make sure you **do NOT have any extensions** related to:
+
+  * Auto importing files
+  * Automatic imports
+* Reason:
+
+  * VS Code now has native auto-import support
+  * Older extensions can conflict with it
+* Action:
+
+  * Uninstall any auto-import extensions you find
+
+## 4. Step 2: Add `jsconfig.json`
+
+* In the **root of your project**, create a new file:
+
+  -------------------code----------------------
+  jsconfig.json
+  -------------------code----------------------
+
+### Purpose of `jsconfig.json`
+
+* Tells VS Code:
+
+  * “This is a **JavaScript project**”
+* Without it:
+
+  * VS Code may treat the project as **TypeScript**
+  * This can break or confuse IntelliSense and auto import
+
+### File Content
+
+-------------------code----------------------
+{
+  "exclude": ["node_modules"]
+}
+-------------------code----------------------
+
+### Why Exclude `node_modules`
+
+* Improves IntelliSense performance
+* Prevents VS Code from scanning thousands of files
+* Makes auto import faster and more reliable
+
+## 5. Restart VS Code
+
+* After:
+
+  * Removing extensions
+  * Adding `jsconfig.json`
+* You **must restart VS Code**
+* This ensures:
+
+  * IntelliSense reloads correctly
+  * Auto import starts working as expected
+
+## 6. Final Notes from the Instructor
+
+* This issue:
+
+  * Does not happen often
+  * Only appears in some setups
+* It was discovered **after recording the course**
+* Re-recording the affected videos wasn’t practical
+* With these steps:
+
+  * You should not face auto import problems
+
+## 7. Summary
+
+* Auto import failures are usually environment-related
+* Fixes:
+
+  1. Remove auto-import extensions
+  2. Add `jsconfig.json`
+  3. Exclude `node_modules`
+  4. Restart VS Code
+* After this:
+
+  * Auto import should work smoothly
+
+---
+
+If you want, I can:
+
+* Merge **all your React Native + Expo lectures into one structured study guide**
+* Turn these notes into **exam-ready bullet summaries**
+* Or **translate them** (Arabic / Japanese)
