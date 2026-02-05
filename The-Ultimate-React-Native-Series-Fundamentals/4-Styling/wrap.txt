@@ -1403,3 +1403,573 @@ This lecture covered:
 * Understanding the absence of style inheritance in React Native.
 
 Next Topic: Creating Reusable Text Components for Consistent Styling.
+
+*** 6- Encapsulating Styles ***
+---
+
+## 1. The Problem: No Style Inheritance in React Native
+
+### 1.1 What’s the issue?
+
+* In React Native, **styles do not inherit** from parent components.
+* Unlike the web (CSS), you **cannot** apply text styles to a parent `<View>` and expect `<Text>` components inside it to inherit those styles.
+
+### 1.2 Why is this a problem?
+
+* You end up repeating the same text styles across many screens.
+* This leads to:
+
+  * Inconsistent UI
+  * Harder maintenance
+  * More chances for bugs when changing styles later
+
+---
+
+## 2. The Solution: Encapsulating Styles
+
+### 2.1 Core idea
+
+* Create a **custom Text component** that encapsulates all common text styles.
+* Use this component everywhere instead of the built-in `<Text>` component.
+
+### 2.2 Benefits
+
+* Consistent typography across the app
+* One place to update text styles
+* Cleaner and more maintainable code
+
+---
+
+## 3. Creating a Custom Text Component (AppText)
+
+---
+
+## 4. Step 1: Create the Folder and File
+
+### Folder structure
+
+Inside the `app` folder:
+
+-------------------code----------------------
+app/
+  components/
+    AppText.js
+-------------------code----------------------
+
+### Naming note
+
+* Avoid naming it `Text`.
+* Using the same name as built-in components can cause **auto-import issues** in VS Code.
+* `AppText` is clear and safe.
+
+---
+
+## 5. Step 2: Create the Functional Component
+
+### Initial setup
+
+-------------------code----------------------
+import React from "react";
+import { Text } from "react-native";
+
+function AppText() {
+  return <Text />;
+}
+
+export default AppText;
+-------------------code----------------------
+
+---
+
+## 6. Step 3: Support Children (Very Important)
+
+### Why?
+
+* We want `<AppText>` to behave exactly like `<Text>`.
+* Anything written between the component tags should be rendered.
+
+### Using `props.children`
+
+-------------------code----------------------
+function AppText(props) {
+  return <Text>{props.children}</Text>;
+}
+-------------------code----------------------
+
+### Cleaner version with destructuring
+
+-------------------code----------------------
+function AppText({ children }) {
+  return <Text>{children}</Text>;
+}
+-------------------code----------------------
+
+---
+
+## 7. Step 4: Add Encapsulated Styles
+
+### Import required modules
+
+-------------------code----------------------
+import { Text, StyleSheet, Platform } from "react-native";
+-------------------code----------------------
+
+### Define text styles
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  text: {
+    fontSize: 18,
+    fontFamily: Platform.OS === "android" ? "Roboto" : "Avenir",
+  },
+});
+-------------------code----------------------
+
+### Apply styles to the Text component
+
+-------------------code----------------------
+function AppText({ children }) {
+  return <Text style={styles.text}>{children}</Text>;
+}
+-------------------code----------------------
+
+---
+
+## 8. Step 5: Final AppText Component Code
+
+-------------------code----------------------
+import React from "react";
+import { Text, StyleSheet, Platform } from "react-native";
+
+function AppText({ children }) {
+  return <Text style={styles.text}>{children}</Text>;
+}
+
+const styles = StyleSheet.create({
+  text: {
+    fontSize: 18,
+    fontFamily: Platform.OS === "android" ? "Roboto" : "Avenir",
+  },
+});
+
+export default AppText;
+-------------------code----------------------
+
+---
+
+## 9. Step 6: Using AppText in App.js
+
+### Import AppText
+
+-------------------code----------------------
+import AppText from "./app/components/AppText";
+-------------------code----------------------
+
+### Usage example
+
+-------------------code----------------------
+export default function App() {
+  return (
+    <AppText>
+      Hello from AppText
+    </AppText>
+  );
+}
+-------------------code----------------------
+
+### Result
+
+* Same font size and font family across:
+
+  * iOS
+  * Android
+* Consistent appearance on all screens
+
+---
+
+## 10. Extending the Pattern: Headings and More
+
+### Idea
+
+* Use the same technique to create:
+
+  * `HeadingText`
+  * `TitleText`
+  * `CaptionText`
+
+### Example
+
+-------------------code----------------------
+<HeadingText>My Heading</HeadingText>
+-------------------code----------------------
+
+Each component can:
+
+* Have its own font size
+* Use bold fonts
+* Be reused everywhere
+
+---
+
+## 11. Important Notes & Best Practices
+
+* Always encapsulate repeated styles into components.
+* Avoid naming conflicts with built-in React Native components.
+* Use `Platform.OS` for platform-specific fonts.
+* Keep typography consistent by centralizing it.
+* This pattern scales very well in large apps.
+
+---
+
+## 12. Summary
+
+* React Native does **not** support style inheritance.
+* Repeating text styles leads to messy and inconsistent UI.
+* The solution is to **encapsulate styles** inside a custom text component.
+* `AppText` behaves exactly like `<Text>` but enforces consistent styling.
+* This approach improves maintainability, consistency, and scalability.
+* The same pattern can be reused for headings and other text variants.
+
+---
+
+
+Quotation:
+********************************************
+why we use js in react native rather than jsx
+*********************************************
+Good question — and it’s a common point of confusion
+The short intuition is: **JSX is not a different language**, it’s just *syntax* that lives inside JavaScript.
+
+Let’s break it down cleanly and practically.
+
+---
+
+## 1. JSX Is Not a Separate Language
+
+### What JSX actually is
+
+* **JSX = JavaScript + XML-like syntax**
+* It is just **syntactic sugar** for `React.createElement(...)`
+
+Example:
+
+-------------------code----------------------
+<Text>Hello</Text>
+-------------------code----------------------
+
+Behind the scenes, this becomes:
+
+-------------------code----------------------
+React.createElement(Text, null, "Hello");
+-------------------code----------------------
+
+So:
+
+* JSX **must be written inside JavaScript**
+* Browsers and React Native **do not understand JSX directly**
+
+---
+
+## 2. Why Files Are Often `.js` Instead of `.jsx`
+
+### 2.1 JSX is still JavaScript
+
+Because JSX compiles into plain JavaScript:
+
+* A file containing JSX is still a **JavaScript file**
+* Using `.js` is technically correct
+
+That’s why React Native allows this:
+
+-------------------code----------------------
+export default function App() {
+  return <Text>Hello</Text>;
+}
+-------------------code----------------------
+
+---
+
+## 3. The Role of Babel (Very Important)
+
+### What happens when you write JSX
+
+1. You write JSX inside a `.js` file
+2. **Babel** transforms JSX into plain JavaScript
+3. Metro bundler sends normal JavaScript to the native app
+
+So React Native never runs JSX at runtime.
+
+---
+
+## 4. Why Not Always Use `.jsx` Then?
+
+You *can* use `.jsx`, but most React Native projects don’t — here’s why.
+
+### 4.1 Convention and simplicity
+
+* React Native community convention favors `.js`
+* Fewer file extensions = simpler tooling and imports
+
+Example:
+
+-------------------code----------------------
+import AppText from "./AppText";
+-------------------code----------------------
+
+Instead of worrying whether it’s `.js` or `.jsx`.
+
+---
+
+### 4.2 Mixing JSX and non-JSX code
+
+Many files:
+
+* Contain logic only (no JSX)
+* Later get JSX added
+
+Using `.js` avoids renaming files just because JSX appears.
+
+---
+
+### 4.3 Tooling already knows JSX is allowed
+
+* Metro + Babel already assume JSX is valid in `.js`
+* No extra configuration needed
+
+---
+
+## 5. When `.jsx` *Does* Make Sense
+
+Some teams prefer `.jsx` to be explicit.
+
+### Example convention
+
+* `.js` → logic, utilities, hooks
+* `.jsx` → components that return UI
+
+This is **a style choice**, not a requirement.
+
+React Native fully supports this:
+
+-------------------code----------------------
+AppText.jsx
+Heading.jsx
+-------------------code----------------------
+
+---
+
+## 6. Why React Native Specifically Uses JavaScript
+
+This is bigger than JSX.
+
+### Core idea
+
+* React Native runs **JavaScript logic**
+* Bridges it to **native UI components** (iOS & Android)
+
+So:
+
+* JavaScript is the execution language
+* JSX is just how we *describe UI declaratively*
+
+---
+
+## 7. Key Takeaways
+
+* JSX is **not** a language — it’s syntax
+* JSX always compiles into JavaScript
+* React Native executes **JavaScript**, never JSX
+* `.js` is the default and most common convention
+* `.jsx` is optional and purely stylistic
+
+If you want, next we can:
+
+* Rewrite a JSX component using pure `React.createElement`
+* Compare `.js` vs `.jsx` project structures
+* Explain why TypeScript uses `.tsx`
+
+
+
+
+
+
+
+Quotation:
+********************************************
+then why we can use tsx in the react native and we don`t make it ts
+*********************************************
+This is a *very* good question — and you’re thinking about it exactly the right way.
+
+Let’s clear it up step by step and connect it directly to how React Native actually works.
+
+---
+
+## 1. The Key Rule (This Explains Everything)
+
+> **If a file contains JSX, it cannot be plain `.ts`.**
+
+That’s the core reason.
+
+---
+
+## 2. Why `.ts` Is Not Enough
+
+### What `.ts` means
+
+* `.ts` = **TypeScript only**
+* No JSX syntax allowed
+
+This will **fail** in a `.ts` file:
+
+-------------------code----------------------
+const App = () => {
+  return <Text>Hello</Text>;
+};
+-------------------code----------------------
+
+Because `<Text>` is **not valid TypeScript syntax**.
+
+---
+
+## 3. What `.tsx` Actually Is
+
+### `.tsx` = TypeScript + JSX
+
+It’s the TypeScript equivalent of `.jsx`.
+
+| File type | Can contain JSX | Purpose          |
+| --------- | --------------- | ---------------- |
+| `.js`     | Yes             | JavaScript       |
+| `.jsx`    | Yes             | JavaScript + JSX |
+| `.ts`     | No              | TypeScript only  |
+| `.tsx`    | Yes             | TypeScript + JSX |
+
+So in React Native:
+
+* Components → `.tsx`
+* Logic / utils → `.ts`
+
+---
+
+## 4. Why React Native Supports `.tsx`
+
+Because React Native supports **TypeScript**, and:
+
+* UI components need JSX
+* TypeScript needs JSX support
+* Therefore `.tsx` exists
+
+Example:
+
+-------------------code----------------------
+type Props = {
+  title: string;
+};
+
+const AppText = ({ title }: Props) => {
+  return <Text>{title}</Text>;
+};
+-------------------code----------------------
+
+This is:
+
+* Type-safe
+* JSX-based
+* Compiled to JavaScript by Babel
+
+---
+
+## 5. Why We Don’t Just Use `.ts` Everywhere
+
+Because `.ts` **cannot parse JSX at all**.
+
+Even this is invalid in `.ts`:
+
+-------------------code----------------------
+<Text />
+-------------------code----------------------
+
+So:
+
+* UI → `.tsx`
+* Non-UI → `.ts`
+
+This separation is intentional and clean.
+
+---
+
+## 6. What Actually Runs in React Native
+
+Important mental model:
+
+-------------------code----------------------
+.ts / .tsx
+   ↓ (TypeScript)
+.js / .jsx
+   ↓ (Babel)
+Plain JavaScript
+   ↓
+React Native runtime
+-------------------code----------------------
+
+React Native **never runs TypeScript**.
+It never runs JSX either.
+
+It only runs **JavaScript**.
+
+---
+
+## 7. Why JavaScript Gets JSX but TypeScript Needs TSX
+
+This trips many people up.
+
+* JavaScript tooling is flexible and allows JSX in `.js`
+* TypeScript is **strict**
+* TypeScript needs to know:
+
+  * “Is `<Foo>` a generic?”
+  * Or “Is this JSX?”
+
+So TypeScript requires:
+
+* `.tsx` to explicitly enable JSX parsing
+
+This avoids ambiguity.
+
+---
+
+## 8. Best Practice in Real Projects
+
+### Common React Native structure
+
+-------------------code----------------------
+components/
+  AppText.tsx
+  Heading.tsx
+
+hooks/
+  useAuth.ts
+
+utils/
+  formatDate.ts
+-------------------code----------------------
+
+Clear, predictable, scalable.
+
+---
+
+## 9. Final Mental Model (Remember This)
+
+* JSX is **syntax**, not a language
+* JavaScript tolerates JSX in `.js`
+* TypeScript requires explicit opt-in → `.tsx`
+* React Native always runs JavaScript in the end
+
+Once you internalize this, file extensions stop feeling magical and start feeling logical.
+
+If you want, next we can:
+
+* Convert a `.tsx` component into `.ts` + `createElement`
+* Explain why TypeScript generics conflict with JSX syntax
+* Compare Babel vs TypeScript responsibilities in React Native
+
