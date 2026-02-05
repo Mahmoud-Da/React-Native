@@ -106,3 +106,59 @@ By the end of the course, students will:
 * The course provides a complete, practical learning experience
 * Focused on real app behavior and professional development standards
 * Sets the foundation for building high-quality mobile apps with React Native
+
+*** 2- Prerequisites ***
+
+# Lecture Notes: Course Prerequisites and Background Knowledge
+
+## React Native and Prior Knowledge
+
+* No prior experience with:
+
+  * React Native
+  * Mobile app development
+    is required to take this course.
+
+## Required Knowledge
+
+### JavaScript
+
+* Solid understanding of JavaScript is required.
+* Learners should be comfortable with:
+
+  * Variables and functions
+  * Modern JavaScript syntax
+
+### React
+
+* Basic to intermediate knowledge of React is required because:
+
+  * React Native is built on top of React.
+  * Instead of targeting the browser (DOM), React Native targets **mobile platforms**.
+
+## React Concepts You Should Know
+
+You do not need to be a React expert, but you should understand the core concepts:
+
+* Components
+* JSX
+* Props
+* State
+* Fundamental React application structure
+
+## Learning Resources for React
+
+If you need to strengthen your React knowledge:
+
+* A **2-hour React tutorial** is available on the instructor’s YouTube channel.
+* A **13-hour comprehensive React course** is also available, covering:
+
+  * Basics
+  * Intermediate topics
+  * Advanced React concepts
+
+## Summary
+
+* Beginners to mobile development are welcome.
+* JavaScript and React fundamentals are mandatory.
+* Additional learning resources are provided for students who need a React refresher before continuing with the course.
