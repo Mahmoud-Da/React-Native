@@ -1678,3 +1678,287 @@ If you want, I can also explain this using:
 * A real-life example (tables, shelves, parking spots)
 * A one-glance diagram
 * A common bug example and how to fix it
+
+
+*** 8- Flexbox- flexBasis, flexGrow and flexShrink ***
+---
+
+# Advanced Flex Properties in React Native
+
+These properties are used less often, but they are important to understand when reading or maintaining other people’s code.
+
+The three properties are:
+
+* `flexBasis`
+* `flexGrow`
+* `flexShrink`
+
+---
+
+## 1. Base Setup Used in This Lesson
+
+-------------------code----------------------
+export default function App() {
+  return (
+    <View
+      style={{
+        flex: 1,
+        flexDirection: 'row',
+        backgroundColor: 'white',
+      }}
+    >
+      <View style={{ backgroundColor: 'dodgerblue' }} />
+      <View style={{ backgroundColor: 'orange', width: 100 }} />
+    </View>
+  );
+}
+-------------------code----------------------
+
+* `flexDirection: 'row'`
+* Main (primary) axis: horizontal
+* Cross axis: vertical
+
+---
+
+## 2. `flexBasis`
+
+### What `flexBasis` Means
+
+`flexBasis` sets the **initial size of an item along the main axis**.
+
+* If the main axis is horizontal → acts like `width`
+* If the main axis is vertical → acts like `height`
+
+---
+
+### Example: Horizontal Main Axis
+
+-------------------code----------------------
+<View
+  style={{
+    backgroundColor: 'dodgerblue',
+    flexBasis: 100,
+  }}
+/>
+-------------------code----------------------
+
+This is equivalent to:
+
+-------------------code----------------------
+<View
+  style={{
+    backgroundColor: 'dodgerblue',
+    width: 100,
+  }}
+/>
+-------------------code----------------------
+
+---
+
+### When the Main Axis Is Vertical
+
+-------------------code----------------------
+flexDirection: 'column'
+-------------------code----------------------
+
+-------------------code----------------------
+flexBasis: 100
+-------------------code----------------------
+
+This becomes equivalent to:
+
+-------------------code----------------------
+height: 100
+-------------------code----------------------
+
+---
+
+### Key Idea
+
+`flexBasis` maps to **width or height depending on the main axis**.
+
+---
+
+## 3. `flexGrow`
+
+### What `flexGrow` Means
+
+`flexGrow` controls **how much an item grows to fill available space**.
+
+---
+
+### Example
+
+-------------------code----------------------
+<View
+  style={{
+    backgroundColor: 'dodgerblue',
+    flexGrow: 1,
+  }}
+/>
+-------------------code----------------------
+
+Result:
+
+* The view expands to fill available free space along the main axis
+
+---
+
+### Relation to `flex`
+
+-------------------code----------------------
+flexGrow: 1
+-------------------code----------------------
+
+Is equivalent to:
+
+-------------------code----------------------
+flex: 1
+-------------------code----------------------
+
+In practice:
+
+* `flex` is a shorthand
+* `flexGrow` is more explicit
+
+---
+
+### Important Note
+
+Sometimes the simulator does not immediately reflect changes.
+
+* Manual refresh may be required
+* Behavior is still correct
+
+---
+
+## 4. `flexShrink`
+
+### What `flexShrink` Means
+
+`flexShrink` controls **whether an item is allowed to shrink when there is not enough space**.
+
+It is the **opposite of `flexGrow`**.
+
+---
+
+### Example Without Shrinking
+
+-------------------code----------------------
+<View
+  style={{
+    backgroundColor: 'dodgerblue',
+    width: 400,
+  }}
+/>
+-------------------code----------------------
+
+Result:
+
+* The item overflows
+* Other items cannot fit
+
+---
+
+### Allow the Item to Shrink
+
+-------------------code----------------------
+<View
+  style={{
+    backgroundColor: 'dodgerblue',
+    width: 400,
+    flexShrink: 1,
+  }}
+/>
+-------------------code----------------------
+
+Result:
+
+* The blue view shrinks
+* Other items fit on the screen
+
+---
+
+### Real Meaning
+
+You are telling React Native:
+
+> If space is tight, this item is allowed to shrink.
+
+---
+
+## 5. `flex` as a Shorthand
+
+The `flex` property combines:
+
+* `flexGrow`
+* `flexShrink`
+
+### Example
+
+-------------------code----------------------
+flex: 1
+-------------------code----------------------
+
+Is equivalent to:
+
+* Grow to fill space
+* Shrink if needed
+
+---
+
+### Negative `flex` Values
+
+-------------------code----------------------
+flex: -1
+-------------------code----------------------
+
+Behaves like:
+
+-------------------code----------------------
+flexShrink: 1
+-------------------code----------------------
+
+This means:
+
+* Do not grow
+* Shrink when space is limited
+
+Again, manual refresh may be required to see the result.
+
+---
+
+## 6. Summary Table
+
+| Property   | Purpose                   | Axis      |
+| ---------- | ------------------------- | --------- |
+| flexBasis  | Initial size              | Main axis |
+| flexGrow   | Expand to fill space      | Main axis |
+| flexShrink | Shrink when overflowing   | Main axis |
+| flex       | Shorthand for grow/shrink | Main axis |
+
+---
+
+## 7. Practical Advice
+
+* Most layouts only need `flex`
+* Use `flexBasis` when you want a starting size
+* Use `flexGrow` when you want controlled expansion
+* Use `flexShrink` when overflow causes layout issues
+* Expect to see these more in advanced or older codebases
+
+---
+
+## 8. One-Line Mental Model
+
+* `flexBasis` = starting size
+* `flexGrow` = can grow
+* `flexShrink` = can shrink
+
+---
+
+If you want, I can:
+
+* Show a visual comparison of grow vs shrink
+* Convert confusing layouts into simple `flex` usage
+* Create a single flexbox cheat sheet covering everything you’ve studied so far
