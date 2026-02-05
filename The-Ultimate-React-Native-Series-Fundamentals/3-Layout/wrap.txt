@@ -1069,3 +1069,296 @@ If you want, I can:
 * Add axis diagrams in text form
 * Compare row vs column with alignment examples
 * Turn this into revision notes combined with previous flex lessons
+
+
+*** 6- Flexbox- justifyContent, alignItems and alignSelf ***
+---
+
+# Aligning Items in React Native Flexbox
+
+## 1. Initial Layout State
+
+By default, items appear at the **top-left corner** of the container.
+
+This happens because:
+
+* `flexDirection` defaults to `column`
+* `justifyContent` defaults to `flex-start`
+* `alignItems` defaults to `stretch`
+
+---
+
+## 2. Base Setup Used in This Lesson
+
+-------------------code----------------------
+export default function App() {
+  return (
+    <View style={{ flex: 1, flexDirection: 'row', backgroundColor: 'white' }}>
+      <View style={{ backgroundColor: 'dodgerblue', width: 100, height: 100 }} />
+      <View style={{ backgroundColor: 'gold', width: 100, height: 100 }} />
+      <View style={{ backgroundColor: 'tomato', width: 100, height: 100 }} />
+    </View>
+  );
+}
+-------------------code----------------------
+
+* `flexDirection: 'row'`
+* Main axis: horizontal
+* Cross axis: vertical
+
+---
+
+## 3. `justifyContent` — Aligning Along the Main Axis
+
+`justifyContent` controls alignment **along the main axis**.
+
+### Main Axis Depends on `flexDirection`
+
+| flexDirection | Main Axis  |
+| ------------- | ---------- |
+| row           | Horizontal |
+| column        | Vertical   |
+
+---
+
+### 3.1 Center Items on the Main Axis
+
+-------------------code----------------------
+justifyContent: 'center'
+-------------------code----------------------
+
+* Items move to the center of the main axis
+
+---
+
+### 3.2 Change Main Axis by Switching Direction
+
+-------------------code----------------------
+flexDirection: 'column'
+justifyContent: 'center'
+-------------------code----------------------
+
+* Items are centered **vertically**
+* Vertical axis is now the main axis
+
+---
+
+### 3.3 Other `justifyContent` Values
+
+#### `flex-start` (default)
+
+-------------------code----------------------
+justifyContent: 'flex-start'
+-------------------code----------------------
+
+* Items align at the start of the main axis
+
+---
+
+#### `flex-end`
+
+-------------------code----------------------
+justifyContent: 'flex-end'
+-------------------code----------------------
+
+* Items align at the end of the main axis
+
+---
+
+### 3.4 Distributing Space
+
+#### `space-around`
+
+-------------------code----------------------
+justifyContent: 'space-around'
+-------------------code----------------------
+
+* Equal space between items
+* Less space at the edges
+
+---
+
+#### `space-evenly`
+
+-------------------code----------------------
+justifyContent: 'space-evenly'
+-------------------code----------------------
+
+* Equal space between items and edges
+
+---
+
+#### `space-between`
+
+-------------------code----------------------
+justifyContent: 'space-between'
+-------------------code----------------------
+
+* First and last items touch the edges
+* Remaining space distributed between items
+
+---
+
+## 4. `alignItems` — Aligning Along the Cross Axis
+
+`alignItems` controls alignment **along the secondary (cross) axis**.
+
+With `flexDirection: 'row'`:
+
+* Cross axis is vertical
+
+---
+
+### 4.1 Center on the Cross Axis
+
+-------------------code----------------------
+alignItems: 'center'
+-------------------code----------------------
+
+* Items appear centered vertically
+
+---
+
+### 4.2 `baseline`
+
+To see `baseline`, item heights must differ.
+
+-------------------code----------------------
+<View style={{ backgroundColor: 'dodgerblue', width: 100, height: 300 }} />
+<View style={{ backgroundColor: 'gold', width: 100, height: 200 }} />
+-------------------code----------------------
+
+-------------------code----------------------
+alignItems: 'baseline'
+-------------------code----------------------
+
+* Items align based on their text baseline
+
+---
+
+### 4.3 `flex-end`
+
+-------------------code----------------------
+alignItems: 'flex-end'
+-------------------code----------------------
+
+* Items align at the end of the cross axis
+
+---
+
+### 4.4 `flex-start`
+
+-------------------code----------------------
+alignItems: 'flex-start'
+-------------------code----------------------
+
+* Items align at the start of the cross axis
+
+---
+
+### 4.5 `stretch` (Default)
+
+-------------------code----------------------
+alignItems: 'stretch'
+-------------------code----------------------
+
+* Items stretch to fill the cross axis
+* Only visible if height (or width) is not set
+
+Example:
+
+-------------------code----------------------
+<View style={{ backgroundColor: 'dodgerblue', width: 100 }} />
+-------------------code----------------------
+
+* The view stretches vertically
+
+If `alignItems` is removed entirely, the behavior is the same.
+
+---
+
+## 5. `alignSelf` — Aligning a Single Item
+
+`alignSelf` overrides `alignItems` **for one specific item**.
+
+### Example: Move Only the Blue View
+
+-------------------code----------------------
+<View
+  style={{
+    backgroundColor: 'dodgerblue',
+    width: 100,
+    height: 100,
+    alignSelf: 'flex-start'
+  }}
+/>
+-------------------code----------------------
+
+* Applied to **individual items**
+* Does not affect siblings
+
+---
+
+## 6. Key Concept Summary
+
+| Property       | Applied To  | Axis       |
+| -------------- | ----------- | ---------- |
+| justifyContent | Container   | Main axis  |
+| alignItems     | Container   | Cross axis |
+| alignSelf      | Single item | Cross axis |
+
+---
+
+## 7. Common Beginner Confusion
+
+* Names are not intuitive at first
+* You must always ask:
+
+  * What is my `flexDirection`?
+  * What is my main axis?
+  * What is my cross axis?
+
+With practice, these properties become automatic.
+-------------------code----------------------
+export default function App() {
+  return (
+    <View style={{
+      flex: 1,
+      backgroundColor: 'white',
+      flexDirection: 'column',
+      justifyContent: 'center', // primary Axis react-native main=column, CSS main=row
+      alignItems: 'center', // secondary Axis react-native main=row, CSS main=column
+
+    }}>
+      <View style={{ backgroundColor: 'dodgerblue', width: 100, height: 100 }} />
+      <View style={{ backgroundColor: 'gold', width: 100, height: 100 }} />
+      <View style={{ backgroundColor: 'tomato', width: 100, height: 100 }} />
+    </View>
+  );
+}
+-------------------code----------------------
+
+---
+
+## 8. Final Takeaways
+
+* `justifyContent` aligns items along the main axis
+* `alignItems` aligns items along the cross axis
+* `alignSelf` overrides alignment for a single view
+* Default alignment often explains unexpected layouts
+
+---
+
+## 9. What’s Next
+
+Next lesson focuses on:
+
+* Wrapping items
+* `flexWrap`
+* Handling overflow layouts
+
+If you want, I can:
+
+* Create an axis cheat sheet
+* Show common alignment recipes
+* Combine all flex lessons into one master reference
