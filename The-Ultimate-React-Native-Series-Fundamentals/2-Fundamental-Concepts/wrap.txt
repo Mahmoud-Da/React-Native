@@ -234,3 +234,141 @@ const styles = StyleSheet.create({
 ## Next Topic
 
 * Introduction to the **Text** component
+
+
+*** 3- Text ***
+---
+
+## React Native Fundamentals: Text Component
+
+### 1. Importance of the Text Component
+
+* In React Native, **text cannot be placed directly inside JSX** like in web applications.
+* Any text displayed on the screen **must be wrapped inside the `<Text>` component**.
+* This is a core rule of React Native UI rendering.
+
+---
+
+### 2. Text Component Documentation
+
+* The `<Text>` component is documented in the **React Native API section**.
+* It provides several props that control behavior and appearance.
+* Understanding the documentation helps clarify:
+
+  * What the component can do
+  * Its limitations
+  * Best practices for usage
+
+---
+
+### 3. Essential Text Props
+
+#### a. `numberOfLines`
+
+* Controls how many lines of text are displayed.
+* If the text exceeds the specified number of lines, it gets **truncated**.
+
+Example behavior:
+
+* Long text with no `numberOfLines`:
+
+  * Text wraps normally across multiple lines.
+* `numberOfLines={2}`:
+
+  * Text is limited to two lines.
+* `numberOfLines={1}`:
+
+  * Text is truncated with `...` at the end.
+
+This prop is very useful for:
+
+* Titles
+* Previews
+* Compact UI layouts
+
+---
+
+#### b. `onPress`
+
+* Allows the `<Text>` component to behave like a clickable link.
+* Triggered when the user taps the text.
+
+##### Inline Handler (for simple logic)
+
+-------------------code----------------------
+<Text onPress={() => console.log('Text clicked')}>
+  Click me
+</Text>
+-------------------code----------------------
+
+* Suitable only for **very small, one-line logic**.
+
+##### Separate Handler Function (recommended)
+
+* Better for readability and maintainability.
+* Especially important when logic becomes more complex.
+
+By convention:
+
+* Event handlers are prefixed with `handle`.
+
+Example:
+
+-------------------code----------------------
+const handlePress = () => {
+  console.log('Text pressed');
+};
+-------------------code----------------------
+
+Usage in JSX:
+
+-------------------code----------------------
+<Text onPress={handlePress}>
+  Click me
+</Text>
+-------------------code----------------------
+
+* When the text is tapped, the message appears in the terminal.
+
+---
+
+### 4. Best Practices
+
+* Avoid placing complex logic directly inside JSX.
+* Always check the official documentation for each component.
+* Understanding component props early leads to better app architecture.
+
+---
+
+### 5. Current Application Code
+
+-------------------code----------------------
+import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, Text, View, SafeAreaView } from 'react-native';
+
+export default function App() {
+  return (
+    <SafeAreaView style={styles.container}>
+      <Text>Open up App.js to start working on your app!</Text>
+      <StatusBar style="auto" />
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'dodgerblue',
+  },
+});
+-------------------code----------------------
+
+---
+
+### 6. What’s Next
+
+* The next topic will cover the **Image component**.
+* Images are another fundamental building block in React Native UI.
+
+---
+
