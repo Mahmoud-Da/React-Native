@@ -1,0 +1,88 @@
+*** 1- Core Components and APIs ***
+## Section Overview
+
+This section introduces the core components and APIs in React Native that are most commonly used to build mobile applications.
+
+---
+
+## Purpose of Core Components and APIs
+
+* React Native provides a set of built-in (core) components and APIs.
+* These are sufficient for building most application user interfaces.
+* While React Native includes many more components than covered here, the course focuses on those used most frequently.
+
+---
+
+## Where to Find the Full List
+
+* Official documentation: reactnative.dev
+* Navigate to the **API** section.
+* The documentation includes:
+
+  * Core UI components
+  * Platform-specific components
+  * Native APIs
+
+---
+
+## Core UI Components
+
+* Core components are **cross-platform**.
+* They work on both Android and iOS.
+* During compilation, each component is mapped to its **native equivalent**.
+
+### Example
+
+* A `Button` component:
+
+  * Appears as a standard Android button on Android.
+  * Appears as a standard iOS button on iOS.
+
+### Customization
+
+* The appearance and behavior of components can be customized using **styles**.
+* Styling will be covered in the next section.
+
+---
+
+## Platform-Specific Components
+
+* React Native also provides components designed specifically for:
+
+  * Android
+  * iOS
+* These are used when platform-specific behavior or UI is required.
+
+---
+
+## Core APIs
+
+* APIs are not UI elements.
+* They provide access to native functionality.
+* Most core APIs are **cross-platform**.
+
+### Examples
+
+* `Keyboard`: control and interact with the soft keyboard.
+* `StyleSheet`: define and manage styles efficiently.
+
+---
+
+## Platform-Specific APIs
+
+* Some APIs are exclusive to Android or iOS.
+* These are used when accessing features unique to a specific platform.
+
+---
+
+## Learning Approach
+
+* The course focuses on essential components and APIs.
+* Not every component is covered in detail.
+* Once the fundamentals are understood, additional components can be learned independently.
+
+---
+
+## Next Topic
+
+* Introduction to **Views**
