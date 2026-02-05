@@ -1962,3 +1962,210 @@ If you want, I can:
 * Show a visual comparison of grow vs shrink
 * Convert confusing layouts into simple `flex` usage
 * Create a single flexbox cheat sheet covering everything you’ve studied so far
+
+
+*** 9- Absolute and Relative Positioning ***
+---
+
+# Relative and Absolute Positioning in React Native
+
+## 1. Initial Setup
+
+We start with a container that holds three views.
+
+-------------------code----------------------
+export default function App() {
+  return (
+    <View
+      style={{
+        flex: 1,
+        flexDirection: 'row',
+        backgroundColor: 'white',
+      }}
+    >
+      <View style={{ backgroundColor: 'dodgerblue', width: 100, height: 100 }} />
+      <View style={{ backgroundColor: 'gold', width: 100, height: 100 }} />
+      <View style={{ backgroundColor: 'tomato', width: 100, height: 100 }} />
+    </View>
+  );
+}
+-------------------code----------------------
+
+---
+
+## 2. Relative Positioning (Default)
+
+In React Native:
+
+* All components are `position: 'relative'` by default
+
+### What Relative Positioning Means
+
+* The component keeps its place in the layout
+* You can move it visually using `top`, `bottom`, `left`, `right`
+* Other components **do not move**
+
+---
+
+### Example: Moving a View Down
+
+-------------------code----------------------
+<View
+  style={{
+    backgroundColor: 'gold',
+    width: 100,
+    height: 100,
+    top: 20,
+  }}
+/>
+-------------------code----------------------
+
+Result:
+
+* Gold view moves **20 units down**
+* Blue and red views stay exactly where they were
+
+---
+
+### Negative Values
+
+-------------------code----------------------
+top: -20
+-------------------code----------------------
+
+Moves the view **up** by 20 units.
+
+Equivalent alternatives:
+
+-------------------code----------------------
+bottom: 20
+left: 20
+right: 20
+-------------------code----------------------
+
+---
+
+## 3. Why Other Views Don’t Move
+
+Because relative positioning:
+
+* Offsets the view from its **original position**
+* Does **not** remove it from the layout flow
+
+This behavior matches CSS.
+
+---
+
+## 4. Absolute Positioning
+
+To use absolute positioning, explicitly set:
+
+-------------------code----------------------
+position: 'absolute'
+-------------------code----------------------
+
+---
+
+### Example: Absolute Positioning
+
+-------------------code----------------------
+<View
+  style={{
+    position: 'absolute',
+    backgroundColor: 'gold',
+    width: 100,
+    height: 100,
+    top: 20,
+    left: 20,
+  }}
+/>
+-------------------code----------------------
+
+---
+
+### What Happens
+
+* The view is positioned relative to its **parent container**
+* The parent here is the full-screen container
+* The view is **removed from the normal layout flow**
+* Other views **reposition themselves**
+
+---
+
+## 5. Visual Difference Summary
+
+### Relative Positioning
+
+* Moves relative to original position
+* Does not affect siblings
+* Default behavior
+
+### Absolute Positioning
+
+* Moves relative to parent
+* Affects layout of siblings
+* Removed from normal flow
+
+---
+
+## 6. Switching Back and Forth
+
+### Relative
+
+-------------------code----------------------
+position: 'relative'
+-------------------code----------------------
+
+* Blue and red views remain fixed
+
+---
+
+### Absolute
+
+-------------------code----------------------
+position: 'absolute'
+-------------------code----------------------
+
+* Gold view floats
+* Other views shift to fill the gap
+
+---
+
+## 7. Key Recap
+
+| Position | Relative To       | Affects Layout |
+| -------- | ----------------- | -------------- |
+| relative | Original position | No             |
+| absolute | Parent container  | Yes            |
+
+---
+
+## 8. Common Use Cases
+
+### Relative Positioning
+
+* Small visual adjustments
+* Fine-tuning spacing
+* Nudging elements
+
+### Absolute Positioning
+
+* Floating buttons
+* Badges
+* Overlays
+* Custom UI effects
+
+---
+
+## 9. One-Sentence Summary
+
+* **Relative**: move the item without disturbing others
+* **Absolute**: pull the item out and position it freely
+
+---
+
+If you want, I can:
+
+* Compare RN positioning with CSS positioning
+* Show common bugs and how to fix them
+* Combine flexbox and absolute positioning in real layouts
