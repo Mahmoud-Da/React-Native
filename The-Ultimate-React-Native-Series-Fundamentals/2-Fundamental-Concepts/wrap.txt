@@ -372,3 +372,229 @@ const styles = StyleSheet.create({
 
 ---
 
+
+*** 4- Image ***
+
+---
+
+## React Native Fundamentals: Image Component
+
+### 1. Preparing the Layout
+
+* Restore the app to its default visual state:
+
+  * Set the background color to white.
+* To center content inside the screen:
+
+  * Use `justifyContent: 'center'`
+  * Use `alignItems: 'center'`
+
+-------------------code----------------------
+container: {
+  flex: 1,
+  backgroundColor: 'white',
+  justifyContent: 'center',
+  alignItems: 'center',
+}
+-------------------code----------------------
+
+* Any component inside `SafeAreaView` will now appear centered.
+
+---
+
+### 2. Importing the Image Component
+
+* To render images, import `Image` from `react-native`.
+* The `Image` component supports:
+
+  * **Local (static) images** bundled with the app
+  * **Network images** downloaded from the internet
+
+-------------------code----------------------
+import { Image } from 'react-native';
+-------------------code----------------------
+
+---
+
+### 3. Rendering Local (Static) Images
+
+#### a. Using Assets
+
+* The `assets` folder typically contains:
+
+  * `icon.png`
+  * `splash.png` (used during app loading)
+
+#### b. Rendering the Image
+
+* Since `<Image>` has no children, use **self-closing syntax**.
+* The `source` prop is required.
+* Local images are loaded using `require()`.
+
+-------------------code----------------------
+<Image source={require('./assets/icon.png')} />
+-------------------code----------------------
+
+#### c. How `require()` Works
+
+* `require()` does **not** return:
+
+  * A string
+  * An image object
+* It returns a **numeric reference** to the image.
+
+Example:
+
+-------------------code----------------------
+console.log(require('./assets/icon.png'));
+-------------------code----------------------
+
+* Output in terminal: a number (e.g., `2`)
+* React Native Packager uses this reference to include the image in the app bundle.
+
+#### d. Best Practice
+
+* Use static images only when they must ship with the app:
+
+  * App icon
+  * Splash screen
+* Avoid bundling large or unnecessary images.
+* Prefer **network images** when possible to reduce app size.
+
+---
+
+### 4. Rendering Network Images
+
+#### a. Image Source
+
+* Network images are loaded using a URL.
+* Example service: `picsum.photos`
+
+  * Provides random images with specified dimensions.
+
+Example URL:
+
+-------------------code----------------------
+https://picsum.photos/200/300
+-------------------code----------------------
+
+#### b. Setting the Source
+
+* For network images, `source` must be an object.
+* The object must include a `uri` property.
+
+-------------------code----------------------
+<Image
+  source={{ uri: 'https://picsum.photos/200/300' }}
+/>
+-------------------code----------------------
+
+#### c. Specifying Dimensions
+
+* Network images **require explicit width and height**.
+* React Native cannot infer their size automatically.
+
+-------------------code----------------------
+<Image
+  source={{
+    uri: 'https://picsum.photos/200/300',
+    width: 200,
+    height: 300,
+  }}
+/>
+-------------------code----------------------
+
+* Local images do not need dimensions because metadata is read via `require()`.
+
+---
+
+### 5. Useful Image Props
+
+#### a. `blurRadius`
+
+* Applies a blur effect to the image.
+
+-------------------code----------------------
+<Image blurRadius={10} />
+-------------------code----------------------
+
+* Higher values increase the blur effect.
+
+---
+
+#### b. `loadingIndicatorSource`
+
+* Displays a placeholder image while the network image loads.
+* Accepts:
+
+  * A local image using `require()`
+  * A network image via `uri`
+
+-------------------code----------------------
+<Image
+  source={{ uri: 'https://picsum.photos/200/300' }}
+  loadingIndicatorSource={require('./assets/icon.png')}
+/>
+-------------------code----------------------
+
+---
+
+#### c. `fadeDuration` (Android Only)
+
+* Controls the fade-in animation when an image loads.
+* Default: `300` milliseconds.
+* Only works on **Android**.
+* Has no effect on iOS.
+
+-------------------code----------------------
+<Image fadeDuration={1000} />
+-------------------code----------------------
+
+* Reloading the Android app will show a more pronounced fade effect.
+
+---
+
+#### d. `resizeMode`
+
+* Used when image dimensions do not match the container.
+* Common modes:
+
+  * `cover`
+  * `contain`
+  * `stretch`
+  * `repeat`
+* Behaves similarly to CSS `object-fit`.
+
+-------------------code----------------------
+<Image resizeMode="contain" />
+-------------------code----------------------
+
+---
+
+### 6. Image Loading Events
+
+* The `Image` component exposes several events:
+
+  * `onLoadStart`
+  * `onLoad`
+  * `onLoadEnd`
+  * `onError`
+* These allow you to react to different stages of image loading.
+
+Example use cases:
+
+* Show a loading spinner
+* Track image load performance
+* Handle loading failures
+
+---
+
+### 7. Summary
+
+* Use `Image` to render both local and network images.
+* Prefer network images when possible to reduce bundle size.
+* Always define dimensions for network images.
+* Use platform-specific props (like `fadeDuration`) carefully.
+* Consult the official documentation to explore all available props.
+
+---
