@@ -332,3 +332,167 @@ There are **two main approaches** to building React Native applications:
 * The next lecture will cover:
 
   * Setting up the React Native development environment
+
+
+*** 5- Setting Up the Development Environment ***
+---
+
+# Lecture Notes: Development Environment Setup (Expo + React Native)
+
+## 1. Node.js Requirement
+
+### Required Version
+
+* Node.js **version 12 or higher** is required.
+
+### Check Node Version
+
+* Run the following command in the terminal:
+
+  -------------------code----------------------
+  node -v
+  -------------------code----------------------
+* Example shown: `v12.14.1`
+* If your version is lower than 12, you must upgrade Node.js before continuing.
+
+## 2. Installing Expo CLI
+
+### What Is Expo CLI?
+
+* A command-line tool that allows you to:
+
+  * Create React Native projects
+  * Run and manage Expo-based applications easily
+
+### Installation Command
+
+* Install Expo CLI globally using npm:
+
+  -------------------code----------------------
+  npm install -g expo-cli
+  -------------------code----------------------
+
+### macOS Permission Note
+
+* If npm permissions are not configured properly on macOS, prefix the command with:
+
+  -------------------code----------------------
+  sudo npm install -g expo-cli
+  -------------------code----------------------
+
+### Installation Notes
+
+* Installation may take some time
+* You may see warnings during installation
+
+  * These warnings can be safely ignored
+
+## 3. Expo Client App (Physical Device Testing)
+
+### What Is Expo Client?
+
+* A mobile app that lets you run your React Native app on a real device
+
+### Installation
+
+* Download **Expo Go (Expo Client)** from:
+
+  * Apple App Store (iOS)
+  * Google Play Store (Android)
+
+### Purpose
+
+* Enables easy testing on a physical phone without:
+
+  * Android Studio
+  * Xcode
+  * Simulators
+
+## 4. Code Editor: Visual Studio Code
+
+### Recommended Editor
+
+* **Visual Studio Code (VS Code)**
+
+### Why VS Code?
+
+* Free and lightweight
+* Excellent React Native support
+* Instructor will demonstrate:
+
+  * Shortcuts
+  * Productivity tips
+  * Debugging techniques
+* Using the same editor makes it easier to follow along
+
+### Download
+
+* Available at: `code.visualstudio.com`
+
+## 5. VS Code Extensions
+
+These extensions are optional but strongly recommended.
+
+### 1. React Native Tools
+
+* Built by Microsoft
+* Enables debugging React Native apps directly in VS Code
+* Widely used and well-supported
+
+### 2. React Native / React / Redux Snippets
+
+* Provides code snippets for:
+
+  * React
+  * React Native
+  * Redux
+* Allows fast code generation using shortcuts
+* Helps speed up development significantly
+
+### 3. Prettier – Code Formatter
+
+* Automatically formats code
+* Maintains consistent style across the project
+* Very popular and commonly used in JavaScript projects
+
+### 4. Material Icon Theme
+
+* Adds file-type icons to the project explorer
+* Improves readability and navigation
+* Different file types get different icons
+
+## 6. VS Code Settings: Format on Save
+
+### Enable Automatic Formatting
+
+* Open:
+
+  * Preferences → Settings
+* Search for:
+
+  * `format on save`
+* Enable **Format on Save**
+
+### Result
+
+* Every time you save a file:
+
+  * Prettier automatically formats the code
+* Works with:
+
+  * `Ctrl + S` (Windows/Linux)
+  * `Cmd + S` (macOS)
+
+## 7. Key Takeaways
+
+* Correct Node.js version is essential
+* Expo CLI simplifies React Native development
+* Expo Client allows fast testing on real devices
+* VS Code + extensions improve productivity and code quality
+* Automatic formatting helps maintain clean, readable code
+
+## What’s Next
+
+* The next step will involve:
+
+  * Creating and running the first Expo-based React Native project
