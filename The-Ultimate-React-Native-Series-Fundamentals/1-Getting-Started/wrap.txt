@@ -245,3 +245,90 @@ Apps built with React Native include:
 * React Native is a powerful and production-proven framework
 * It enables JavaScript developers to build serious, high-quality mobile applications
 * It is one of the best tools to add to your JavaScript and mobile development toolbox
+
+
+*** 4- Expo ***
+
+# Lecture Notes: Ways to Build React Native Apps
+
+## Overview
+
+There are **two main approaches** to building React Native applications:
+
+1. Plain React Native (React Native CLI)
+2. Expo
+
+## Option 1: Expo
+
+### What Is Expo?
+
+* Expo is a **framework and set of tools** built on top of React Native.
+* It hides much of the underlying complexity of mobile development.
+
+### Advantages of Expo
+
+* Very fast and easy setup
+* Ideal for beginners with no mobile development experience
+* You can build and run your first app within minutes
+* Provides many built-in native features out of the box
+
+### Project Structure with Expo
+
+* Only JavaScript code is visible
+* No separate:
+
+  * Android project
+  * iOS project
+* You cannot directly access native platform APIs
+* You are limited to the native features that Expo provides
+
+### Is This a Limitation?
+
+* For most applications, this is **not a problem**
+* Expo includes a wide range of native capabilities
+* You can build a fully functional, production-ready app using Expo alone
+
+### Ejecting from Expo
+
+* If you need more flexibility:
+
+  * Custom native components
+  * Direct access to iOS or Android APIs
+* You can **eject** from Expo
+* Ejecting generates the underlying Android and iOS projects
+* This process will be covered later in the course
+
+## Option 2: React Native CLI
+
+### What Is React Native CLI?
+
+* The standard command-line interface for React Native
+* Creates a project that includes native platform code
+
+### Project Structure with React Native CLI
+
+* Separate folders for:
+
+  * Android (native Android project)
+  * iOS (native iOS project)
+* JavaScript code shared across both platforms
+
+### Who Is This For?
+
+* Developers with:
+
+  * iOS development experience
+  * Android development experience
+* Those who need full control over native APIs and components
+
+## Course Decision
+
+* The course assumes **no prior mobile development experience**
+* Expo will be used throughout the course
+* Focus is on building a complete, real-world app using Expo
+
+## What’s Next
+
+* The next lecture will cover:
+
+  * Setting up the React Native development environment
