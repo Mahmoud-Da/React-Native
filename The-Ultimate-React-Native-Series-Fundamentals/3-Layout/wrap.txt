@@ -2711,3 +2711,273 @@ If you want next:
 * `ViewImageScreen.js`
 * A **diagram of primary vs cross axis**
 * Or refactor this to use reusable Button components
+
+
+*** 12- Building the View Image Screen ***
+---
+
+## ViewImageScreen – Displaying and Styling an Image in React Native
+
+### 1. Creating the Screen Component
+
+* Inside the `screens` folder, create a new file:
+
+  -------------------code----------------------
+  view-image-screen.js
+  -------------------code----------------------
+* Create a **function component** named `ViewImageScreen`.
+
+---
+
+### 2. Rendering an Image
+
+* Import the `Image` component.
+* Load the image using `require` from the `assets` folder (`chair.jpg`).
+
+-------------------code----------------------
+import React from "react";
+import { Image } from "react-native";
+
+function ViewImageScreen() {
+  return (
+    <Image source={require("../assets/chair.jpg")} />
+  );
+}
+
+export default ViewImageScreen;
+-------------------code----------------------
+
+---
+
+### 3. Testing the Screen
+
+* Open `App.js`
+* Render `ViewImageScreen`
+
+-------------------code----------------------
+import ViewImageScreen from "./screens/view-image-screen";
+
+export default function App() {
+  return <ViewImageScreen />;
+}
+-------------------code----------------------
+
+* Result: a whitish screen appears because the image is **larger than the screen**.
+
+---
+
+### 4. Styling the Image
+
+#### 4.1 Creating a Stylesheet
+
+* Import `StyleSheet`
+* Create a `styles` object
+
+-------------------code----------------------
+import React from "react";
+import { Image, StyleSheet } from "react-native";
+
+function ViewImageScreen() {
+  return (
+    <Image
+      source={require("../assets/chair.jpg")}
+      style={styles.image}
+    />
+  );
+}
+
+const styles = StyleSheet.create({
+  image: {
+    width: "100%",
+    height: "100%",
+  },
+});
+
+export default ViewImageScreen;
+-------------------code----------------------
+
+* The image now fills the screen.
+* Problem: **edges of the image are cut off**.
+
+---
+
+### 5. Fixing Image Cropping with `resizeMode`
+
+* The default resize mode causes cropping.
+* Set `resizeMode` to `contain`.
+
+-------------------code----------------------
+<Image
+  source={require("../assets/chair.jpg")}
+  style={styles.image}
+  resizeMode="contain"
+/>
+-------------------code----------------------
+
+* The image now fits perfectly.
+* New issue: **white background is visible**.
+
+---
+
+### 6. Adding a Container View
+
+* Wrap the image inside a `View`.
+* This container will control the background.
+
+-------------------code----------------------
+import React from "react";
+import { View, Image, StyleSheet } from "react-native";
+
+function ViewImageScreen() {
+  return (
+    <View style={styles.container}>
+      <Image
+        source={require("../assets/chair.jpg")}
+        style={styles.image}
+        resizeMode="contain"
+      />
+    </View>
+  );
+}
+-------------------code----------------------
+
+---
+
+### 7. Container Styling
+
+* Use `flex: 1` to fill the screen.
+* Set background color to black.
+* Styles are sorted alphabetically for maintainability.
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: "black",
+    flex: 1,
+  },
+  image: {
+    height: "100%",
+    width: "100%",
+  },
+});
+-------------------code----------------------
+
+---
+
+### 8. Adding a Close Icon Placeholder
+
+* Add another `View` inside the container.
+* This will represent a close button placeholder.
+
+-------------------code----------------------
+<View style={styles.closeIcon} />
+-------------------code----------------------
+
+#### Styles
+
+-------------------code----------------------
+closeIcon: {
+  backgroundColor: "#FC5C65",
+  height: 50,
+  width: 50,
+}
+-------------------code----------------------
+
+* The icon appears, but its position is not correct.
+
+---
+
+### 9. Positioning with Absolute Layout
+
+* Use `position: "absolute"` to place the icon relative to the container.
+* Position it:
+
+  * 40 pixels from the top
+  * 30 pixels from the left
+
+-------------------code----------------------
+closeIcon: {
+  backgroundColor: "#FC5C65",
+  height: 50,
+  left: 30,
+  position: "absolute",
+  top: 40,
+  width: 50,
+}
+-------------------code----------------------
+
+---
+
+### 10. Adding a Delete Icon Placeholder
+
+* Duplicate the close icon view.
+* Rename it to `deleteIcon`.
+
+-------------------code----------------------
+<View style={styles.deleteIcon} />
+-------------------code----------------------
+
+#### Styles
+
+-------------------code----------------------
+deleteIcon: {
+  backgroundColor: "#4ECDC4",
+  height: 50,
+  position: "absolute",
+  right: 30,
+  top: 40,
+  width: 50,
+}
+-------------------code----------------------
+
+* Note: Code duplication is temporary and will be refactored later.
+
+---
+
+### 11. Final Styles Object
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  closeIcon: {
+    backgroundColor: "#FC5C65",
+    height: 50,
+    left: 30,
+    position: "absolute",
+    top: 40,
+    width: 50,
+  },
+  container: {
+    backgroundColor: "black",
+    flex: 1,
+  },
+  deleteIcon: {
+    backgroundColor: "#4ECDC4",
+    height: 50,
+    position: "absolute",
+    right: 30,
+    top: 40,
+    width: 50,
+  },
+  image: {
+    height: "100%",
+    width: "100%",
+  },
+});
+-------------------code----------------------
+
+---
+
+### 12. Notes on Best Practices
+
+* Sorting style properties alphabetically improves readability.
+* ESLint can automate this, but it was disabled in the course to reduce friction.
+* Placeholder views will later be replaced with real icon components.
+* Code refactoring will be done in later stages of the course.
+
+---
+
+If you want, I can also:
+
+* Refactor this using reusable icon components
+* Replace placeholders with vector icons
+* Convert this into a production-ready screen structure
