@@ -2763,3 +2763,309 @@ const styles = StyleSheet.create({
 * This approach adds extra boilerplate.
 * The most important rule is **consistency** across the project.
 * Choose the structure that best fits your team and project size.
+
+*** 11- Building the Button Component ***
+## 1. Goal of the Exercise
+
+Create a **reusable custom button component** in React Native that:
+
+* Has a styled background and text
+* Accepts a `title` prop
+* Responds to tap events
+* Can be reused across the app (e.g., Login button)
+
+---
+
+## 2. Creating the Button Component File
+
+### Step 1: Create the file
+
+* Inside the `components` folder, create a new file:
+
+  -------------------code----------------------
+  AppButton.js
+  -------------------code----------------------
+
+### Step 2: Create a functional component
+
+We start with a simple functional component.
+
+-------------------code----------------------
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+
+function AppButton() {
+  return (
+    <View>
+      <Text>Button</Text>
+    </View>
+  );
+}
+
+export default AppButton;
+-------------------code----------------------
+
+---
+
+## 3. Styling the Button Container
+
+### Step 3: Import StyleSheet and define styles
+
+We want:
+
+* Primary background color
+* Rounded corners
+* Centered content
+* Padding
+* Full width
+
+-------------------code----------------------
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import colors from '../config/colors';
+
+function AppButton() {
+  return (
+    <View style={styles.button}>
+      <Text>Button</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  button: {
+    backgroundColor: colors.primary,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 15,
+    width: '100%',
+  },
+});
+
+export default AppButton;
+-------------------code----------------------
+
+---
+
+## 4. Using a Centralized Color Palette
+
+### Step 4: Define colors in a single file
+
+Inside `config/colors.js`:
+
+-------------------code----------------------
+export default {
+  primary: '#fc5c65',
+  black: '#000',
+  white: '#fff',
+};
+-------------------code----------------------
+
+**Why this matters**
+
+* Easy theme changes
+* Consistent colors
+* Cleaner components
+
+---
+
+## 5. Adding Dynamic Button Text
+
+### Step 5: Accept a `title` prop
+
+The button text should be configurable by the component consumer.
+
+-------------------code----------------------
+function AppButton({ title }) {
+  return (
+    <View style={styles.button}>
+      <Text style={styles.text}>{title}</Text>
+    </View>
+  );
+}
+-------------------code----------------------
+
+---
+
+## 6. Styling the Button Text
+
+### Step 6: Add text styles
+
+We want:
+
+* White text
+* Larger font
+* Bold
+* Uppercase
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  button: {
+    backgroundColor: colors.primary,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 15,
+    width: '100%',
+  },
+  text: {
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+  },
+});
+-------------------code----------------------
+
+---
+
+## 7. Avoiding Naming Conflicts
+
+### Step 7: Rename the component
+
+React Native already has a `Button` component.
+
+* Rename:
+
+  * Component → `AppButton`
+  * File → `AppButton.js`
+
+This avoids confusion and naming collisions.
+
+---
+
+## 8. Using the Button in App.js
+
+### Step 8: Render the button
+
+-------------------code----------------------
+import React from 'react';
+import { View } from 'react-native';
+import AppButton from './components/AppButton';
+
+export default function App() {
+  return (
+    <View>
+      <AppButton title="Login" />
+    </View>
+  );
+}
+-------------------code----------------------
+
+---
+
+## 9. Making the Button Touchable
+
+### Step 9: Add touch support
+
+Buttons must respond to user interaction.
+
+* Replace `View` with `TouchableOpacity`
+
+-------------------code----------------------
+import React from 'react';
+import { Text, StyleSheet, TouchableOpacity } from 'react-native';
+import colors from '../config/colors';
+
+function AppButton({ title }) {
+  return (
+    <TouchableOpacity style={styles.button}>
+      <Text style={styles.text}>{title}</Text>
+    </TouchableOpacity>
+  );
+}
+-------------------code----------------------
+
+Now the button gives visual feedback when tapped.
+
+---
+
+## 10. Handling Press Events
+
+### Step 10: Add `onPress` support
+
+We want the press logic to come from outside the component.
+
+-------------------code----------------------
+function AppButton({ title, onPress }) {
+  return (
+    <TouchableOpacity style={styles.button} onPress={onPress}>
+      <Text style={styles.text}>{title}</Text>
+    </TouchableOpacity>
+  );
+}
+-------------------code----------------------
+
+### Step 11: Test the press event in App.js
+
+-------------------code----------------------
+<AppButton
+  title="Login"
+  onPress={() => console.log('Tapped')}
+/>
+-------------------code----------------------
+
+Check the terminal to confirm the event fires.
+
+---
+
+## 11. Full Final Code
+
+### AppButton.js
+
+-------------------code----------------------
+import React from 'react';
+import { Text, StyleSheet, TouchableOpacity } from 'react-native';
+import colors from '../config/colors';
+
+function AppButton({ title, onPress }) {
+  return (
+    <TouchableOpacity style={styles.button} onPress={onPress}>
+      <Text style={styles.text}>{title}</Text>
+    </TouchableOpacity>
+  );
+}
+
+const styles = StyleSheet.create({
+  button: {
+    backgroundColor: colors.primary,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 15,
+    width: '100%',
+  },
+  text: {
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+  },
+});
+
+export default AppButton;
+-------------------code----------------------
+
+---
+
+## 12. Important Notes & Best Practices
+
+* Keep reusable components in **single files** to avoid deep import paths.
+* Use a **centralized colors config** for maintainability.
+* Always pass event handlers (`onPress`) from outside.
+* Prefer `TouchableOpacity` for simple buttons with visual feedback.
+* Avoid naming components the same as built-in React Native components.
+
+---
+
+## 13. Summary
+
+* Built a reusable custom button component
+* Styled container and text cleanly
+* Centralized colors for consistency
+* Added tap interaction using `TouchableOpacity`
+* Passed `title` and `onPress` as props
+* Created a production-ready button usable across the app
+
+This button is now ready to be reused on screens like Login, Welcome, or Signup.

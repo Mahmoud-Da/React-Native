@@ -1,11 +1,11 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
-import AppText from "./app/components/AppText";
+import AppButton from './components/AppButton';
 
 export default function App() {
   return (
     <View style={styles.container}>
-      <AppText>I love React Native</AppText>
+      <AppButton title="Login" />
     </View>
   );
 }
