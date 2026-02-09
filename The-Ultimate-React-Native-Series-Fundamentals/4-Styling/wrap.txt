@@ -3979,3 +3979,342 @@ export default ListingDetailsScreen;
 * Applied clean, readable typography
 
 The screen layout is complete and ready for adding seller information and navigation logic next.
+
+*** 15- Building the ListItem Component ***
+# Listing Details Screen — Adding Seller Information (Reusable ListItem Component)
+
+---
+
+## 1. Goal of This Lecture
+
+Enhance the **Listing Details Screen** by displaying information about the person who posted the listing.
+
+We will:
+
+* Build a reusable `ListItem` component
+* Display an image, title, and subtitle horizontally
+* Keep it generic for reuse in different contexts
+* Add spacing properly at the screen level (not inside the reusable component)
+
+---
+
+## 2. Using the ListItem Component in the Screen
+
+We want to display seller information under the listing price.
+
+### Step 1: Use `ListItem` inside `ListingDetailsScreen`
+
+-------------------code----------------------
+<ListItem
+  image={require('../assets/mosh.jpg')}
+  title="Mosh Hamedani"
+  subtitle="5 Listings"
+/>
+-------------------code----------------------
+
+### Important
+
+* Use `require()` here (not inside ListItem)
+* Keep prop names generic: `title`, `subtitle`, `image`
+* This keeps the component reusable
+
+---
+
+## 3. Creating the ListItem Component
+
+### Step 2: Create `ListItem.js` in the components folder
+
+-------------------code----------------------
+import React from 'react';
+import { View, Image, StyleSheet } from 'react-native';
+import AppText from './AppText';
+
+function ListItem({ title, subtitle, image }) {
+  return (
+    <View style={styles.container}>
+      <Image source={image} style={styles.image} />
+
+      <View>
+        <AppText style={styles.title}>{title}</AppText>
+        <AppText style={styles.subtitle}>{subtitle}</AppText>
+      </View>
+    </View>
+  );
+}
+
+export default ListItem;
+-------------------code----------------------
+
+---
+
+## 4. Layout Structure
+
+### Why two containers?
+
+* Outer container → `flexDirection: 'row'` (horizontal layout)
+* Inner container → default `column` layout (vertical stacking of texts)
+
+This pattern is very common in mobile UI.
+
+---
+
+## 5. Styling the Container
+
+### Step 3: Add styles
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+  },
+});
+-------------------code----------------------
+
+This aligns image and text horizontally.
+
+---
+
+## 6. Styling the Image
+
+### Step 4: Add image styles
+
+-------------------code----------------------
+image: {
+  width: 70,
+  height: 70,
+  borderRadius: 35,
+  marginRight: 10,
+},
+-------------------code----------------------
+
+### Explanation
+
+* Width & height → creates square
+* Border radius = half width → creates circle
+* marginRight → space between image and text
+
+---
+
+## 7. Styling the Title
+
+### Step 5: Add title style
+
+-------------------code----------------------
+title: {
+  fontWeight: '500',
+},
+-------------------code----------------------
+
+Makes the title slightly stronger.
+
+---
+
+## 8. Styling the Subtitle
+
+### Step 6: Add subtitle style
+
+Instead of hardcoding color, define it in the palette.
+
+#### Add in `colors.js`
+
+-------------------code----------------------
+export default {
+  primary: '#fc5c65',
+  secondary: '#4ecdc4',
+  white: '#fff',
+  black: '#000',
+  medium: '#6e6969',
+};
+-------------------code----------------------
+
+#### Import and use in `ListItem.js`
+
+-------------------code----------------------
+import colors from '../config/colors';
+
+subtitle: {
+  color: colors.medium,
+},
+-------------------code----------------------
+
+This ensures:
+
+* Clean separation between title and subtitle
+* Centralized color management
+
+---
+
+## 9. Adding Vertical Spacing (Correct Way)
+
+We need space between listing details and seller info.
+
+### Important Design Decision
+
+Do NOT add margin inside `ListItem`.
+
+Why?
+
+* It is a reusable component.
+* Spacing may not be appropriate everywhere.
+
+Spacing specific to this screen must be handled in the screen.
+
+---
+
+### Step 7: Wrap ListItem in a container inside ListingDetailsScreen
+
+-------------------code----------------------
+<View style={styles.userContainer}>
+  <ListItem
+    image={require('../assets/mosh.jpg')}
+    title="Mosh Hamedani"
+    subtitle="5 Listings"
+  />
+</View>
+-------------------code----------------------
+
+### Step 8: Add spacing style
+
+-------------------code----------------------
+userContainer: {
+  marginVertical: 40,
+},
+-------------------code----------------------
+
+---
+
+# Full Final Code
+
+---
+
+## ListItem.js
+
+-------------------code----------------------
+import React from 'react';
+import { View, Image, StyleSheet } from 'react-native';
+import AppText from './AppText';
+import colors from '../config/colors';
+
+function ListItem({ title, subtitle, image }) {
+  return (
+    <View style={styles.container}>
+      <Image source={image} style={styles.image} />
+
+      <View>
+        <AppText style={styles.title}>{title}</AppText>
+        <AppText style={styles.subtitle}>{subtitle}</AppText>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+  },
+  image: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    marginRight: 10,
+  },
+  title: {
+    fontWeight: '500',
+  },
+  subtitle: {
+    color: colors.medium,
+  },
+});
+
+export default ListItem;
+-------------------code----------------------
+
+---
+
+## Updated ListingDetailsScreen.js
+
+-------------------code----------------------
+import React from 'react';
+import { View, Image, StyleSheet } from 'react-native';
+import AppText from '../components/AppText';
+import ListItem from '../components/ListItem';
+import colors from '../config/colors';
+
+function ListingDetailsScreen() {
+  return (
+    <View>
+      <Image
+        source={require('../assets/jacket.jpg')}
+        style={styles.image}
+      />
+
+      <View style={styles.detailsContainer}>
+        <AppText style={styles.title}>
+          Red jacket for sale
+        </AppText>
+
+        <AppText style={styles.price}>
+          $100
+        </AppText>
+      </View>
+
+      <View style={styles.userContainer}>
+        <ListItem
+          image={require('../assets/mosh.jpg')}
+          title="Mosh Hamedani"
+          subtitle="5 Listings"
+        />
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  image: {
+    width: '100%',
+    height: 300,
+  },
+  detailsContainer: {
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '500',
+  },
+  price: {
+    color: colors.secondary,
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginVertical: 10,
+  },
+  userContainer: {
+    marginVertical: 40,
+  },
+});
+
+export default ListingDetailsScreen;
+-------------------code----------------------
+
+---
+
+# Important Best Practices
+
+1. Keep reusable components generic
+2. Avoid hardcoded colors
+3. Handle layout-specific spacing in the screen
+4. Use nested containers for row/column control
+5. Keep component responsibilities small and clear
+
+---
+
+# Summary
+
+In this lecture, you:
+
+* Built a reusable `ListItem` component
+* Used horizontal layout with `flexDirection: 'row'`
+* Styled circular images properly
+* Centralized color management
+* Handled spacing at the correct architectural level
+
+Now your Listing Details screen looks complete and professionally structured.
