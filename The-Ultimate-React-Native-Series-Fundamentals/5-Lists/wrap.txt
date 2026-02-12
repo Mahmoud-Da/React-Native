@@ -2270,3 +2270,234 @@ React Hook rules and reasoning
 Layout correction using flex
 
 Next logical step: connecting refresh to a backend API.
+
+*** 10- Planning the Account Screen ***
+# Planning the My Account Screen
+
+In this lecture, we plan how to build the **My Account** screen and define the development strategy step by step.
+
+The focus is not just on implementation, but on thinking like a software engineer:
+Break complex UI into small, reusable building blocks.
+
+---
+
+# 1. Understanding the Target Layout
+
+The **My Account** screen will contain:
+
+1. A single list item at the top (user profile)
+2. A group of menu items in the middle (inside a FlatList)
+3. A single list item at the bottom (e.g., logout)
+
+So the structure is:
+
+* Independent List Item (top)
+* FlatList (middle section)
+* Independent List Item (bottom)
+
+---
+
+# 2. Two Possible Implementation Approaches
+
+## Option 1 — Use SectionList
+
+React Native provides `SectionList`, which:
+
+* Supports section headers
+* Supports section separators
+* Has all FlatList features
+
+Example structure:
+
+-------------------code----------------------
+<SectionList
+  sections={[
+    { title: "Profile", data: [...] },
+    { title: "Menu", data: [...] },
+    { title: "Logout", data: [...] },
+  ]}
+  renderItem={...}
+  renderSectionHeader={...}
+/>
+-------------------code----------------------
+
+Why not use it?
+
+* Overkill for a simple layout
+* Adds unnecessary complexity
+* Harder to customize spacing exactly like the design
+
+---
+
+## Option 2 — Simpler and More Flexible (Chosen Approach)
+
+We will:
+
+1. Render a ListItem manually (top)
+2. Wrap it inside a container with margin
+3. Render a FlatList (middle section)
+4. Wrap it inside another container with margin
+5. Render one more independent ListItem (bottom)
+
+This gives:
+
+* More control over spacing
+* Simpler logic
+* Easier customization
+
+---
+
+# 3. Final Screen Structure (Conceptual)
+
+-------------------code----------------------
+<Screen>
+
+  <View style={styles.container}>
+    <ListItem />
+  </View>
+
+  <View style={styles.container}>
+    <FlatList />
+  </View>
+
+  <ListItem />
+
+</Screen>
+-------------------code----------------------
+
+So we are mixing:
+
+* Standalone components
+* A FlatList in the middle
+
+---
+
+# 4. Development Strategy (Step-by-Step Plan)
+
+Instead of building the full screen immediately, we will:
+
+## Step 1 — Build a Reusable Icon Component
+
+We need an icon that looks like:
+
+* Colored background
+* Rounded shape
+* Icon centered inside
+
+This will be reusable across the app.
+
+---
+
+## Step 2 — Extend ListItem
+
+Currently, `ListItem` only supports:
+
+* image
+* title
+* subtitle
+
+We will extend it to support:
+
+* icon
+* custom icon background color
+
+So it can render:
+
+Either an image
+Or an icon
+
+This makes `ListItem` more flexible.
+
+---
+
+## Step 3 — Build the MyAccountScreen
+
+Once we have:
+
+* Reusable Icon component
+* Extended ListItem
+
+We combine everything to build:
+
+* Profile section
+* Menu section
+* Logout item
+
+---
+
+# 5. Why This Approach Is Important
+
+This lecture emphasizes an important mindset:
+
+## Always Build in Small Steps
+
+Instead of:
+
+Building everything at once
+
+We:
+
+1. Identify reusable components
+2. Build them independently
+3. Test them
+4. Combine them
+
+---
+
+# 6. Engineering Mindset
+
+Good software development means:
+
+* Divide complex UI into small parts
+* Build and test each part
+* Make components reusable
+* Avoid duplication
+* Keep screens clean and simple
+
+This is how scalable apps are built.
+
+---
+
+# 7. Key Design Decisions
+
+* Avoid SectionList for simple layout
+* Use containers with margin for spacing
+* Separate UI building blocks from screen logic
+* Build reusable components first
+
+---
+
+# 8. What Comes Next
+
+Next step:
+
+Build a reusable Icon component that:
+
+* Accepts icon name
+* Accepts background color
+* Has consistent size
+* Centers the icon properly
+
+After that:
+
+Extend ListItem to support icons.
+
+---
+
+# Summary
+
+In this lecture, we:
+
+* Analyzed the My Account screen layout
+* Compared SectionList vs custom structure
+* Chose a simpler and more flexible approach
+* Planned development in small steps
+* Identified reusable components to build first
+* Learned the importance of incremental development
+
+Core takeaway:
+
+Break large UI into small reusable pieces.
+Build, test, then combine.
+
+This mindset leads to clean, scalable applications.
