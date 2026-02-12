@@ -22,6 +22,7 @@ const initialMessages = [
 
 function MessagesScreen() {
   const [messages, setMessages] = useState(initialMessages);
+  const [refreshing, setRefreshing] = useState(false);
 
   const handleDelete = (message) => {
     setMessages(messages.filter(m => m.id !== message.id));
@@ -32,6 +33,10 @@ function MessagesScreen() {
       <FlatList
         data={messages}
         keyExtractor={(message) => message.id.toString()}
+        refreshing={refreshing}
+        onRefresh={() => {
+          setMessages([initialMessages[1]]);
+        }}
         renderItem={({ item }) => (
           <ListItem
             title={item.title}
