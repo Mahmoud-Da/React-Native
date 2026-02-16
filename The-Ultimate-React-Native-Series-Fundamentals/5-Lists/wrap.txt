@@ -3556,3 +3556,498 @@ export default function App() {
 -------------------code----------------------
 
 ---
+
+*** 13- Building the Account Screen ***
+# Building the Account Screen in React Native – Clean Structured Notes
+
+This lecture combines all previously built components to create the **Account Screen** using:
+
+* Screen component
+* ListItem component
+* Icon component
+* FlatList
+* ListItemSeparator
+
+---
+
+# 1. Goal of the Account Screen
+
+We want to build a screen with 3 sections:
+
+1. User profile (image, name, email)
+2. Menu list (FlatList with icons)
+3. Logout button
+
+Structure:
+
+-------------------code----------------------
+Screen
+ ├── Profile ListItem
+ ├── FlatList (menu items)
+ └── Logout ListItem
+-------------------code----------------------
+
+---
+
+# 2. Step 1 – Create AccountScreen file
+
+Create:
+
+-------------------code----------------------
+app/screens/AccountScreen.js
+-------------------code----------------------
+
+Import dependencies:
+
+-------------------code----------------------
+import React from "react";
+import { View, FlatList, StyleSheet } from "react-native";
+
+import Screen from "../components/Screen";
+import ListItem from "../components/ListItem";
+import Icon from "../components/Icon";
+import ListItemSeparator from "../components/ListItemSeparator";
+
+import colors from "../config/colors";
+-------------------code----------------------
+
+---
+
+# 3. Step 2 – Create Menu Items Data
+
+Create menuItems array outside component.
+
+Why outside?
+
+Because if inside, it recreates on every render (bad for performance).
+
+-------------------code----------------------
+const menuItems = [
+  {
+    title: "My Listings",
+    icon: {
+      name: "format-list-bulleted",
+      backgroundColor: colors.primary,
+    },
+  },
+  {
+    title: "My Messages",
+    icon: {
+      name: "email",
+      backgroundColor: colors.secondary,
+    },
+  },
+];
+-------------------code----------------------
+
+---
+
+# 4. Step 3 – Create Basic AccountScreen Layout
+
+Start component:
+
+-------------------code----------------------
+function AccountScreen() {
+  return (
+    <Screen style={styles.screen}>
+
+    </Screen>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 5. Step 4 – Add Profile List Item
+
+Add user info at top:
+
+-------------------code----------------------
+<ListItem
+  title="Mosh Hamedani"
+  subtitle="mosh@email.com"
+  image={require("../assets/mosh.jpg")}
+/>
+-------------------code----------------------
+
+---
+
+# 6. Step 5 – Create Container Styling
+
+We want spacing between sections.
+
+Create container:
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+
+  screen: {
+    backgroundColor: colors.light,
+  },
+
+  container: {
+    marginVertical: 20,
+  },
+
+});
+-------------------code----------------------
+
+Use container:
+
+-------------------code----------------------
+<View style={styles.container}>
+
+   ListItem here
+
+</View>
+-------------------code----------------------
+
+---
+
+# 7. Step 6 – Add FlatList Menu
+
+Inside second container:
+
+-------------------code----------------------
+<View style={styles.container}>
+
+  <FlatList
+    data={menuItems}
+
+    keyExtractor={(item) => item.title}
+
+    renderItem={({ item }) => (
+
+      <ListItem
+        title={item.title}
+
+        iconComponent={
+          <Icon
+            name={item.icon.name}
+            backgroundColor={item.icon.backgroundColor}
+          />
+        }
+
+      />
+
+    )}
+
+  />
+
+</View>
+-------------------code----------------------
+
+---
+
+# 8. Step 7 – Add Separator Between Items
+
+Add:
+
+-------------------code----------------------
+ItemSeparatorComponent={ListItemSeparator}
+-------------------code----------------------
+
+Final FlatList:
+
+-------------------code----------------------
+<FlatList
+  data={menuItems}
+
+  keyExtractor={(item) => item.title}
+
+  renderItem={({ item }) => (
+
+    <ListItem
+      title={item.title}
+
+      iconComponent={
+        <Icon
+          name={item.icon.name}
+          backgroundColor={item.icon.backgroundColor}
+        />
+      }
+
+    />
+
+  )}
+
+  ItemSeparatorComponent={ListItemSeparator}
+
+/>
+-------------------code----------------------
+
+---
+
+# 9. Step 8 – Add Logout Button
+
+Below FlatList:
+
+-------------------code----------------------
+<ListItem
+  title="Logout"
+
+  iconComponent={
+    <Icon
+      name="logout"
+      backgroundColor="#FFE66D"
+    />
+  }
+
+/>
+-------------------code----------------------
+
+Note:
+
+Logout color is hardcoded because:
+
+* It belongs only to this screen
+* Not part of global color palette
+
+---
+
+# 10. Step 9 – Fix Screen Component to Accept Style
+
+Your Screen component must support style prop.
+
+Update Screen.js:
+
+Before:
+
+-------------------code----------------------
+<View style={styles.screen}>
+-------------------code----------------------
+
+After:
+
+-------------------code----------------------
+function Screen({ children, style }) {
+
+  return (
+    <View style={[styles.screen, style]}>
+      {children}
+    </View>
+  );
+
+}
+-------------------code----------------------
+
+---
+
+# 11. Step 10 – Fix ListItem Background
+
+To make items visible:
+
+ListItem.js
+
+-------------------code----------------------
+container: {
+  flexDirection: "row",
+  padding: 15,
+  backgroundColor: colors.white,
+},
+-------------------code----------------------
+
+---
+
+# 12. Best Practices
+
+---
+
+## Best Practice 1
+
+Always create FlatList data outside component
+
+Wrong:
+
+-------------------code----------------------
+function Screen(){
+const data = []
+}
+-------------------code----------------------
+
+Correct:
+
+-------------------code----------------------
+const data = []
+
+function Screen(){}
+-------------------code----------------------
+
+---
+
+## Best Practice 2
+
+Always use keyExtractor
+
+Bad performance without it.
+
+---
+
+## Best Practice 3
+
+Use reusable components
+
+Icon
+ListItem
+Screen
+
+This improves scalability.
+
+---
+
+## Best Practice 4
+
+Use style arrays
+
+-------------------code----------------------
+style={[styles.screen, style]}
+-------------------code----------------------
+
+---
+
+## Best Practice 5
+
+Separate sections using containers
+
+Improves UI clarity.
+
+---
+
+# 13. Full Final Code
+
+---
+
+# AccountScreen.js
+
+-------------------code----------------------
+import React from "react";
+import { View, FlatList, StyleSheet } from "react-native";
+
+import Screen from "../components/Screen";
+import ListItem from "../components/ListItem";
+import Icon from "../components/Icon";
+import ListItemSeparator from "../components/ListItemSeparator";
+
+import colors from "../config/colors";
+
+const menuItems = [
+
+  {
+    title: "My Listings",
+    icon: {
+      name: "format-list-bulleted",
+      backgroundColor: colors.primary,
+    },
+  },
+
+  {
+    title: "My Messages",
+    icon: {
+      name: "email",
+      backgroundColor: colors.secondary,
+    },
+  },
+
+];
+
+function AccountScreen() {
+
+  return (
+
+    <Screen style={styles.screen}>
+      <View style={styles.container}>
+        <ListItem
+          title="Mosh Hamedani"
+          subtitle="mosh@email.com"
+          image={require("../assets/mosh.jpg")}
+        />
+      </View>
+
+      <View style={styles.container}>
+        <FlatList
+          data={menuItems}
+          keyExtractor={(item) => item.title}
+          renderItem={({ item }) => (
+            <ListItem
+              title={item.title}
+              iconComponent={
+                <Icon
+                  name={item.icon.name}
+                  backgroundColor={item.icon.backgroundColor}
+                />
+              }
+            />
+          )}
+          ItemSeparatorComponent={ListItemSeparator}
+        />
+      </View>
+
+
+      <ListItem
+        title="Logout"
+        iconComponent={
+          <Icon
+            name="logout"
+            backgroundColor="#FFE66D"
+          />
+        }
+      />
+    </Screen>
+  );
+}
+
+
+const styles = StyleSheet.create({
+
+  screen: {
+    backgroundColor: colors.light,
+  },
+
+  container: {
+    marginVertical: 20,
+  },
+
+});
+
+export default AccountScreen;
+-------------------code----------------------
+
+
+App.js
+-------------------code----------------------
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import AccountScreen from "./app/screens/AccountScreen.js";
+
+export default function App() {
+  return (<GestureHandlerRootView style={{ flex: 1 }}>
+    <AccountScreen />
+  </GestureHandlerRootView>)
+}
+-------------------code----------------------
+---
+
+# 14. Final Result
+
+You now have:
+Profile section
+Menu list
+Logout button
+Professional layout
+Reusable components
+Production-level structure
+
+---
+
+# 15. Summary
+
+This lecture taught:
+
+How to build full Account Screen
+How to use FlatList
+How to pass Icon component as prop
+How to structure screen sections
+How to use separator
+How to apply reusable components
+How to design scalable UI
+
+---
