@@ -662,3 +662,462 @@ Important props include maxLength, keyboardType, clearButtonMode, secureTextEntr
 Component re-renders automatically when state changes.
 
 ---
+
+*** 3- Building a Pretty TextInput ***
+# Building a Custom Cross-Platform Text Input in React Native
+
+## 1. Introduction
+
+Almost every app needs text input fields (username, email, password, etc.). The default React Native `TextInput` works, but it looks different on iOS and Android and is not visually appealing.
+
+In this lesson, we build a reusable custom component called `AppTextInput` that:
+
+* Looks consistent on both platforms
+* Supports icons
+* Supports placeholders and other props
+* Uses custom styling
+
+---
+
+# 2. Step 1: Create the Component File
+
+Create a new file:
+
+-------------------code----------------------
+components/AppTextInput.js
+-------------------code----------------------
+
+Start with a basic functional component.
+
+### Code
+
+-------------------code----------------------
+import React from "react";
+import { View } from "react-native";
+
+function AppTextInput() {
+  return <View />;
+}
+
+export default AppTextInput;
+-------------------code----------------------
+
+This creates the foundation.
+
+---
+
+# 3. Step 2: Add Icon and TextInput
+
+We need:
+
+* Container View
+* Icon
+* TextInput field
+
+Import required components.
+
+### Code
+
+-------------------code----------------------
+import React from "react";
+import { View, TextInput } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+-------------------code----------------------
+
+Add them inside the component:
+
+-------------------code----------------------
+function AppTextInput() {
+  return (
+    <View>
+      <MaterialCommunityIcons name="email" />
+      <TextInput />
+    </View>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 4. Step 3: Add Container Styling
+
+We want:
+
+* Light gray background
+* Rounded corners
+* Horizontal layout
+* Padding and spacing
+
+Import colors:
+
+-------------------code----------------------
+import colors from "../config/colors";
+-------------------code----------------------
+
+Create styles:
+
+-------------------code----------------------
+import { StyleSheet } from "react-native";
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: colors.light,
+    borderRadius: 25,
+    flexDirection: "row",
+    width: "100%",
+    padding: 15,
+    marginVertical: 10,
+  },
+});
+-------------------code----------------------
+
+Apply style:
+
+-------------------code----------------------
+<View style={styles.container}>
+-------------------code----------------------
+
+---
+
+# 5. Step 4: Make Icon Dynamic (Using Props)
+
+We want to pass icon name from outside.
+
+Update component:
+
+-------------------code----------------------
+function AppTextInput({ icon }) {
+-------------------code----------------------
+
+Render icon conditionally:
+
+-------------------code----------------------
+{icon && <MaterialCommunityIcons name={icon} />}
+-------------------code----------------------
+
+This means:
+
+Icon only appears if provided.
+
+---
+
+# 6. Step 5: Style TextInput
+
+Create style:
+
+-------------------code----------------------
+textInput: {
+  fontSize: 18,
+}
+-------------------code----------------------
+
+Apply style:
+
+-------------------code----------------------
+<TextInput style={styles.textInput} />
+-------------------code----------------------
+
+---
+
+# 7. Step 6: Support All TextInput Props (Important Step)
+
+Problem:
+
+Placeholder does not work yet.
+
+Solution:
+
+Use rest operator.
+
+### Update component props
+
+-------------------code----------------------
+function AppTextInput({ icon, ...otherProps }) {
+-------------------code----------------------
+
+Apply props:
+
+-------------------code----------------------
+<TextInput style={styles.textInput} {...otherProps} />
+-------------------code----------------------
+
+Now it supports:
+
+* placeholder
+* keyboardType
+* secureTextEntry
+* etc
+
+Example usage:
+
+-------------------code----------------------
+<AppTextInput placeholder="Email" />
+-------------------code----------------------
+
+---
+
+# 8. Step 7: Improve Icon Design
+
+Problems:
+
+* Small
+* Too dark
+* Too close
+
+Fix:
+
+-------------------code----------------------
+<MaterialCommunityIcons
+  name={icon}
+  size={20}
+  color={colors.medium}
+  style={styles.icon}
+/>
+-------------------code----------------------
+
+Add style:
+
+-------------------code----------------------
+icon: {
+  marginRight: 10,
+},
+-------------------code----------------------
+
+---
+
+# 9. Step 8: Change Text Color
+
+Default text color is pure black.
+
+Better to use dark gray.
+
+Add to colors.js:
+
+-------------------code----------------------
+dark: "#0c0c0c"
+-------------------code----------------------
+
+Apply:
+
+-------------------code----------------------
+textInput: {
+  fontSize: 18,
+  color: colors.dark,
+}
+-------------------code----------------------
+
+---
+
+# 10. Step 9: Use Platform-Specific Font
+
+To support iOS and Android fonts:
+
+Import Platform:
+
+-------------------code----------------------
+import { Platform } from "react-native";
+-------------------code----------------------
+
+Apply:
+
+-------------------code----------------------
+textInput: {
+  fontSize: 18,
+  color: colors.dark,
+  ...Platform.select({
+    ios: {
+      fontFamily: "Avenir",
+    },
+    android: {
+      fontFamily: "Roboto",
+    },
+  }),
+},
+-------------------code----------------------
+
+---
+
+# 11. Step 10: Use Component in App.js
+
+Example:
+
+-------------------code----------------------
+import AppTextInput from "./components/AppTextInput";
+
+<AppTextInput
+  icon="email"
+  placeholder="Email"
+/>
+-------------------code----------------------
+
+---
+
+# 12. Full Final Code
+
+## components/AppTextInput.js
+
+-------------------code----------------------
+import React from "react";
+import { View, TextInput, StyleSheet, Platform } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import colors from "../config/colors";
+
+function AppTextInput({ icon, ...otherProps }) {
+  return (
+    <View style={styles.container}>
+
+      {icon && (
+        <MaterialCommunityIcons
+          name={icon}
+          size={20}
+          color={colors.medium}
+          style={styles.icon}
+        />
+      )}
+
+      <TextInput
+        style={styles.textInput}
+        {...otherProps}
+      />
+
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+
+  container: {
+    backgroundColor: colors.light,
+    borderRadius: 25,
+    flexDirection: "row",
+    width: "100%",
+    padding: 15,
+    marginVertical: 10,
+  },
+
+  textInput: {
+    fontSize: 18,
+    color: colors.dark,
+
+    ...Platform.select({
+      ios: {
+        fontFamily: "Avenir",
+      },
+      android: {
+        fontFamily: "Roboto",
+      },
+    }),
+  },
+
+  icon: {
+    marginRight: 10,
+  },
+
+});
+
+export default AppTextInput;
+-------------------code----------------------
+
+---
+
+# 13. Best Practices and Important Notes
+
+## Important Concept: Rest Operator
+
+-------------------code----------------------
+{ icon, ...otherProps }
+-------------------code----------------------
+
+Collects remaining props.
+
+Spread operator:
+
+-------------------code----------------------
+{...otherProps}
+-------------------code----------------------
+
+Passes them to TextInput.
+
+This makes component reusable.
+
+---
+
+## Why Use Custom Component?
+
+Benefits:
+
+* Reusable
+* Consistent design
+* Easier maintenance
+* Cleaner code
+
+---
+
+## Why Use colors file?
+
+Avoid hardcoding colors.
+
+Good:
+
+-------------------code----------------------
+colors.dark
+-------------------code----------------------
+
+Bad:
+
+-------------------code----------------------
+"#0c0c0c"
+-------------------code----------------------
+
+---
+
+## Why Conditional Icon?
+
+-------------------code----------------------
+{icon && <Icon />}
+-------------------code----------------------
+
+Prevents rendering empty icon.
+
+---
+
+# 14. Visual Result
+
+Final component supports:
+
+* Icon
+* Placeholder
+* Custom font
+* Proper spacing
+* Clean design
+* Cross platform
+
+---
+
+# 15. Summary
+
+In this lesson you learned:
+
+You created a reusable custom TextInput component.
+
+You learned how to:
+
+Create reusable components
+
+Use TextInput
+
+Add icons
+
+Use props
+
+Use rest and spread operators
+
+Apply styling
+
+Support both iOS and Android
+
+Use color palette
+
+Improve UI design
+
+This component will now be used throughout your app.
