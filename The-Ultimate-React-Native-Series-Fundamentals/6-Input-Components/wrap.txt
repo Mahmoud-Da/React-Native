@@ -1310,3 +1310,313 @@ Centralize shared styles in config folder. Avoid duplication. Export colors and 
 
 You learned how to extract default styles into a central file. 
 You created config/styles.js. You reused styles across components. You simplified AppText and AppTextInput. This makes the app cleaner, scalable, and easier to maintain.
+
+*** 5- Switch ***
+# React Native Switch Component – Clean Structured Notes
+
+## 1. Introduction to Switch Component
+
+The **Switch** component in React Native is used to capture a **boolean value**, meaning:
+
+* True / False
+* On / Off
+* Enabled / Disabled
+
+It is commonly used for:
+
+* Settings (notifications on/off)
+* Toggles (dark mode on/off)
+* Feature enable/disable
+
+Important: The Switch looks different on iOS and Android because each platform follows its own design language.
+
+---
+
+## 2. Import the Correct Switch Component
+
+React Native provides its own Switch component.
+
+There is another Switch in react-native-gesture-handler, but you should use the one from react-native.
+
+### Correct Import
+
+-------------------code----------------------
+import { Switch } from "react-native";
+-------------------code----------------------
+
+---
+
+## 3. Step 1: Create a Boolean State Variable
+
+The Switch needs a state variable to store its value.
+
+Use the useState hook.
+
+### Code
+
+-------------------code----------------------
+import React, { useState } from "react";
+-------------------code----------------------
+
+Inside your component:
+
+-------------------code----------------------
+const [isNew, setIsNew] = useState(false);
+-------------------code----------------------
+
+Explanation:
+
+* isNew → current value (true or false)
+* setIsNew → function to update the value
+* false → initial value
+
+---
+
+## 4. Step 2: Bind the State to the Switch
+
+Use the value prop.
+
+This connects the Switch UI to your state.
+
+### Code
+
+-------------------code----------------------
+<Switch value={isNew} />
+-------------------code----------------------
+
+Now the switch reflects the state.
+
+---
+
+## 5. Step 3: Handle Switch Changes
+
+When the user toggles the switch, you must update the state.
+
+Use:
+
+onValueChange
+
+This function receives the new boolean value.
+
+### Code
+
+-------------------code----------------------
+<Switch
+  value={isNew}
+  onValueChange={(newValue) => setIsNew(newValue)}
+/>
+-------------------code----------------------
+
+Explanation:
+
+* newValue is true or false
+* setIsNew updates the state
+* UI updates automatically
+
+This is called a Controlled Component.
+
+---
+
+## 6. Complete Example (Basic)
+
+-------------------code----------------------
+import React, { useState } from "react";
+import { View, Switch } from "react-native";
+
+function App() {
+
+  const [isNew, setIsNew] = useState(false);
+
+  return (
+
+    <View>
+
+      <Switch
+        value={isNew}
+        onValueChange={(newValue) => setIsNew(newValue)}
+      />
+
+    </View>
+
+  );
+
+}
+
+export default App;
+-------------------code----------------------
+
+---
+
+## 7. How Switch Looks on iOS vs Android
+
+iOS:
+
+* Smooth animation
+* Modern design
+* Positioned normally
+
+Android:
+
+* Different visual style
+* Usually aligned to the right
+* Matches Android design system
+
+This difference is normal and expected.
+
+React Native follows native platform design.
+
+---
+
+## 8. How Switch Works Internally (Step-by-Step)
+
+Step 1:
+
+User toggles switch
+
+Step 2:
+
+onValueChange fires
+
+Step 3:
+
+newValue is received
+
+Step 4:
+
+State is updated
+
+Step 5:
+
+UI re-renders automatically
+
+---
+
+## 9. Best Practices
+
+Always control Switch with state.
+
+Correct:
+
+-------------------code----------------------
+value={isNew}
+-------------------code----------------------
+
+Incorrect:
+
+Never hardcode:
+
+-------------------code----------------------
+value={true}
+-------------------code----------------------
+
+because it cannot change.
+
+Always use useState.
+
+Use clear naming:
+
+Good:
+
+-------------------code----------------------
+isEnabled
+isDarkMode
+isNew
+-------------------code----------------------
+
+Bad:
+
+-------------------code----------------------
+x
+flag
+value
+-------------------code----------------------
+
+---
+
+## 10. Common Mistake
+
+Wrong:
+
+-------------------code----------------------
+<Switch />
+-------------------code----------------------
+
+This will not work properly.
+
+Correct:
+
+-------------------code----------------------
+<Switch
+ value={isNew}
+ onValueChange={setIsNew}
+/>
+-------------------code----------------------
+
+Shortcut version:
+
+This also works:
+
+-------------------code----------------------
+onValueChange={setIsNew}
+-------------------code----------------------
+
+because React passes the value automatically.
+
+---
+
+## 11. Full Final Code (Recommended Version)
+
+-------------------code----------------------
+import React, { useState } from "react";
+import { View, Switch, StyleSheet } from "react-native";
+
+function App() {
+
+  const [isNew, setIsNew] = useState(false);
+
+  return (
+
+    <View style={styles.container}>
+
+      <Switch
+        value={isNew}
+        onValueChange={setIsNew}
+      />
+
+    </View>
+
+  );
+
+}
+
+const styles = StyleSheet.create({
+
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+});
+
+export default App;
+-------------------code----------------------
+
+---
+
+## 12. Summary
+
+The Switch component is used to capture boolean values.
+
+It requires two main props:
+
+value → current state
+onValueChange → update state
+
+You must use useState to control it.
+
+The Switch looks different on iOS and Android, which is normal.
+
+This component is essential for building settings screens and toggle features.
+
+Always connect Switch to state for proper functionality.
