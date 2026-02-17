@@ -1,0 +1,403 @@
+*** 1- Introduction ***
+# Getting User Input in React Native
+
+## 1. Introduction
+
+In this section, we learn how to get input from users in React Native. The section covers three main topics:
+
+1. Input components available in React Native core
+2. Building custom styled text input boxes
+3. Building a cross-platform picker component from scratch
+
+These components allow users to type text, select options, and interact with your app.
+
+---
+
+# 2. React Native Core Input Components
+
+React Native provides built-in components to collect user input.
+
+The most important ones are:
+
+* TextInput → for typing text
+* Switch → for true/false input
+* Button → for triggering actions
+* Picker (community package) → for selecting from a list
+
+The most commonly used input component is TextInput.
+
+---
+
+# 3. Using the TextInput Component
+
+## 3.1 Basic TextInput Example
+
+Step 1: Import required components
+
+-------------------code----------------------
+import React from "react";
+import { View, TextInput } from "react-native";
+-------------------code----------------------
+
+Step 2: Use TextInput inside View
+
+-------------------code----------------------
+export default function App() {
+  return (
+    <View>
+      <TextInput placeholder="Enter your name" />
+    </View>
+  );
+}
+-------------------code----------------------
+
+This creates a simple text box.
+
+---
+
+## 3.2 Capturing User Input with State
+
+To store the typed value, use useState.
+
+Step 1: Import useState
+
+-------------------code----------------------
+import React, { useState } from "react";
+import { View, TextInput } from "react-native";
+-------------------code----------------------
+
+Step 2: Create state
+
+-------------------code----------------------
+const [name, setName] = useState("");
+-------------------code----------------------
+
+Step 3: Connect TextInput to state
+
+-------------------code----------------------
+<TextInput
+  placeholder="Enter your name"
+  value={name}
+  onChangeText={(text) => setName(text)}
+/>
+-------------------code----------------------
+
+Now the input value is saved in the name variable.
+
+---
+
+# 4. Making Pretty Text Boxes
+
+By default, TextInput looks very plain.
+
+We use styles to improve appearance.
+
+---
+
+## 4.1 Adding Styles
+
+Step 1: Import StyleSheet
+
+-------------------code----------------------
+import { StyleSheet } from "react-native";
+-------------------code----------------------
+
+Step 2: Create styles
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 10,
+    borderRadius: 5,
+    margin: 10,
+  },
+});
+-------------------code----------------------
+
+Step 3: Apply style
+
+-------------------code----------------------
+<TextInput
+  style={styles.input}
+  placeholder="Enter your name"
+/>
+-------------------code----------------------
+
+---
+
+# 5. Building a Cross-Platform Picker Component
+
+A picker allows the user to choose one option from a list.
+
+Example:
+
+* Category selection
+* Country selection
+* Settings selection
+
+---
+
+## 5.1 Basic Picker Concept
+
+Picker works like:
+
+When user taps → open modal → select item → save selection
+
+---
+
+## 5.2 Example Picker Implementation Concept
+
+Step 1: Create state
+
+-------------------code----------------------
+const [category, setCategory] = useState(null);
+-------------------code----------------------
+
+Step 2: Show picker
+
+Example structure:
+
+-------------------code----------------------
+<TouchableOpacity onPress={() => openPicker()}>
+  <Text>Select Category</Text>
+</TouchableOpacity>
+-------------------code----------------------
+
+Step 3: Show modal with options
+
+-------------------code----------------------
+<Modal visible={true}>
+  <Text onPress={() => setCategory("Books")}>Books</Text>
+  <Text onPress={() => setCategory("Movies")}>Movies</Text>
+</Modal>
+-------------------code----------------------
+
+---
+
+# 6. How Picker Works Internally
+
+Flow:
+
+1 User taps picker
+
+2 Modal opens
+
+3 User selects item
+
+4 Value saved in state
+
+5 Modal closes
+
+---
+
+# 7. Best Practices
+
+## Always use state
+
+Never store input in variables
+
+Correct:
+
+-------------------code----------------------
+const [name, setName] = useState("");
+-------------------code----------------------
+
+Wrong:
+
+-------------------code----------------------
+let name = "";
+-------------------code----------------------
+
+State updates UI automatically.
+
+---
+
+## Always style inputs
+
+Default inputs look bad.
+
+Use:
+
+* padding
+* border
+* margin
+* borderRadius
+
+---
+
+## Use reusable components
+
+Instead of repeating code, create:
+
+Example:
+
+AppTextInput.js
+
+-------------------code----------------------
+export default function AppTextInput(props) {
+  return (
+    <TextInput
+      style={styles.input}
+      {...props}
+    />
+  );
+}
+-------------------code----------------------
+
+---
+
+## Always close picker after selection
+
+This improves user experience.
+
+---
+
+# 8. Full Final Example Code
+
+-------------------code----------------------
+import React, { useState } from "react";
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  Modal,
+} from "react-native";
+
+export default function App() {
+  const [name, setName] = useState("");
+  const [category, setCategory] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  return (
+    <View style={styles.container}>
+      
+      <TextInput
+        style={styles.input}
+        placeholder="Enter your name"
+        value={name}
+        onChangeText={(text) => setName(text)}
+      />
+
+      <TouchableOpacity
+        style={styles.picker}
+        onPress={() => setModalVisible(true)}
+      >
+        <Text>
+          {category ? category : "Select Category"}
+        </Text>
+      </TouchableOpacity>
+
+      <Modal visible={modalVisible} animationType="slide">
+        <View style={styles.modalContainer}>
+
+          <Text
+            style={styles.option}
+            onPress={() => {
+              setCategory("Books");
+              setModalVisible(false);
+            }}
+          >
+            Books
+          </Text>
+
+          <Text
+            style={styles.option}
+            onPress={() => {
+              setCategory("Movies");
+              setModalVisible(false);
+            }}
+          >
+            Movies
+          </Text>
+
+          <Text
+            style={styles.option}
+            onPress={() => {
+              setModalVisible(false);
+            }}
+          >
+            Close
+          </Text>
+
+        </View>
+      </Modal>
+
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+
+  container: {
+    flex: 1,
+    justifyContent: "center",
+  },
+
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 10,
+    margin: 10,
+    borderRadius: 5,
+  },
+
+  picker: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 15,
+    margin: 10,
+    borderRadius: 5,
+  },
+
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  option: {
+    fontSize: 20,
+    margin: 20,
+  },
+
+});
+-------------------code----------------------
+
+---
+
+# 9. Summary
+
+You learned:
+
+Input Components
+
+* TextInput for typing text
+* Picker for selecting items
+
+State Management
+
+* useState stores user input
+* State updates UI automatically
+
+Styling
+
+* Use StyleSheet to improve appearance
+
+Picker Logic
+
+* Tap → Open modal
+* Select item → Save state
+* Close modal
+
+Best Practice
+
+* Always use state
+* Always style inputs
+* Build reusable components
+* Use modal for picker
+
+This is the foundation for handling user input in React Native.
