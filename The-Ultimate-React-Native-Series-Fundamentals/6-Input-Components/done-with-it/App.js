@@ -1,31 +1,20 @@
-import React, { useState } from "react";
-import { View, Switch, StyleSheet } from "react-native";
+import AppTextInput from "./app/components/AppTextInput.js";
+import AppPicker from "./app/components/AppPicker.js";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-function App() {
 
-  const [isNew, setIsNew] = useState(false);
-
+export default function App() {
   return (
-
-    <View style={styles.container}>
-      <Switch
-        value={isNew}
-        onValueChange={setIsNew}
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AppPicker
+        placeholder="Category"
+        icon="apps"
       />
-    </View>
 
-  );
+      <AppTextInput
+        placeholder="Email"
+        icon="email"
+      />
+    </GestureHandlerRootView>)
 
 }
-
-const styles = StyleSheet.create({
-
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-});
-
-export default App;
