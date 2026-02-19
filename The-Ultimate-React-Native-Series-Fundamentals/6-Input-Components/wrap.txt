@@ -2732,3 +2732,507 @@ Safe area support
 Your AppPicker is now interactive.
 
 Next step is adding selectable items inside Modal.
+
+*** 9- Showing Picker Items ***
+# Custom Picker Component – Displaying and Selecting Items
+
+## 1. Goal of This Lecture
+
+When the user taps the picker, a list of items should appear. These items come from an array of objects. Each item has:
+
+* label: displayed to the user
+* value: used internally (for server, logic, etc.)
+
+We will:
+
+1. Create a test array of items
+2. Pass it to AppPicker
+3. Render items using FlatList
+4. Create a reusable PickerItem component
+5. Handle item press events
+6. Add basic styling
+
+Note: Closing the modal and showing selected value will be implemented in the next lecture.
+
+---
+
+# 2. Step 1 – Create Categories Array in App.js
+
+This is test data.
+
+Each object contains:
+
+* label
+* value
+
+## Code – App.js
+
+-------------------code----------------------
+const categories = [
+  { label: "Furniture", value: 1 },
+  { label: "Clothing", value: 2 },
+  { label: "Cameras", value: 3 },
+];
+-------------------code----------------------
+
+Pass categories to AppPicker:
+
+-------------------code----------------------
+<AppPicker
+  items={categories}
+  placeholder="Category"
+/>
+-------------------code----------------------
+
+---
+
+# 3. Step 2 – Receive items Prop in AppPicker
+
+Open:
+
+AppPicker.js
+
+Add items prop:
+
+-------------------code----------------------
+function AppPicker({ icon, items, placeholder }) {
+-------------------code----------------------
+
+Best practice:
+Sort props alphabetically or logically for readability.
+
+---
+
+# 4. Step 3 – Render Items Using FlatList
+
+FlatList efficiently renders lists.
+
+Import:
+
+-------------------code----------------------
+import { FlatList } from "react-native";
+-------------------code----------------------
+
+Add FlatList:
+
+-------------------code----------------------
+<FlatList
+  data={items}
+  keyExtractor={(item) => item.value.toString()}
+  renderItem={({ item }) => (
+    <PickerItem
+      label={item.label}
+      onPress={() => console.log(item)}
+    />
+  )}
+/>
+-------------------code----------------------
+
+Explanation:
+
+data
+List of items
+
+keyExtractor
+Unique key for each item
+Must be string
+
+renderItem
+Function to render each item
+
+---
+
+# 5. Step 4 – Create PickerItem Component
+
+Create file:
+
+PickerItem.js
+
+Purpose:
+Reusable item component
+
+User can tap it.
+
+---
+
+## Code – Basic PickerItem
+
+Import:
+
+-------------------code----------------------
+import React from "react";
+import { TouchableOpacity } from "react-native";
+import AppText from "./AppText";
+-------------------code----------------------
+
+Component:
+
+-------------------code----------------------
+function PickerItem({ label, onPress }) {
+  return (
+    <TouchableOpacity onPress={onPress}>
+      <AppText>{label}</AppText>
+    </TouchableOpacity>
+  );
+}
+
+export default PickerItem;
+-------------------code----------------------
+
+Explanation:
+
+TouchableOpacity
+Makes item clickable
+
+label
+Displays text
+
+onPress
+Passed from parent component
+
+Important Concept:
+Delegation
+
+PickerItem does NOT decide what happens when pressed.
+Parent decides.
+
+This makes component reusable.
+
+---
+
+# 6. Step 5 – Add Styling to PickerItem
+
+Import:
+
+-------------------code----------------------
+import { StyleSheet } from "react-native";
+-------------------code----------------------
+
+Create styles:
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  text: {
+    padding: 20,
+  },
+});
+-------------------code----------------------
+
+Apply style:
+
+-------------------code----------------------
+<AppText style={styles.text}>
+  {label}
+</AppText>
+-------------------code----------------------
+
+Final PickerItem:
+
+-------------------code----------------------
+function PickerItem({ label, onPress }) {
+  return (
+    <TouchableOpacity onPress={onPress}>
+      <AppText style={styles.text}>{label}</AppText>
+    </TouchableOpacity>
+  );
+}
+-------------------code----------------------
+
+Result:
+Items have proper spacing
+
+---
+
+# 7. Step 6 – Test Item Press
+
+Inside AppPicker:
+
+-------------------code----------------------
+onPress={() => console.log(item)}
+-------------------code----------------------
+
+When tapping item:
+
+Console output:
+
+Example:
+
+-------------------code----------------------
+{ label: "Furniture", value: 1 }
+-------------------code----------------------
+
+This confirms:
+
+FlatList works
+PickerItem works
+onPress works
+
+---
+
+# 8. Important Notes and Best Practices
+
+## Always use FlatList for lists
+
+Never use map() for large lists
+
+FlatList advantages:
+
+Performance optimized
+Lazy rendering
+Better memory usage
+
+---
+
+## Always use keyExtractor
+
+React requires unique key
+
+Bad:
+
+-------------------code----------------------
+keyExtractor={(item) => item.value}
+-------------------code----------------------
+
+Good:
+
+-------------------code----------------------
+keyExtractor={(item) => item.value.toString()}
+-------------------code----------------------
+
+---
+
+## Always make components reusable
+
+Bad design:
+
+Component controls everything
+
+Good design:
+
+Parent controls behavior
+
+PickerItem receives:
+
+label
+onPress
+
+---
+
+## Use TouchableOpacity from react-native
+
+Correct:
+
+-------------------code----------------------
+import { TouchableOpacity } from "react-native";
+-------------------code----------------------
+
+Avoid gesture-handler version unless needed.
+
+---
+
+# 9. Full Final Code
+
+---
+
+# App.js
+
+-------------------code----------------------
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import AppPicker from "./app/components/AppPicker.js";
+import AppTextInput from "./app/components/AppTextInput.js";
+import Screen from "./app/components/Screen.js";
+
+
+export default function App() {
+  const categories = [
+    { label: "Furniture", value: 1 },
+    { label: "Clothing", value: 2 },
+    { label: "Cameras", value: 3 },
+  ];
+
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Screen>
+        <AppPicker
+          placeholder="Category"
+          icon="apps"
+          items={categories}
+        />
+
+        <AppTextInput
+          placeholder="Email"
+          icon="email"
+        />
+      </Screen>
+
+    </GestureHandlerRootView>)
+}
+-------------------code----------------------
+
+---
+
+# AppPicker.js
+
+-------------------code----------------------
+import { useState } from "react";
+
+import {
+  Button,
+  FlatList,
+  Modal,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
+
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+
+import colors from "../config/colors";
+import AppText from "./AppText";
+import PickerItem from "./PickerItem";
+import Screen from "./Screen";
+
+function AppPicker({ icon, items, placeholder }) {
+
+  const [modalVisible, setModalVisible] = useState(false);
+
+  return (
+    <>
+      <TouchableWithoutFeedback
+        onPress={() => setModalVisible(true)}
+      >
+        <View style={styles.container}>
+          {icon && (
+            <MaterialCommunityIcons
+              name={icon}
+              size={20}
+              color={colors.medium}
+              style={styles.icon}
+            />
+          )}
+
+          <AppText style={styles.text}>
+            {placeholder}
+          </AppText>
+
+          <MaterialCommunityIcons
+            name="chevron-down"
+            size={20}
+            color={colors.medium}
+          />
+
+        </View>
+
+      </TouchableWithoutFeedback>
+
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+      >
+
+        <Screen>
+          <Button
+            title="Close"
+            onPress={() => setModalVisible(false)}
+          />
+          <FlatList
+            data={items}
+            keyExtractor={(item) => item.value.toString()}
+            renderItem={({ item }) => (
+              <PickerItem
+                label={item.label}
+                onPress={() => console.log(item)}
+              />
+            )}
+          />
+        </Screen>
+
+      </Modal>
+
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+
+  container: {
+    backgroundColor: colors.light,
+    borderRadius: 25,
+    flexDirection: "row",
+    width: "100%",
+    padding: 15,
+    marginVertical: 10,
+    alignItems: "center",
+  },
+
+  text: {
+    flex: 1,
+  },
+
+  icon: {
+    marginRight: 10,
+  },
+
+});
+
+export default AppPicker;
+-------------------code----------------------
+
+---
+
+# PickerItem.js
+
+-------------------code----------------------
+import React from "react";
+import { TouchableOpacity, StyleSheet } from "react-native";
+import AppText from "./AppText";
+
+function PickerItem({ label, onPress }) {
+
+  return (
+    <TouchableOpacity onPress={onPress}>
+      <AppText style={styles.text}>
+        {label}
+      </AppText>
+    </TouchableOpacity>
+  );
+
+}
+
+const styles = StyleSheet.create({
+  text: {
+    padding: 20,
+  },
+});
+
+export default PickerItem;
+-------------------code----------------------
+
+---
+
+# 10. Summary
+
+In this lecture, we learned how to build item selection list.
+
+We learned:
+
+How to create data array
+How to pass data via props
+How to use FlatList
+How to create reusable PickerItem
+How to handle onPress
+How to style list items
+
+Current Result:
+
+Picker shows list of items
+User can tap item
+Item logs to console
+
+Next Lecture Will Add:
+
+Modal
+Closing picker
+Showing selected item inside picker
+
+This completes the item rendering part of the custom picker component.
