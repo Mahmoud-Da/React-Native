@@ -1,20 +1,23 @@
-import AppTextInput from "./app/components/AppTextInput.js";
-import AppPicker from "./app/components/AppPicker.js";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import AppPicker from "./app/components/AppPicker.js";
+import AppTextInput from "./app/components/AppTextInput.js";
+import Screen from "./app/components/Screen.js";
 
 
 export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <AppPicker
-        placeholder="Category"
-        icon="apps"
-      />
+      <Screen>
+        <AppPicker
+          placeholder="Category"
+          icon="apps"
+        />
 
-      <AppTextInput
-        placeholder="Email"
-        icon="email"
-      />
+        <AppTextInput
+          placeholder="Email"
+          icon="email"
+        />
+      </Screen>
+
     </GestureHandlerRootView>)
-
 }
