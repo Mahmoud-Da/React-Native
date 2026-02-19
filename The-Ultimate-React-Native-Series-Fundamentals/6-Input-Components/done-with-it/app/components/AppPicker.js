@@ -16,7 +16,13 @@ import AppText from "./AppText";
 import PickerItem from "./PickerItem";
 import Screen from "./Screen";
 
-function AppPicker({ icon, items, placeholder }) {
+function AppPicker({
+  icon,
+  items,
+  placeholder,
+  selectedItem,
+  onSelectItem
+}) {
 
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -36,7 +42,11 @@ function AppPicker({ icon, items, placeholder }) {
           )}
 
           <AppText style={styles.text}>
-            {placeholder}
+
+            {selectedItem
+              ? selectedItem.label
+              : placeholder}
+
           </AppText>
 
           <MaterialCommunityIcons
@@ -61,18 +71,21 @@ function AppPicker({ icon, items, placeholder }) {
           />
           <FlatList
             data={items}
-            keyExtractor={(item) => item.value.toString()}
+            keyExtractor={(item) =>
+              item.value.toString()
+            }
             renderItem={({ item }) => (
               <PickerItem
                 label={item.label}
-                onPress={() => console.log(item)}
+                onPress={() => {
+                  setModalVisible(false);
+                  onSelectItem(item);
+                }}
               />
             )}
           />
         </Screen>
-
       </Modal>
-
     </>
   );
 }
