@@ -1620,3 +1620,238 @@ The Switch looks different on iOS and Android, which is normal.
 This component is essential for building settings screens and toggle features.
 
 Always connect Switch to state for proper functionality.
+
+
+*** 6- Picker ***
+# React Native Picker, Expo Limitations, and Custom Picker – Clean Structured Notes
+
+## 1. Overview of Input Components in React Native
+
+React Native Core provides only a few built-in input components.
+Core input components:
+
+1. TextInput → for text
+2. Switch → for boolean values
+
+Previously, there was another component:
+3. Picker → for selecting from a list
+However, Picker has been removed from React Native Core.
+
+It is now deprecated.
+
+---
+
+## 2. Picker is No Longer in React Native Core
+If you search for Picker in the documentation, you will see:
+Picker is deprecated.
+It has been moved to a separate library:
+Library name:
+-------------------code----------------------
+@react-native-community/picker
+-------------------code----------------------
+
+This means you must install it manually.
+
+---
+
+## 3. Installing the Community Picker Library
+
+Installation command:
+-------------------code----------------------
+npm install @react-native-community/picker
+-------------------code----------------------
+
+or
+-------------------code----------------------
+yarn add @react-native-community/picker
+-------------------code----------------------
+
+However, this is not enough for iOS.
+You must also install native dependencies.
+Example:
+
+-------------------code----------------------
+cd ios
+pod install
+-------------------code----------------------
+
+This requires access to native iOS project files.
+
+---
+
+## 4. Why Picker Does NOT Work in Expo (Important)
+
+Expo hides native code.
+
+In Expo, you only work with:
+
+JavaScript
+
+You do NOT have access to:
+
+* ios folder
+* android folder
+
+Because of this:
+
+You cannot install libraries that require native code setup.
+
+Therefore:
+
+Community Picker cannot be used in Expo Managed Workflow.
+
+---
+
+## 5. What is Ejecting in Expo
+
+Expo provides an option called:
+
+Eject
+
+Ejecting means:
+
+You convert your Expo project into a full React Native project.
+
+After ejecting, you get:
+
+* ios folder
+* android folder
+
+Then you can install native libraries.
+
+But ejecting increases complexity.
+
+So avoid ejecting unless necessary.
+
+---
+
+## 6. Expo Alternative: DateTimePicker
+
+Expo supports another picker-type component:
+
+DateTimePicker
+
+Library name:
+
+-------------------code----------------------
+@react-native-community/datetimepicker
+-------------------code----------------------
+
+Expo installation command:
+
+-------------------code----------------------
+expo install @react-native-community/datetimepicker
+-------------------code----------------------
+
+Important:
+
+This picker is only for:
+
+* Date selection
+* Time selection
+
+Example uses:
+
+* Select birth date
+* Select meeting time
+
+It is NOT for selecting from a custom list like:
+
+* Country list
+* Category list
+* Menu list
+
+That is the job of Picker.
+
+---
+
+## 7. Difference Between Picker and DateTimePicker
+
+Picker:
+
+Used to select from custom list.
+
+Example:
+
+* Japan
+* USA
+* Canada
+
+DateTimePicker:
+
+Used to select:
+
+* Date
+* Time
+
+Example:
+
+* 2026-02-17
+* 10:30 AM
+
+---
+
+## 8. Solution: Build Custom Picker Component
+Since Expo does not support Picker easily,
+
+The recommended solution is:
+Build your own custom picker component.
+
+Advantages:
+Works in Expo
+Same design on Android and iOS
+Full control over styling
+No need to eject Expo
+Better user experience
+
+---
+
+## 9. Why Building Custom Picker is Better
+
+Reasons:
+Avoid native dependencies
+Avoid ejecting Expo
+Maintain simple project structure
+Consistent UI across platforms
+
+Full customization
+---
+
+## 10. Example of What a Custom Picker Will Do
+Example use case:
+User selects category:
+Cars
+Clothing
+Furniture
+
+Instead of native Picker,
+You will create:
+Touchable component → open modal → select item
+
+---
+
+## 11. Best Practices
+Avoid ejecting Expo unless absolutely necessary.
+Use Expo-compatible libraries when possible.
+Build custom components when native ones are unavailable.
+Keep platform behavior consistent.
+Avoid deprecated components.
+
+---
+
+## 12. Summary
+
+React Native Core only includes two input components:
+TextInput
+Switch
+Picker has been removed from React Native Core.
+It now exists in:
+-------------------code----------------------
+@react-native-community/picker
+-------------------code----------------------
+But this library cannot be used in Expo easily because Expo hides native code.
+Expo supports DateTimePicker, but it is only for date and time selection.
+To select from a custom list in Expo, the best solution is to build your own custom picker component.
+This approach avoids ejecting Expo and gives full control over design and behavior.
+---
+
