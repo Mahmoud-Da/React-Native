@@ -1137,3 +1137,611 @@ padding improves layout
 Manual form handling does not scale well.
 
 Formik will solve this problem.
+
+*** 3- Building Better Forms with Formik ***
+# Using Formik in Login Screen — Structured Notes
+
+This lecture introduces **Formik** and replaces manual form state handling with Formik. This makes forms cleaner, scalable, and easier to maintain.
+
+---
+
+# 1. Problem With Manual Forms
+
+Previously, you used `useState` to manage form inputs:
+
+Example:
+
+-------------------code----------------------
+const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
+-------------------code----------------------
+
+Problems with this approach:
+
+As the number of fields increases:
+
+* More state variables needed
+* More event handlers needed
+* Harder to validate inputs
+* More complex code
+
+Example with 5 fields:
+
+-------------------code----------------------
+const [field1, setField1] = useState("");
+const [field2, setField2] = useState("");
+const [field3, setField3] = useState("");
+const [field4, setField4] = useState("");
+const [field5, setField5] = useState("");
+-------------------code----------------------
+
+This becomes difficult to manage.
+
+Solution: Use Formik
+
+---
+
+# 2. What is Formik
+
+Formik is a popular library that:
+
+* Tracks form state automatically
+* Handles input changes
+* Handles submission
+* Supports validation
+
+Main benefit:
+
+Removes need for useState for form fields.
+
+Formik manages everything internally.
+
+---
+
+# 3. Install Formik
+
+Install version used in lecture:
+
+-------------------code----------------------bash
+npm install formik@2.1.4
+-------------------code----------------------
+
+or
+
+-------------------code----------------------bash
+yarn add formik@2.1.4
+-------------------code----------------------
+
+Using same version avoids compatibility issues.
+
+---
+
+# 4. Import Formik
+
+Formik is a named export.
+
+Correct import:
+
+-------------------code----------------------
+import { Formik } from "formik";
+-------------------code----------------------
+
+Wrong:
+
+-------------------code----------------------
+import Formik from "formik";
+-------------------code----------------------
+
+---
+
+# 5. Add Formik Component
+
+Formik wraps your form.
+
+---
+
+## Step 1: Add Formik inside LoginScreen
+
+Example:
+
+-------------------code----------------------
+<Formik>
+
+</Formik>
+-------------------code----------------------
+
+---
+
+# 6. Set initialValues
+
+Formik requires initial values for all fields.
+
+---
+
+## Step 1: Add initialValues prop
+
+-------------------code----------------------
+<Formik
+   initialValues={{
+      email: "",
+      password: ""
+   }}
+>
+-------------------code----------------------
+
+Explanation:
+
+This defines form structure.
+
+Field names:
+
+* email
+* password
+
+Formik will track these automatically.
+
+---
+
+# 7. Handle Form Submission
+
+Formik provides onSubmit prop.
+
+---
+
+## Step 1: Add onSubmit
+
+-------------------code----------------------
+<Formik
+   initialValues={{
+      email: "",
+      password: ""
+   }}
+   onSubmit={(values) => console.log(values)}
+>
+-------------------code----------------------
+
+Explanation:
+
+values contains:
+
+-------------------code----------------------json
+{
+   email: "...",
+   password: "..."
+}
+-------------------code----------------------
+
+Example output:
+
+-------------------code----------------------bash
+{ email: "test@gmail.com", password: "123456" }
+-------------------code----------------------
+
+---
+
+# 8. Formik Uses Function as Children
+
+Formik does not use normal JSX children.
+
+Instead, it uses a function.
+
+This function gives access to Formik tools.
+
+---
+
+## Step 1: Add function inside Formik
+
+-------------------code----------------------
+<Formik
+ initialValues={{ email: "", password: "" }}
+ onSubmit={(values) => console.log(values)}
+>
+ {() => (
+
+ )}
+</Formik>
+-------------------code----------------------
+
+---
+
+# 9. Extract Important Formik Functions
+
+Formik provides many functions.
+
+Most important:
+
+* handleChange
+* handleSubmit
+
+---
+
+## Step 1: Destructure functions
+
+-------------------code----------------------
+{({ handleChange, handleSubmit }) => (
+
+)}
+-------------------code----------------------
+
+---
+
+# 10. Move Inputs Inside Formik
+
+Your inputs must be inside Formik.
+
+Example:
+
+-------------------code----------------------
+{({ handleChange, handleSubmit }) => (
+
+   <>
+
+      <AppTextInput />
+
+      <AppTextInput />
+
+      <AppButton />
+
+   </>
+
+)}
+-------------------code----------------------
+
+Fragment is required because multiple components exist.
+
+---
+
+# 11. Connect Email Input to Formik
+
+Before:
+
+-------------------code----------------------
+onChangeText={(text) => setEmail(text)}
+-------------------code----------------------
+
+Now:
+
+-------------------code----------------------
+onChangeText={handleChange("email")}
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+<AppTextInput
+   placeholder="Email"
+   onChangeText={handleChange("email")}
+/>
+-------------------code----------------------
+
+Important:
+
+"email" must match initialValues property.
+
+---
+
+# 12. Connect Password Input
+
+Before:
+
+-------------------code----------------------
+onChangeText={(text) => setPassword(text)}
+-------------------code----------------------
+
+Now:
+
+-------------------code----------------------
+onChangeText={handleChange("password")}
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+<AppTextInput
+   placeholder="Password"
+   onChangeText={handleChange("password")}
+/>
+-------------------code----------------------
+
+---
+
+# 13. Connect Submit Button
+
+Before:
+
+-------------------code----------------------
+onPress={() => console.log(email, password)}
+-------------------code----------------------
+
+Now:
+
+-------------------code----------------------
+onPress={handleSubmit}
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+<AppButton
+   title="Login"
+   onPress={handleSubmit}
+/>
+-------------------code----------------------
+
+Formik will call onSubmit automatically.
+
+---
+
+# 14. Remove useState
+
+Formik replaces useState.
+
+Delete:
+
+-------------------code----------------------
+const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
+-------------------code----------------------
+
+Also remove import:
+
+-------------------code----------------------
+useState
+-------------------code----------------------
+
+Benefit:
+
+Cleaner code
+
+Formik manages state.
+
+---
+
+# 15. How Formik Works Internally
+
+Flow:
+
+User types email
+
+↓
+
+handleChange("email")
+
+↓
+
+Formik updates state
+
+↓
+
+User presses Login
+
+↓
+
+handleSubmit()
+
+↓
+
+Formik calls onSubmit(values)
+
+↓
+
+Your function executes
+
+---
+
+# 16. Benefits of Formik
+
+Major benefits:
+
+No useState needed
+
+Automatic state management
+
+Cleaner code
+
+Scalable for large forms
+
+Easy validation integration
+
+---
+
+# 17. Best Practices
+
+Always match field names with initialValues
+
+Correct:
+
+-------------------code----------------------
+initialValues={{ email: "" }}
+
+handleChange("email")
+-------------------code----------------------
+
+Wrong:
+
+-------------------code----------------------
+handleChange("username")
+-------------------code----------------------
+
+---
+
+Always wrap form elements inside Formik
+
+Wrong:
+
+-------------------code----------------------
+<Formik />
+<AppTextInput />
+-------------------code----------------------
+
+Correct:
+
+-------------------code----------------------
+<Formik>
+
+<AppTextInput />
+
+</Formik>
+-------------------code----------------------
+
+---
+
+Always use handleSubmit
+
+Wrong:
+
+-------------------code----------------------
+onPress={() => {}}
+-------------------code----------------------
+
+Correct:
+
+-------------------code----------------------
+onPress={handleSubmit}
+-------------------code----------------------
+
+---
+
+Remove useState when using Formik
+
+Formik replaces it.
+
+---
+
+# 18. Full Final Code
+
+LoginScreen.js
+
+-------------------code----------------------
+import React from "react";
+import {
+  StyleSheet,
+  Image
+} from "react-native";
+import { Formik } from "formik";
+import Screen from "../components/Screen";
+import AppTextInput from "../components/AppTextInput";
+import AppButton from "../components/AppButton";
+
+function LoginScreen() {
+  return (
+    <Screen style={styles.container}>
+      <Image
+        source={require("../assets/logo-red.png")}
+        style={styles.logo}
+      />
+      <Formik
+        initialValues={{
+          email: "",
+          password: ""
+        }}
+        onSubmit={(values) => console.log(values)}
+      >
+        {({ handleChange, handleSubmit }) => (
+          <>
+            <AppTextInput
+              icon="email"
+              placeholder="Email"
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="email-address"
+              textContentType="emailAddress"
+              onChangeText={handleChange("email")}
+            />
+            <AppTextInput
+              icon="lock"
+              placeholder="Password"
+              autoCapitalize="none"
+              autoCorrect={false}
+              secureTextEntry
+              textContentType="password"
+              onChangeText={handleChange("password")}
+            />
+            <AppButton
+              title="Login"
+              onPress={handleSubmit}
+            />
+          </>
+        )}
+      </Formik>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 10
+  },
+  logo: {
+    width: 80,
+    height: 80,
+    alignSelf: "center",
+    marginTop: 50,
+    marginBottom: 20
+  }
+});
+
+export default LoginScreen;
+-------------------code----------------------
+
+---
+
+# 19. Summary
+
+---
+
+## What you learned
+
+Formik replaces manual form state handling
+
+Formik manages:
+
+Form values
+
+Input changes
+
+Form submission
+
+---
+
+## Key Functions
+
+handleChange → updates field value
+
+handleSubmit → submits form
+
+initialValues → defines form fields
+
+onSubmit → handles form submission
+
+---
+
+## Major Benefit
+
+Formik eliminates need for useState for forms.
+
+---
+
+## Before Formik
+
+Complex
+
+Manual state management
+
+Hard to scale
+
+---
+
+## After Formik
+
+Clean
+
+Simple
+
+Scalable
+
+Professional approach
+
+---
+
+Next step: Form validation using Yup.
