@@ -49,7 +49,7 @@ const [password, setPassword] = useState("");
    value={password}
    onChangeText={setPassword}
 />
-```
+-------------------code----------------------
 
 Problems:
 
@@ -85,7 +85,7 @@ Install using npm:
 
 -------------------code----------------------
 npm install formik
-```
+-------------------code----------------------
 
 or
 
@@ -474,7 +474,7 @@ export default function LoginScreen() {
    );
 
 }
-```
+-------------------code----------------------
 
 ---
 
@@ -517,3 +517,623 @@ User Input → Formik → Yup Validation → Submit
 ## Most Important Takeaway
 
 Formik and Yup together are the standard and best practice for building forms in React Native.
+
+
+*** 2- Building the Login Form ***
+# Building the Login Screen (Manual Form) — Structured Notes
+
+This lecture shows how to build a **Login Screen UI manually**, using custom input components and useState. This is the step before introducing Formik.
+
+You will create:
+
+* LoginScreen file
+* Logo
+* Email input
+* Password input
+* Login button
+* State handling
+* Basic styling
+
+---
+
+# 1. Create Login Screen File
+
+## Step 1: Add new file
+
+Location:
+
+-------------------code----------------------
+screens/LoginScreen.js
+-------------------code----------------------
+
+## Step 2: Create function component
+
+-------------------code----------------------
+import React from "react";
+import { StyleSheet } from "react-native";
+
+function LoginScreen() {
+
+}
+
+const styles = StyleSheet.create({});
+
+export default LoginScreen;
+-------------------code----------------------
+
+This creates the base screen.
+
+---
+
+# 2. Add Screen Component Container
+
+You previously created a reusable Screen component.
+
+## Step 1: Import Screen
+
+-------------------code----------------------
+import Screen from "../components/Screen";
+-------------------code----------------------
+
+## Step 2: Use Screen component
+
+-------------------code----------------------
+function LoginScreen() {
+
+   return (
+      <Screen>
+
+      </Screen>
+   );
+
+}
+-------------------code----------------------
+
+This gives:
+
+* Safe area handling
+* Consistent layout
+
+---
+
+# 3. Add Logo Image
+
+The logo appears at the top.
+
+---
+
+## Step 1: Import Image
+
+-------------------code----------------------
+import { Image } from "react-native";
+-------------------code----------------------
+
+---
+
+## Step 2: Render Image
+
+Inside Screen:
+
+-------------------code----------------------
+<Screen>
+
+   <Image
+      source={require("../assets/logo-red.png")}
+      style={styles.logo}
+   />
+
+</Screen>
+-------------------code----------------------
+
+---
+
+## Step 3: Style Logo
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+
+   logo: {
+
+      width: 80,
+      height: 80,
+
+      alignSelf: "center",
+
+      marginTop: 50,
+      marginBottom: 20
+
+   }
+
+});
+-------------------code----------------------
+
+---
+
+## Important Concept: alignSelf
+
+Screen layout direction is vertical.
+
+alignSelf controls horizontal alignment.
+
+Example:
+
+-------------------code----------------------
+alignSelf: "center"
+-------------------code----------------------
+
+This centers the logo horizontally.
+
+---
+
+# 4. Render LoginScreen in App.js
+
+Open:
+
+-------------------code----------------------
+App.js
+-------------------code----------------------
+
+Replace content:
+
+-------------------code----------------------
+import React from "react";
+import LoginScreen from "./app/screens/LoginScreen";
+
+export default function App() {
+
+   return <LoginScreen />;
+
+}
+-------------------code----------------------
+
+Now LoginScreen becomes main screen.
+
+---
+
+# 5. Add Email Input Field
+
+You previously created custom component:
+
+AppTextInput
+
+---
+
+## Step 1: Import component
+
+-------------------code----------------------
+import AppTextInput from "../components/AppTextInput";
+-------------------code----------------------
+
+---
+
+## Step 2: Add Email Input
+
+-------------------code----------------------
+<AppTextInput
+   icon="email"
+   placeholder="Email"
+   autoCapitalize="none"
+   autoCorrect={false}
+   keyboardType="email-address"
+   textContentType="emailAddress"
+/>
+-------------------code----------------------
+
+---
+
+## Explanation of Each Prop
+
+### icon
+
+Shows icon:
+
+-------------------code----------------------
+icon="email"
+-------------------code----------------------
+
+---
+
+### placeholder
+
+Hint text:
+
+-------------------code----------------------
+placeholder="Email"
+-------------------code----------------------
+
+---
+
+### autoCapitalize
+
+Prevent capital letters:
+
+-------------------code----------------------
+autoCapitalize="none"
+-------------------code----------------------
+
+Important for emails.
+
+---
+
+### autoCorrect
+
+Disable autocorrect:
+
+-------------------code----------------------
+autoCorrect={false}
+-------------------code----------------------
+
+Prevents incorrect suggestions.
+
+---
+
+### keyboardType
+
+Shows email keyboard:
+
+-------------------code----------------------
+keyboardType="email-address"
+-------------------code----------------------
+
+Improves typing experience.
+
+---
+
+### textContentType (iOS only)
+
+-------------------code----------------------
+textContentType="emailAddress"
+-------------------code----------------------
+
+Allows auto-fill from saved passwords.
+
+---
+
+# 6. Add Password Input Field
+
+Add second input:
+
+-------------------code----------------------
+<AppTextInput
+   icon="lock"
+   placeholder="Password"
+   autoCapitalize="none"
+   autoCorrect={false}
+   secureTextEntry
+   textContentType="password"
+/>
+-------------------code----------------------
+
+---
+
+## Important Property: secureTextEntry
+
+-------------------code----------------------
+secureTextEntry
+-------------------code----------------------
+
+This hides password.
+
+Example:
+
+123456 → ******
+
+---
+
+# 7. Add Login Button
+
+Import button:
+
+-------------------code----------------------
+import AppButton from "../components/AppButton";
+-------------------code----------------------
+
+Add button:
+
+-------------------code----------------------
+<AppButton
+   title="Login"
+   onPress={() => console.log("Login pressed")}
+/>
+-------------------code----------------------
+
+Currently logs message.
+
+---
+
+# 8. Add State Management
+
+Now connect inputs to state.
+
+---
+
+## Step 1: Import useState
+
+-------------------code----------------------
+import React, { useState } from "react";
+-------------------code----------------------
+
+---
+
+## Step 2: Create state variables
+
+-------------------code----------------------
+const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
+-------------------code----------------------
+
+---
+
+# 9. Update State When User Types
+
+---
+
+## Email input
+
+-------------------code----------------------
+<AppTextInput
+   icon="email"
+   placeholder="Email"
+   autoCapitalize="none"
+   autoCorrect={false}
+   keyboardType="email-address"
+   textContentType="emailAddress"
+   onChangeText={text => setEmail(text)}
+/>
+-------------------code----------------------
+
+---
+
+## Password input
+
+-------------------code----------------------
+<AppTextInput
+   icon="lock"
+   placeholder="Password"
+   autoCapitalize="none"
+   autoCorrect={false}
+   secureTextEntry
+   textContentType="password"
+   onChangeText={text => setPassword(text)}
+/>
+-------------------code----------------------
+
+---
+
+# 10. Handle Login Button Press
+
+Log values:
+
+-------------------code----------------------
+<AppButton
+   title="Login"
+   onPress={() => console.log(email, password)}
+/>
+-------------------code----------------------
+
+Example output:
+
+-------------------code----------------------
+test@gmail.com 123456
+-------------------code----------------------
+
+---
+
+# 11. Add Container Padding
+
+Without padding UI touches edges.
+
+---
+
+## Step 1: Add style
+
+-------------------code----------------------
+container: {
+
+   padding: 10
+
+}
+-------------------code----------------------
+
+---
+
+## Step 2: Apply to Screen
+
+-------------------code----------------------
+<Screen style={styles.container}>
+-------------------code----------------------
+
+---
+
+# 12. Best Practices
+
+---
+
+## Always disable autoCorrect for emails and passwords
+
+Correct:
+
+-------------------code----------------------
+autoCorrect={false}
+-------------------code----------------------
+
+---
+
+## Always disable autoCapitalize
+
+Correct:
+
+-------------------code----------------------
+autoCapitalize="none"
+-------------------code----------------------
+
+---
+
+## Always use secureTextEntry for passwords
+
+Correct:
+
+-------------------code----------------------
+secureTextEntry
+-------------------code----------------------
+
+---
+
+## Always store input in state
+
+Correct:
+
+-------------------code----------------------
+useState
+-------------------code----------------------
+
+---
+
+## Always add padding to container
+
+Improves UI.
+
+---
+
+# 13. Problem With This Approach
+
+This manual approach becomes messy when forms grow.
+
+Problems:
+
+* Too many state variables
+* Hard to validate
+* Hard to manage errors
+
+Solution (next lecture):
+
+Formik
+
+---
+
+# 14. Full Final Code
+
+LoginScreen.js
+
+-------------------code----------------------
+import React, { useState } from "react";
+import {
+  StyleSheet,
+  Image
+} from "react-native";
+import Screen from "../components/Screen";
+import AppTextInput from "../components/AppTextInput";
+import AppButton from "../components/AppButton";
+
+function LoginScreen() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  return (
+    <Screen style={styles.container}>
+      <Image
+        source={require("../assets/logo-red.png")}
+        style={styles.logo}
+      />
+
+      <AppTextInput
+        icon="email"
+        placeholder="Email"
+        autoCapitalize="none"
+        autoCorrect={false}
+        keyboardType="email-address"
+        textContentType="emailAddress"
+        onChangeText={text => setEmail(text)}
+
+      />
+
+      <AppTextInput
+        icon="lock"
+        placeholder="Password"
+        autoCapitalize="none"
+        autoCorrect={false}
+        secureTextEntry
+        textContentType="password"
+        onChangeText={text => setPassword(text)}
+      />
+
+      <AppButton
+        title="Login"
+        onPress={() => console.log(email, password)}
+      />
+    </Screen>
+
+  );
+
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 10
+  },
+
+  logo: {
+    width: 80,
+    height: 80,
+    alignSelf: "center",
+    marginTop: 50,
+    marginBottom: 20
+  }
+});
+
+export default LoginScreen;
+-------------------code----------------------
+
+
+App.js
+-------------------code----------------------
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import LoginScreen from "./app/screens/LoginScreen";
+
+export default function App() {
+
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <LoginScreen />;
+    </GestureHandlerRootView>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 15. Summary
+
+---
+
+## What you built
+
+Login screen with:
+
+* Logo
+* Email input
+* Password input
+* Login button
+* State handling
+
+---
+
+## Core Concepts Learned
+
+useState manages input values
+
+onChangeText updates state
+
+secureTextEntry hides password
+
+alignSelf centers logo
+
+padding improves layout
+
+---
+
+## Major Limitation
+
+Manual form handling does not scale well.
+
+Formik will solve this problem.
