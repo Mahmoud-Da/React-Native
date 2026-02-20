@@ -1745,3 +1745,610 @@ Professional approach
 ---
 
 Next step: Form validation using Yup.
+
+
+*** 4- Form Validation with Yup ***
+# Form Validation with Yup and Formik — Structured Notes
+
+This lecture explains how to add **form validation** using **Yup**, and integrate it with **Formik** to validate email and password fields.
+
+---
+
+# 1. Why Validation is Needed
+
+Validation ensures users enter correct data.
+
+Examples:
+
+* Email must be valid format
+* Password must have minimum length
+* Required fields cannot be empty
+
+Without validation:
+
+* Invalid data can be submitted
+* Security and usability problems occur
+
+Solution: Use Yup with Formik
+
+Formik has built-in support for Yup.
+
+---
+
+# 2. Install Yup
+
+Install the same version used in the lecture:
+
+-------------------code----------------------
+npm install yup@0.28.5
+-------------------code----------------------
+
+or
+
+-------------------code----------------------
+yarn add yup@0.28.5
+-------------------code----------------------
+
+---
+
+# 3. Import Yup
+
+Import everything as Yup:
+
+-------------------code----------------------
+import * as Yup from "yup";
+-------------------code----------------------
+
+This gives access to all Yup validation functions.
+
+---
+
+# 4. Create Validation Schema
+
+Validation schema defines all validation rules.
+
+Important: Define schema outside component.
+
+Why?
+
+To prevent recreating the object on every render.
+
+---
+
+## Step 1: Create validationSchema
+
+-------------------code----------------------
+const validationSchema = Yup.object().shape({
+
+   email: Yup.string()
+      .required()
+      .email()
+      .label("Email"),
+
+   password: Yup.string()
+      .required()
+      .min(4)
+      .label("Password")
+
+});
+-------------------code----------------------
+
+---
+
+# 5. Understanding Each Validation Rule
+
+---
+
+## Yup.object()
+
+Creates validation object.
+
+-------------------code----------------------
+Yup.object()
+-------------------code----------------------
+
+---
+
+## shape()
+
+Defines structure of form:
+
+-------------------code----------------------
+.shape({
+
+ email: ...,
+ password: ...
+
+})
+-------------------code----------------------
+
+---
+
+## Yup.string()
+
+Defines text field:
+
+-------------------code----------------------
+Yup.string()
+-------------------code----------------------
+
+---
+
+## required()
+
+Field cannot be empty:
+
+-------------------code----------------------
+.required()
+-------------------code----------------------
+
+Error example:
+
+-------------------code----------------------
+Email is required
+-------------------code----------------------
+
+---
+
+## email()
+
+Validates email format:
+
+-------------------code----------------------
+.email()
+-------------------code----------------------
+
+Example invalid:
+
+-------------------code----------------------
+abc
+-------------------code----------------------
+
+Example valid:
+
+-------------------code----------------------
+abc@gmail.com
+-------------------code----------------------
+
+---
+
+## min()
+
+Minimum characters:
+
+-------------------code----------------------
+.min(4)
+-------------------code----------------------
+
+Example invalid:
+
+-------------------code----------------------
+123
+-------------------code----------------------
+
+Example valid:
+
+-------------------code----------------------
+1234
+-------------------code----------------------
+
+---
+
+## label()
+
+Defines display name:
+
+-------------------code----------------------
+.label("Email")
+-------------------code----------------------
+
+Instead of:
+
+-------------------code----------------------
+email is required
+-------------------code----------------------
+
+Shows:
+
+-------------------code----------------------
+Email is required
+-------------------code----------------------
+
+Better UI.
+
+---
+
+# 6. Connect Validation Schema to Formik
+
+Add validationSchema prop:
+
+-------------------code----------------------
+<Formik
+
+ initialValues={{
+  email: "",
+  password: ""
+ }}
+
+ validationSchema={validationSchema}
+
+ onSubmit={(values) => console.log(values)}
+
+>
+-------------------code----------------------
+
+Formik automatically validates form.
+
+---
+
+# 7. Display Validation Errors
+
+Formik provides errors object.
+
+This contains all validation messages.
+
+Example:
+
+-------------------code----------------------
+errors.email
+errors.password
+-------------------code----------------------
+
+---
+
+# 8. Extract errors from Formik
+
+Update destructuring:
+
+Before:
+
+-------------------code----------------------
+{({ handleChange, handleSubmit }) => (
+-------------------code----------------------
+
+After:
+
+-------------------code----------------------
+{({ handleChange, handleSubmit, errors }) => (
+-------------------code----------------------
+
+---
+
+# 9. Display Email Error
+
+After email input:
+
+-------------------code----------------------
+<AppText style={{ color: "red" }}>
+   {errors.email}
+</AppText>
+-------------------code----------------------
+
+---
+
+# 10. Display Password Error
+
+After password input:
+
+-------------------code----------------------
+<AppText style={{ color: "red" }}>
+   {errors.password}
+</AppText>
+-------------------code----------------------
+
+---
+
+# 11. How Validation Works
+
+Step-by-step flow:
+
+User presses Login
+
+↓
+
+Formik runs Yup validation
+
+↓
+
+Errors stored in errors object
+
+↓
+
+Errors displayed on screen
+
+↓
+
+User fixes input
+
+↓
+
+Errors update automatically
+
+---
+
+# 12. Example Validation Behavior
+
+---
+
+## Case 1: Empty email
+
+Error:
+
+-------------------code----------------------
+Email is required
+-------------------code----------------------
+
+---
+
+## Case 2: Invalid email
+
+Example input:
+
+-------------------code----------------------
+abc
+-------------------code----------------------
+
+Error:
+
+-------------------code----------------------
+Email must be a valid email
+-------------------code----------------------
+
+---
+
+## Case 3: Short password
+
+Example input:
+
+-------------------code----------------------
+12
+-------------------code----------------------
+
+Error:
+
+-------------------code----------------------
+Password must be at least 4 characters
+-------------------code----------------------
+
+---
+
+## Case 4: Valid inputs
+
+Example:
+
+-------------------code----------------------
+test@gmail.com
+1234
+-------------------code----------------------
+
+No errors shown
+
+Form submits successfully
+
+---
+
+# 13. Temporary Styling for Error Text
+
+Example:
+
+-------------------code----------------------
+style={{ color: "red" }}
+-------------------code----------------------
+
+Later, this will be converted to reusable component.
+
+---
+
+# 14. Best Practices
+
+---
+
+## Always define validationSchema outside component
+
+Correct:
+
+-------------------code----------------------
+const validationSchema = ...
+-------------------code----------------------
+
+Wrong:
+
+-------------------code----------------------
+function LoginScreen() {
+
+ const validationSchema = ...
+
+}
+-------------------code----------------------
+
+This reduces performance.
+
+---
+
+## Always use label()
+
+Improves error messages.
+
+---
+
+## Always validate all fields
+
+Never trust user input.
+
+---
+
+## Always connect validationSchema to Formik
+
+-------------------code----------------------
+validationSchema={validationSchema}
+-------------------code----------------------
+
+---
+
+## Always show error messages
+
+Improves user experience.
+
+---
+
+# 15. Full Final Code
+
+LoginScreen.js
+
+-------------------code----------------------
+import { Formik } from "formik";
+import {
+  Image,
+  StyleSheet
+} from "react-native";
+import * as Yup from "yup";
+import AppButton from "../components/AppButton";
+import AppText from "../components/AppText";
+import AppTextInput from "../components/AppTextInput";
+import Screen from "../components/Screen";
+
+const validationSchema = Yup.object().shape({
+  email: Yup.string()
+    .required()
+    .email()
+    .label("Email"),
+  password: Yup.string()
+    .required()
+    .min(4)
+    .label("Password")
+});
+
+function LoginScreen() {
+  return (
+    <Screen style={styles.container}>
+      <Image
+        source={require("../assets/logo-red.png")}
+        style={styles.logo}
+      />
+      <Formik
+        initialValues={{
+          email: "",
+          password: ""
+        }}
+        validationSchema={validationSchema}
+        onSubmit={(values) => console.log(values)}
+      >
+
+        {({
+          handleChange,
+          handleSubmit,
+          errors
+        }) => (
+          <>
+            <AppTextInput
+              icon="email"
+              placeholder="Email"
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="email-address"
+              textContentType="emailAddress"
+              onChangeText={handleChange("email")}
+            />
+            <AppText style={{ color: "red" }}>
+              {errors.email}
+            </AppText>
+            <AppTextInput
+              icon="lock"
+              placeholder="Password"
+              autoCapitalize="none"
+              autoCorrect={false}
+              secureTextEntry
+              textContentType="password"
+              onChangeText={handleChange("password")}
+            />
+            <AppText style={{ color: "red" }}>
+              {errors.password}
+            </AppText>
+            <AppButton
+              title="Login"
+              onPress={handleSubmit}
+            />
+          </>
+        )}
+      </Formik>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 10
+  },
+  logo: {
+    width: 80,
+    height: 80,
+    alignSelf: "center",
+    marginTop: 50,
+    marginBottom: 20
+  }
+});
+
+export default LoginScreen;
+-------------------code----------------------
+
+---
+
+# 16. Summary
+
+---
+
+# What you learned
+
+Yup is used for validation
+
+Formik integrates with Yup
+
+Validation rules defined in validationSchema
+
+Errors accessed using errors object
+
+---
+
+# Key Concepts
+
+validationSchema → defines rules
+
+errors → contains validation messages
+
+label → improves message text
+
+Formik handles validation automatically
+
+---
+
+# Validation Flow
+
+User Input
+
+↓
+
+Formik
+
+↓
+
+Yup Validation
+
+↓
+
+Errors Object
+
+↓
+
+Display Errors
+
+---
+
+# Result
+
+Professional form validation
+
+Clean code
+
+Easy to scale
+
+Industry standard approach
