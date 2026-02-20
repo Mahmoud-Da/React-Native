@@ -5,7 +5,7 @@ export default function App() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <LoginScreen />;
+      <LoginScreen />
     </GestureHandlerRootView>
   );
 }
