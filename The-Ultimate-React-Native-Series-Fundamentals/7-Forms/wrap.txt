@@ -2842,3 +2842,393 @@ Professional code
 # Best Practice
 
 Always create reusable components for repeated UI elements
+
+
+*** 6- The Touched State ***
+# Handling Touched Fields and Showing Validation Errors Properly in Formik
+
+## 1. Problem: Validation Errors Show Too Early
+
+### Issue
+
+When the app reloads and the user starts typing in the email field, the password error appears immediately even though the user never interacted with the password field.
+
+This creates a bad user experience.
+
+Example:
+
+* User types email
+* Password error appears without touching password
+
+This happens because Formik validates all fields, regardless of user interaction.
+
+---
+
+## 2. Solution Overview
+
+We must:
+
+1. Mark a field as touched when the user leaves it
+2. Show error messages only if:
+
+* The field has an error
+* AND the field has been touched
+
+Formik provides:
+
+* `setFieldTouched`
+* `touched` object
+
+---
+
+## 3. Step 1: Get Required Properties from Formik
+
+Add these Formik props:
+
+-------------------code----------------------
+{({
+  handleChange,
+  handleSubmit,
+  setFieldTouched,
+  errors,
+  touched
+}) => (
+-------------------code----------------------
+
+Explanation:
+
+| Property        | Purpose                           |
+| --------------- | --------------------------------- |
+| setFieldTouched | Mark field as touched             |
+| touched         | Object that tracks touched fields |
+| errors          | Contains validation errors        |
+
+Example touched object:
+
+-------------------code----------------------
+{
+  email: true,
+  password: false
+}
+-------------------code----------------------
+
+---
+
+## 4. Step 2: Mark Field as Touched Using onBlur
+
+We use the `onBlur` event.
+
+### Email Field
+
+-------------------code----------------------
+<AppTextInput
+  placeholder="Email"
+  onChangeText={handleChange("email")}
+  onBlur={() => setFieldTouched("email")}
+/>
+-------------------code----------------------
+
+Explanation:
+
+When user leaves the field:
+
+-------------------code----------------------
+setFieldTouched("email")
+-------------------code----------------------
+
+Formik marks email as touched.
+
+---
+
+### Password Field
+
+-------------------code----------------------
+<AppTextInput
+  placeholder="Password"
+  secureTextEntry
+  onChangeText={handleChange("password")}
+  onBlur={() => setFieldTouched("password")}
+/>
+-------------------code----------------------
+
+---
+
+## 5. Step 3: Show Error Only If Field is Touched
+
+Formik provides:
+
+-------------------code----------------------
+touched.email
+touched.password
+-------------------code----------------------
+
+Instead of conditional rendering, create a reusable prop called visible.
+
+---
+
+## 6. Step 4: Update ErrorMessage Component
+
+### ErrorMessage.js
+
+-------------------code----------------------
+import { StyleSheet } from "react-native";
+import AppText from "./AppText";
+
+function ErrorMessage({ error, visible }) {
+
+  if (!visible || !error)
+    return null;
+
+  return (
+    <AppText style={styles.error}>
+      {error}
+    </AppText>
+  );
+}
+
+const styles = StyleSheet.create({
+  error: {
+    color: "red"
+  }
+});
+
+export default ErrorMessage;
+-------------------code----------------------
+
+---
+
+## 7. Step 5: Pass visible Prop
+
+### Email Error
+
+-------------------code----------------------
+<ErrorMessage
+  error={errors.email}
+  visible={touched.email}
+/>
+-------------------code----------------------
+
+---
+
+### Password Error
+
+-------------------code----------------------
+<ErrorMessage
+  error={errors.password}
+  visible={touched.password}
+/>
+-------------------code----------------------
+
+---
+
+## 8. How It Works (Flow Explanation)
+
+### Before
+
+User types email
+
+Formik validates password
+
+Password error shows immediately
+
+Bad UX
+
+---
+
+### After Fix
+
+User types email
+
+No error shown yet
+
+User leaves field
+
+Formik marks field as touched
+
+Now error shows
+
+Correct UX
+
+---
+
+## 9. Visual Flow Diagram
+
+User touches field
+
+↓
+
+User leaves field
+
+↓
+
+onBlur fires
+
+↓
+
+setFieldTouched called
+
+↓
+
+touched.field = true
+
+↓
+
+ErrorMessage visible = true
+
+↓
+
+Error shows
+
+---
+
+# 10. Full Final Code
+
+## LoginScreen.js
+
+-------------------code----------------------
+import { Formik } from "formik";
+import { Image, StyleSheet } from "react-native";
+import * as Yup from "yup";
+import AppButton from "../components/AppButton";
+import AppTextInput from "../components/AppTextInput";
+import ErrorMessage from "../components/ErrorMessage";
+import Screen from "../components/Screen";
+
+const validationSchema = Yup.object().shape({
+  email: Yup.string()
+    .required()
+    .email()
+    .label("Email"),
+  password: Yup.string()
+    .required()
+    .min(4)
+    .label("Password")
+});
+
+function LoginScreen() {
+  return (
+    <Screen style={styles.container}>
+      <Image
+        source={require("../assets/logo-red.png")}
+        style={styles.logo}
+      />
+      <Formik
+        initialValues={{
+          email: "",
+          password: ""
+        }}
+        validationSchema={validationSchema}
+        onSubmit={(values) => console.log(values)}
+      >
+        {({
+          handleChange,
+          handleSubmit,
+          setFieldTouched,
+          errors,
+          touched
+        }) => (
+          <>
+            <AppTextInput
+              icon="email"
+              placeholder="Email"
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="email-address"
+              textContentType="emailAddress"
+              onChangeText={handleChange("email")}
+              onBlur={() => setFieldTouched("email")}
+            />
+            <ErrorMessage
+              error={errors.email}
+              visible={touched.email}
+            />
+            <AppTextInput
+              icon="lock"
+              placeholder="Password"
+              autoCapitalize="none"
+              autoCorrect={false}
+              secureTextEntry
+              textContentType="password"
+              onChangeText={handleChange("password")}
+              onBlur={() => setFieldTouched("password")}
+            />
+            <ErrorMessage
+              error={errors.password}
+              visible={touched.password}
+            />
+            <AppButton
+              title="Login"
+              onPress={handleSubmit}
+            />
+          </>
+        )}
+      </Formik>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 10
+  },
+  logo: {
+    width: 80,
+    height: 80,
+    alignSelf: "center",
+    marginTop: 50,
+    marginBottom: 20
+  }
+});
+
+export default LoginScreen;
+-------------------code----------------------
+
+---
+
+# 11. Best Practices
+
+Always use touched with errors
+
+Never show errors before interaction
+
+Use reusable ErrorMessage component
+
+Always use onBlur with Formik inputs
+
+Define validationSchema outside component
+
+---
+
+# 12. Summary
+
+Problem:
+
+Validation errors appeared too early
+
+Cause:
+
+Formik validates all fields immediately
+
+Solution:
+
+Use:
+
+setFieldTouched
+
+touched object
+
+visible prop
+
+ErrorMessage component
+
+Result:
+
+Errors only appear after user interaction
+
+This creates professional and user-friendly forms.
+
+---
+
+If you want, next lecture summary is even more important:
+
+Building reusable FormField component (clean architecture).
