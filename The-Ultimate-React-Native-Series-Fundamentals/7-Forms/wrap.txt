@@ -3229,6 +3229,512 @@ This creates professional and user-friendly forms.
 
 ---
 
-If you want, next lecture summary is even more important:
 
-Building reusable FormField component (clean architecture).
+*** 7- Building the Field Component ***
+# Creating a Reusable FormField Component with Formik (Refactoring)
+
+## 1. Problem: Too Much Duplicate Code
+
+### Current Implementation Problem
+
+For every input field, we must repeat:
+
+* AppTextInput
+* onChangeText
+* onBlur
+* ErrorMessage
+* errors.fieldName
+* touched.fieldName
+
+Example duplication:
+
+-------------------code----------------------
+<AppTextInput
+  onChangeText={handleChange("email")}
+  onBlur={() => setFieldTouched("email")}
+/>
+
+<ErrorMessage
+  error={errors.email}
+  visible={touched.email}
+/>
+-------------------code----------------------
+
+This is bad because:
+
+* Hard to maintain
+* Repetitive
+* Error-prone
+* Not scalable
+
+---
+
+## 2. Solution Overview: Create Reusable FormField Component
+
+We will create a custom component that:
+
+Encapsulates:
+
+* AppTextInput
+* ErrorMessage
+* Formik logic
+
+Result:
+
+Cleaner LoginScreen
+
+Example:
+
+-------------------code----------------------
+<AppFormField
+  name="email"
+  placeholder="Email"
+/>
+-------------------code----------------------
+
+---
+
+# 3. Step 1: Create AppFormField Component
+
+Create new file:
+
+-------------------code----------------------
+components/AppFormField.js
+-------------------code----------------------
+
+---
+
+## 4. Step 2: Copy Input and ErrorMessage
+
+Wrap inside Fragment:
+
+-------------------code----------------------
+<>
+  <AppTextInput />
+
+  <ErrorMessage />
+</>
+-------------------code----------------------
+
+Reason:
+
+React components must return one parent element.
+
+---
+
+# 5. Step 3: Import Required Components
+
+-------------------code----------------------
+import AppTextInput from "./AppTextInput";
+import ErrorMessage from "./ErrorMessage";
+-------------------code----------------------
+
+---
+
+# 6. Step 4: Add name Prop
+
+We must avoid hardcoding "email"
+
+Instead use:
+
+-------------------code----------------------
+function AppFormField({ name }) {
+-------------------code----------------------
+
+Use name dynamically:
+
+### Change this:
+
+-------------------code----------------------
+handleChange("email")
+-------------------code----------------------
+
+### To:
+
+-------------------code----------------------
+handleChange(name)
+-------------------code----------------------
+
+---
+
+# 7. Step 5: Access errors and touched Dynamically
+
+Use bracket notation:
+
+Correct:
+
+-------------------code----------------------
+errors[name]
+touched[name]
+-------------------code----------------------
+
+Not:
+
+-------------------code----------------------
+errors.email
+-------------------code----------------------
+
+---
+
+# 8. Step 6: Access Formik Using useFormikContext
+
+Important Concept
+
+Formik uses React Context.
+
+We access it using:
+
+-------------------code----------------------
+useFormikContext()
+-------------------code----------------------
+
+Import:
+
+-------------------code----------------------
+import { useFormikContext } from "formik";
+-------------------code----------------------
+
+Use:
+
+-------------------code----------------------
+const {
+  setFieldTouched,
+  handleChange,
+  errors,
+  touched
+} = useFormikContext();
+-------------------code----------------------
+
+Now FormField has access to:
+
+* errors
+* touched
+* handleChange
+* setFieldTouched
+
+---
+
+# 9. Step 7: Pass Remaining Props Using Spread Operator
+
+We want to pass props like:
+
+* placeholder
+* icon
+* keyboardType
+
+Use Rest operator:
+
+-------------------code----------------------
+function AppFormField({ name, ...otherProps })
+-------------------code----------------------
+
+Pass using spread:
+
+-------------------code----------------------
+<AppTextInput
+  onChangeText={handleChange(name)}
+  onBlur={() => setFieldTouched(name)}
+  {...otherProps}
+/>
+-------------------code----------------------
+
+---
+
+# 10. Final AppFormField Component
+
+## AppFormField.js
+
+-------------------code----------------------
+import { useFormikContext } from "formik";
+import AppTextInput from "./AppTextInput";
+import ErrorMessage from "./ErrorMessage";
+
+function AppFormField({ name, ...otherProps }) {
+  const {
+    setFieldTouched,
+    handleChange,
+    errors,
+    touched
+  } = useFormikContext();
+  return (
+    <>
+      <AppTextInput
+        onChangeText={handleChange(name)}
+        onBlur={() => setFieldTouched(name)}
+        {...otherProps}
+      />
+      <ErrorMessage
+        error={errors[name]}
+        visible={touched[name]}
+      />
+    </>
+  );
+}
+
+export default AppFormField;
+-------------------code----------------------
+
+---
+
+# 11. Step 8: Refactor LoginScreen
+
+Before:
+
+-------------------code----------------------
+<AppTextInput ... />
+<ErrorMessage ... />
+-------------------code----------------------
+
+After:
+
+-------------------code----------------------
+<AppFormField
+  name="email"
+  placeholder="Email"
+/>
+
+<AppFormField
+  name="password"
+  placeholder="Password"
+  secureTextEntry
+/>
+-------------------code----------------------
+
+---
+
+# 12. Final LoginScreen Code
+
+-------------------code----------------------
+import { Formik } from "formik";
+import { Image, StyleSheet } from "react-native";
+import * as Yup from "yup";
+import Screen from "../components/Screen";
+import AppButton from "../components/AppButton";
+import AppFormField from "../components/AppFormField";
+
+const validationSchema = Yup.object().shape({
+  email: Yup.string()
+    .required()
+    .email()
+    .label("Email"),
+  password: Yup.string()
+    .required()
+    .min(4)
+    .label("Password")
+});
+
+function LoginScreen() {
+  return (
+    <Screen style={styles.container}>
+      <Image
+        source={require("../assets/logo-red.png")}
+        style={styles.logo}
+      />
+      <Formik
+        initialValues={{
+          email: "",
+          password: ""
+        }}
+        validationSchema={validationSchema}
+        onSubmit={(values) => console.log(values)}
+      >
+        {({
+          handleChange,
+          handleSubmit,
+          setFieldTouched,
+          errors,
+          touched
+        }) => (
+          <>
+            <AppFormField
+              name="email"
+              icon="email"
+              placeholder="Email"
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="email-address"
+              textContentType="emailAddress"
+            />
+            <AppFormField
+              name="password"
+              icon="lock"
+              placeholder="Password"
+              autoCapitalize="none"
+              autoCorrect={false}
+              secureTextEntry
+              textContentType="password"
+            />
+            <AppButton
+              title="Login"
+              onPress={handleSubmit}
+            />
+          </>
+        )}
+      </Formik>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 10
+  },
+  logo: {
+    width: 80,
+    height: 80,
+    alignSelf: "center",
+    marginTop: 50,
+    marginBottom: 20
+  }
+
+});
+
+export default LoginScreen;
+-------------------code----------------------
+
+---
+
+# 13. How This Works Internally
+
+Flow:
+
+User types
+
+↓
+
+AppFormField
+
+↓
+
+Formik handleChange
+
+↓
+
+Formik updates state
+
+↓
+
+Formik updates errors
+
+↓
+
+ErrorMessage shows automatically
+
+---
+
+# 14. Benefits of This Refactor
+
+Before:
+
+50+ lines
+
+After:
+
+Clean and reusable
+
+Advantages:
+
+Reusable
+
+Cleaner code
+
+Less duplication
+
+Professional structure
+
+Scalable
+
+Industry standard
+
+---
+
+# 15. Important Best Practices
+
+Always use:
+
+useFormikContext
+
+Use:
+
+name prop
+
+Use:
+
+errors[name]
+
+Never hardcode field names
+
+Use spread operator for flexibility
+
+---
+
+# 16. Common Mistake
+
+Wrong import:
+
+-------------------code----------------------
+import { ErrorMessage } from "formik"
+-------------------code----------------------
+
+Correct:
+
+-------------------code----------------------
+import ErrorMessage from "./ErrorMessage"
+-------------------code----------------------
+
+---
+
+# 17. Visual Comparison
+
+Before:
+
+-------------------code----------------------
+<AppTextInput />
+<ErrorMessage />
+-------------------code----------------------
+
+After:
+
+-------------------code----------------------
+<AppFormField />
+-------------------code----------------------
+
+Much cleaner
+
+---
+
+# 18. Summary
+
+Problem:
+
+Too much duplicate form code
+
+Solution:
+
+Create reusable AppFormField
+
+Key Tools:
+
+useFormikContext
+
+errors[name]
+
+touched[name]
+
+spread operator
+
+Result:
+
+Clean
+
+Reusable
+
+Professional form architecture
+
+---
+
+Next lecture will cover:
+
+Creating reusable Submit Button component (AppFormSubmitButton)
+
+This completes the professional Formik structure.
