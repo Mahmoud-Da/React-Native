@@ -3738,3 +3738,380 @@ Next lecture will cover:
 Creating reusable Submit Button component (AppFormSubmitButton)
 
 This completes the professional Formik structure.
+
+*** 8- Building the SubmitButton Component ***
+# Creating a Reusable Submit Button with Formik Context
+
+In this lecture, the goal is to remove repetitive code when adding submit buttons to forms by creating a reusable **SubmitButton component** that automatically connects to Formik.
+
+---
+
+# 1. Problem: Repeating handleSubmit for Every Button
+
+## Current Implementation
+
+Every time you add a button, you must manually connect it to Formik:
+
+-------------------code----------------------
+<AppButton
+  title="Login"
+  onPress={handleSubmit}
+/>
+-------------------code----------------------
+
+This causes:
+
+* Code duplication
+* Poor scalability
+* Harder maintenance
+
+We want to eliminate this repetition.
+
+---
+
+# 2. Solution: Create a Reusable SubmitButton Component
+
+We will create a component that:
+
+* Automatically connects to Formik
+* Calls handleSubmit internally
+* Only requires the title
+
+Result:
+
+-------------------code----------------------
+<SubmitButton title="Login" />
+-------------------code----------------------
+
+Cleaner and reusable.
+
+---
+
+# 3. Step 1: Create SubmitButton File
+
+Create file:
+
+-------------------code----------------------text
+components/SubmitButton.js
+-------------------code----------------------
+
+---
+
+# 4. Step 2: Basic Component Structure
+
+Import dependencies:
+
+-------------------code----------------------
+import React from "react";
+import AppButton from "./AppButton";
+-------------------code----------------------
+
+Create component:
+
+-------------------code----------------------
+function SubmitButton({ title }) {
+
+  return (
+    <AppButton title={title} />
+  );
+
+}
+
+export default SubmitButton;
+-------------------code----------------------
+
+But this doesn't submit the form yet.
+
+---
+
+# 5. Step 3: Access Formik Context
+
+Formik provides:
+
+useFormikContext()
+
+This gives access to:
+
+handleSubmit
+
+---
+
+## Import it:
+
+-------------------code----------------------
+import { useFormikContext } from "formik";
+-------------------code----------------------
+
+---
+
+# 6. Step 4: Connect handleSubmit
+
+Update component:
+
+-------------------code----------------------
+function SubmitButton({ title }) {
+
+  const { handleSubmit } = useFormikContext();
+
+  return (
+    <AppButton
+      title={title}
+      onPress={handleSubmit}
+    />
+  );
+
+}
+-------------------code----------------------
+
+Now button automatically submits form.
+
+---
+
+# 7. Final SubmitButton Component
+
+-------------------code----------------------
+import { useFormikContext } from "formik";
+import AppButton from "./AppButton";
+
+function SubmitButton({ title }) {
+  const { handleSubmit } = useFormikContext();
+  return (
+    <AppButton
+      title={title}
+      onPress={handleSubmit}
+    />
+  );
+}
+
+export default SubmitButton;
+-------------------code----------------------
+
+---
+
+# 8. Step 5: Use SubmitButton in LoginScreen
+
+Before:
+
+-------------------code----------------------
+<Formik>
+  {({ handleSubmit }) => (
+
+    <AppButton
+      title="Login"
+      onPress={handleSubmit}
+    />
+
+  )}
+</Formik>
+-------------------code----------------------
+
+---
+
+After:
+
+-------------------code----------------------
+<Formik>
+
+  <SubmitButton title="Login" />
+
+</Formik>
+-------------------code----------------------
+
+No more handleSubmit needed.
+
+---
+
+# 9. Clean Up LoginScreen
+
+Before:
+
+-------------------code----------------------
+{({ handleSubmit }) => (
+-------------------code----------------------
+
+After:
+
+-------------------code----------------------
+{() => (
+-------------------code----------------------
+
+Or even cleaner (final form later):
+
+-------------------code----------------------
+<Formik>
+  <>
+-------------------code----------------------
+
+---
+
+# 10. Final LoginScreen Code
+
+-------------------code----------------------
+import { Formik } from "formik";
+import { Image, StyleSheet } from "react-native";
+import * as Yup from "yup";
+
+import AppFormField from "../components/AppFormField";
+import Screen from "../components/Screen";
+import SubmitButton from "../components/SubmitButton";
+
+const validationSchema = Yup.object().shape({
+  email: Yup.string()
+    .required()
+    .email()
+    .label("Email"),
+  password: Yup.string()
+    .required()
+    .min(4)
+    .label("Password")
+});
+
+function LoginScreen() {
+  return (
+    <Screen style={styles.container}>
+      <Image
+        source={require("../assets/logo-red.png")}
+        style={styles.logo}
+      />
+      <Formik
+        initialValues={{
+          email: "",
+          password: ""
+        }}
+        validationSchema={validationSchema}
+        onSubmit={(values) => console.log(values)}
+      >
+        {() => (
+          <>
+            <AppFormField
+              name="email"
+              icon="email"
+              placeholder="Email"
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="email-address"
+              textContentType="emailAddress"
+            />
+            <AppFormField
+              name="password"
+              icon="lock"
+              placeholder="Password"
+              autoCapitalize="none"
+              autoCorrect={false}
+              secureTextEntry
+              textContentType="password"
+            />
+            <SubmitButton title="Login" />
+          </>
+        )}
+      </Formik>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 10
+  },
+  logo: {
+    width: 80,
+    height: 80,
+    alignSelf: "center",
+    marginTop: 50,
+    marginBottom: 20
+  }
+
+});
+
+export default LoginScreen;
+-------------------code----------------------
+
+---
+
+# 11. Final Component Architecture
+
+Clean professional structure:
+
+-------------------code----------------------
+LoginScreen
+
+ ├── Formik
+
+ │     ├── AppFormField
+ │     ├── AppFormField
+ │     └── SubmitButton
+
+ └── Screen
+-------------------code----------------------
+
+---
+
+# 12. Best Practices
+
+## Always use useFormikContext in reusable components
+
+Avoid passing:
+
+* handleSubmit
+* errors
+* touched
+
+Manually.
+
+---
+
+## Use reusable form components
+
+Benefits:
+
+* Cleaner code
+* Easier maintenance
+* Professional structure
+
+---
+
+## Avoid prop drilling
+
+Formik Context solves this.
+
+---
+
+# 13. Why This Approach is Powerful
+
+Without reusable components:
+
+50 forms = massive duplicated code
+
+With reusable components:
+
+50 forms = clean and simple
+
+---
+
+# 14. Summary
+
+Problem:
+
+Repeated handleSubmit code
+
+Solution:
+
+Create reusable SubmitButton
+
+Key concepts learned:
+
+useFormikContext
+
+Reusable components
+
+Cleaner architecture
+
+Benefits:
+
+Less code
+
+Better readability
+
+Professional design
+
+---

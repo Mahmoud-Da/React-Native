@@ -1,9 +1,10 @@
 import { Formik } from "formik";
 import { Image, StyleSheet } from "react-native";
 import * as Yup from "yup";
-import Screen from "../components/Screen";
-import AppButton from "../components/AppButton";
+
 import AppFormField from "../components/AppFormField";
+import Screen from "../components/Screen";
+import SubmitButton from "../components/SubmitButton";
 
 const validationSchema = Yup.object().shape({
   email: Yup.string()
@@ -31,13 +32,7 @@ function LoginScreen() {
         validationSchema={validationSchema}
         onSubmit={(values) => console.log(values)}
       >
-        {({
-          handleChange,
-          handleSubmit,
-          setFieldTouched,
-          errors,
-          touched
-        }) => (
+        {() => (
           <>
             <AppFormField
               name="email"
@@ -57,10 +52,7 @@ function LoginScreen() {
               secureTextEntry
               textContentType="password"
             />
-            <AppButton
-              title="Login"
-              onPress={handleSubmit}
-            />
+            <SubmitButton title="Login" />
           </>
         )}
       </Formik>
