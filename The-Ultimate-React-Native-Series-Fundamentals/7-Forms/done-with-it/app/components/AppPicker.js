@@ -1,5 +1,5 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useState } from "react";
-
 import {
   Button,
   FlatList,
@@ -8,9 +8,6 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-
 import colors from "../config/colors";
 import AppText from "./AppText";
 import PickerItem from "./PickerItem";
@@ -23,9 +20,7 @@ function AppPicker({
   selectedItem,
   onSelectItem
 }) {
-
   const [modalVisible, setModalVisible] = useState(false);
-
   return (
     <>
       <TouchableWithoutFeedback
@@ -40,30 +35,28 @@ function AppPicker({
               style={styles.icon}
             />
           )}
-
-          <AppText style={styles.text}>
-
-            {selectedItem
-              ? selectedItem.label
-              : placeholder}
-
-          </AppText>
-
+          {
+            selectedItem ? (
+              <AppText style={styles.text}>
+                {selectedItem.label}
+              </AppText>
+            ) : (
+              <AppText style={styles.placeholder}>
+                {placeholder}
+              </AppText>
+            )
+          }
           <MaterialCommunityIcons
             name="chevron-down"
             size={20}
             color={colors.medium}
           />
-
         </View>
-
       </TouchableWithoutFeedback>
-
       <Modal
         visible={modalVisible}
         animationType="slide"
       >
-
         <Screen>
           <Button
             title="Close"
@@ -91,7 +84,6 @@ function AppPicker({
 }
 
 const styles = StyleSheet.create({
-
   container: {
     backgroundColor: colors.light,
     borderRadius: 25,
@@ -101,15 +93,17 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     alignItems: "center",
   },
-
-  text: {
+  placeholder: {
+    color: colors.medium,
     flex: 1,
   },
-
+  text: {
+    color: colors.dark,
+    flex: 1,
+  },
   icon: {
     marginRight: 10,
   },
-
 });
 
 export default AppPicker;

@@ -5670,3 +5670,464 @@ Clean professional form:
 This is production-level architecture used in real apps.
 
 ---
+
+
+*** 13- Fixing the Placeholder Color ***
+# Fix Placeholder Color in AppPicker – Clean Structured Notes
+
+This lecture fixes the placeholder color inconsistency between:
+
+* AppPicker placeholder
+* AppTextInput placeholder
+
+The goal is to make placeholder text use **medium gray** and selected text use **dark gray**, ensuring consistent UI.
+
+---
+
+# 1. Problem Overview
+
+## 1.1 The Issue
+
+The placeholder in AppPicker appears:
+
+* Darker than other input placeholders
+* Visually inconsistent
+
+Reason:
+
+The same style was used for:
+
+* Selected item text
+* Placeholder text
+
+But they should have **different colors**.
+
+---
+
+# 2. Solution Part 1 – Fix AppPicker Component
+
+We must render:
+
+* One style for selected item
+* Another style for placeholder
+
+---
+
+# 3. Step-by-Step Fix in AppPicker
+
+File:
+
+-------------------code----------------------
+components/AppPicker.js
+-------------------code----------------------
+
+---
+
+# 3.1 Before Fix (Incorrect)
+
+Previously:
+
+-------------------code----------------------
+<AppText style={styles.text}>
+  {selectedItem ? selectedItem.label : placeholder}
+</AppText>
+-------------------code----------------------
+
+Problem:
+
+Same style used for both cases.
+
+---
+
+# 3.2 After Fix (Correct Approach)
+
+Use conditional rendering:
+
+-------------------code----------------------
+{
+  selectedItem ? (
+
+    <AppText style={styles.text}>
+      {selectedItem.label}
+    </AppText>
+
+  ) : (
+
+    <AppText style={styles.placeholder}>
+      {placeholder}
+    </AppText>
+
+  )
+}
+-------------------code----------------------
+
+---
+
+# 4. Create Placeholder Style
+
+Add new style:
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+
+  text: {
+
+    color: colors.dark,
+    flex: 1,
+
+  },
+
+  placeholder: {
+
+    color: colors.medium,
+    flex: 1,
+
+  },
+
+});
+-------------------code----------------------
+
+---
+
+# 4.1 Why flex: 1 is Important
+
+This ensures:
+
+* Text expands
+* Layout remains correct
+
+---
+
+# 5. Solution Part 2 – Fix AppTextInput Component
+
+Even after fixing AppPicker, TextInput placeholder still uses default color.
+
+We must explicitly set placeholderTextColor.
+
+---
+
+# 6. Fix AppTextInput
+
+File:
+
+-------------------code----------------------
+components/AppTextInput.js
+-------------------code----------------------
+
+---
+
+# 6.1 Add placeholderTextColor
+
+-------------------code----------------------
+<TextInput
+
+  placeholderTextColor={
+    defaultStyles.colors.medium
+  }
+
+/>
+-------------------code----------------------
+
+---
+
+# 7. Why This Is Important
+
+Without this:
+
+React Native uses default system color.
+
+Which may differ from your design.
+
+---
+
+# 8. Final AppPicker Code
+
+-------------------code----------------------
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useState } from "react";
+import {
+  Button,
+  FlatList,
+  Modal,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
+import colors from "../config/colors";
+import AppText from "./AppText";
+import PickerItem from "./PickerItem";
+import Screen from "./Screen";
+
+function AppPicker({
+  icon,
+  items,
+  placeholder,
+  selectedItem,
+  onSelectItem
+}) {
+  const [modalVisible, setModalVisible] = useState(false);
+  return (
+    <>
+      <TouchableWithoutFeedback
+        onPress={() => setModalVisible(true)}
+      >
+        <View style={styles.container}>
+          {icon && (
+            <MaterialCommunityIcons
+              name={icon}
+              size={20}
+              color={colors.medium}
+              style={styles.icon}
+            />
+          )}
+          {
+            selectedItem ? (
+              <AppText style={styles.text}>
+                {selectedItem.label}
+              </AppText>
+            ) : (
+              <AppText style={styles.placeholder}>
+                {placeholder}
+              </AppText>
+            )
+          }
+          <MaterialCommunityIcons
+            name="chevron-down"
+            size={20}
+            color={colors.medium}
+          />
+        </View>
+      </TouchableWithoutFeedback>
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+      >
+        <Screen>
+          <Button
+            title="Close"
+            onPress={() => setModalVisible(false)}
+          />
+          <FlatList
+            data={items}
+            keyExtractor={(item) =>
+              item.value.toString()
+            }
+            renderItem={({ item }) => (
+              <PickerItem
+                label={item.label}
+                onPress={() => {
+                  setModalVisible(false);
+                  onSelectItem(item);
+                }}
+              />
+            )}
+          />
+        </Screen>
+      </Modal>
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: colors.light,
+    borderRadius: 25,
+    flexDirection: "row",
+    width: "100%",
+    padding: 15,
+    marginVertical: 10,
+    alignItems: "center",
+  },
+  placeholder: {
+    color: colors.medium,
+    flex: 1,
+  },
+  text: {
+    color: colors.dark,
+    flex: 1,
+  },
+  icon: {
+    marginRight: 10,
+  },
+});
+
+export default AppPicker;
+-------------------code----------------------
+
+
+App.js
+-------------------code----------------------
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import ListingEditScreen from "./app/screens/ListingEditScreen";
+
+export default function App() {
+
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ListingEditScreen />
+    </GestureHandlerRootView>
+  );
+}
+-------------------code----------------------
+---
+
+# 9. Final AppTextInput Code Fix
+
+-------------------code----------------------
+import defaultStyles from "../config/styles";
+
+<TextInput
+
+ placeholderTextColor={
+  defaultStyles.colors.medium
+ }
+
+/>
+-------------------code----------------------
+
+---
+
+# 10. Color System Best Practice
+
+This works well because of centralized color palette:
+
+Example:
+
+-------------------code----------------------
+config/colors.js
+-------------------code----------------------
+
+-------------------code----------------------
+export default {
+
+ dark: "#0c0c0c",
+
+ medium: "#6e6969",
+
+ light: "#f8f4f4",
+
+};
+-------------------code----------------------
+
+---
+
+# 11. Visual Result
+
+Before:
+
+Placeholder too dark
+
+After:
+
+Correct medium gray
+
+Matches other inputs
+
+Professional UI
+
+---
+
+# 12. Best Practices
+
+---
+
+## Always separate placeholder and text styles
+
+Correct:
+
+-------------------code----------------------
+text: dark color
+
+placeholder: medium gray
+-------------------code----------------------
+
+---
+
+## Always define placeholderTextColor in TextInput
+
+Correct:
+
+-------------------code----------------------
+placeholderTextColor={colors.medium}
+-------------------code----------------------
+
+---
+
+## Always use centralized color palette
+
+Never hardcode colors like:
+
+Wrong:
+
+-------------------code----------------------
+color: "#999"
+-------------------code----------------------
+
+Correct:
+
+-------------------code----------------------
+color: colors.medium
+-------------------code----------------------
+
+---
+
+# 13. Common Mistake
+
+Wrong:
+
+-------------------code----------------------
+<AppText>
+{selectedItem || placeholder}
+</AppText>
+-------------------code----------------------
+
+This prevents style control.
+
+---
+
+# 14. Final Architecture
+
+-------------------code----------------------
+components
+
+ AppPicker.js
+
+ AppTextInput.js
+
+config
+
+ colors.js
+ styles.js
+-------------------code----------------------
+
+---
+
+# 15. Summary
+
+Problem:
+
+AppPicker placeholder color inconsistent
+
+Solution:
+
+Fix AppPicker:
+
+Use two AppText components
+
+Fix AppTextInput:
+
+Set placeholderTextColor
+
+Use centralized color palette
+
+---
+
+# Final Result
+
+Consistent UI across:
+
+* TextInput
+* Picker
+* Entire app
+
+Professional design quality.
