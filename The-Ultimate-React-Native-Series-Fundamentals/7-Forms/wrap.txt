@@ -5091,3 +5091,582 @@ LoginScreen becomes:
 This is the professional production-level structure used in real React Native apps.
 
 ---
+
+*** 12- Building the Listing Edit Screen ***
+
+# Listing Edit Screen with Formik and Picker – Clean Structured Notes
+
+This lecture explains how to build a more advanced form called ListingEditScreen using:
+
+* AppForm
+* AppFormField
+* AppFormPicker (new)
+* SubmitButton
+* Yup validation
+
+This form allows users to create a listing with:
+
+* Title
+* Price
+* Category (Picker)
+* Description
+
+---
+
+# 1. Overview of the Listing Edit Screen
+
+## 1.1 Fields in this Form
+
+The form contains 4 fields:
+
+| Field       | Type   | Required |
+| ----------- | ------ | -------- |
+| Title       | string | Yes      |
+| Price       | number | Yes      |
+| Category    | object | Yes      |
+| Description | string | No       |
+
+---
+
+# 2. Create AppFormPicker Component
+
+## 2.1 Purpose
+
+AppFormPicker connects AppPicker with Formik.
+
+It handles:
+
+* Reading selected value
+* Updating Formik state
+* Showing validation errors
+
+This is similar to AppFormField but for pickers.
+
+---
+
+## 2.2 Create File
+
+-------------------code----------------------
+components/forms/AppFormPicker.js
+-------------------code----------------------
+
+---
+
+## 2.3 Step-by-Step Code Explanation
+
+### Step 1 — Import dependencies
+
+-------------------code----------------------
+import React from "react";
+import { useFormikContext } from "formik";
+
+import AppPicker from "../AppPicker";
+import ErrorMessage from "./ErrorMessage";
+-------------------code----------------------
+
+useFormikContext gives access to:
+
+* values
+* errors
+* touched
+* setFieldValue
+
+---
+
+### Step 2 — Create component
+
+-------------------code----------------------
+function AppFormPicker({ items, name, placeholder }) {
+-------------------code----------------------
+
+Props:
+
+| Prop        | Purpose                |
+| ----------- | ---------------------- |
+| items       | list of picker options |
+| name        | Formik field name      |
+| placeholder | placeholder text       |
+
+---
+
+### Step 3 — Access Formik
+
+-------------------code----------------------
+const { errors, setFieldValue, touched, values } = useFormikContext();
+-------------------code----------------------
+
+---
+
+### Step 4 — Connect Picker to Formik
+
+-------------------code----------------------
+<AppPicker
+  items={items}
+  onSelectItem={(item) => setFieldValue(name, item)}
+  placeholder={placeholder}
+  selectedItem={values[name]}
+/>
+-------------------code----------------------
+
+Important:
+
+setFieldValue updates Formik state.
+
+---
+
+### Step 5 — Show error message
+
+-------------------code----------------------
+<ErrorMessage
+  error={errors[name]}
+  visible={touched[name]}
+/>
+-------------------code----------------------
+
+---
+
+## 2.4 Final AppFormPicker Code
+
+-------------------code----------------------
+import React from "react";
+import { useFormikContext } from "formik";
+
+import AppPicker from "../AppPicker";
+import ErrorMessage from "./ErrorMessage";
+
+function AppFormPicker({ items, name, placeholder }) {
+  const { errors, setFieldValue, touched, values } = useFormikContext();
+
+  return (
+    <>
+      <AppPicker
+        items={items}
+        onSelectItem={(item) => setFieldValue(name, item)}
+        placeholder={placeholder}
+        selectedItem={values[name]}
+      />
+      <ErrorMessage error={errors[name]} visible={touched[name]} />
+    </>
+  );
+}
+
+export default AppFormPicker;
+-------------------code----------------------
+
+---
+
+# 3. Create Validation Schema
+
+## 3.1 Using Yup
+
+-------------------code----------------------
+const validationSchema = Yup.object().shape({
+
+  title:
+    Yup.string()
+      .required()
+      .min(1)
+      .label("Title"),
+
+  price:
+    Yup.number()
+      .required()
+      .min(1)
+      .max(10000)
+      .label("Price"),
+
+  description:
+    Yup.string()
+      .label("Description"),
+
+  category:
+    Yup.object()
+      .required()
+      .nullable()
+      .label("Category"),
+
+});
+-------------------code----------------------
+
+---
+
+## 3.2 Important Note: nullable()
+
+Category must be:
+
+* object when selected
+* null when empty
+
+So nullable() is required.
+
+---
+
+# 4. Create Categories Array
+
+Picker needs data:
+
+-------------------code----------------------
+const categories = [
+
+  { label: "Furniture", value: 1 },
+
+  { label: "Clothing", value: 2 },
+
+  { label: "Camera", value: 3 },
+
+];
+-------------------code----------------------
+
+Each item must contain:
+
+* label
+* value
+
+---
+
+# 5. Build ListingEditScreen Form
+
+---
+
+# 5.1 Import Form Components with Alias
+
+-------------------code----------------------
+import {
+
+  AppForm as Form,
+  AppFormField as FormField,
+  AppFormPicker as Picker,
+  SubmitButton,
+
+} from "../components/forms";
+-------------------code----------------------
+
+Alias improves readability.
+
+---
+
+# 5.2 Create Form Container
+
+-------------------code----------------------
+<Form
+
+ initialValues={{
+   title: "",
+   price: "",
+   description: "",
+   category: null,
+ }}
+
+ validationSchema={validationSchema}
+
+ onSubmit={(values) =>
+   console.log(values)
+ }
+
+>
+-------------------code----------------------
+
+---
+
+# 5.3 Important: Initial Values Rules
+
+| Field  | Initial value |
+| ------ | ------------- |
+| string | ""            |
+| number | ""            |
+| object | null          |
+
+Why price = "" ?
+
+Because TextInput only works with string.
+
+If you use 0, it will show 0 in input.
+
+---
+
+# 5.4 Add Title Field
+
+-------------------code----------------------
+<FormField
+ name="title"
+ placeholder="Title"
+ maxLength={255}
+/>
+-------------------code----------------------
+
+---
+
+# 5.5 Add Price Field
+
+-------------------code----------------------
+<FormField
+ name="price"
+ placeholder="Price"
+ keyboardType="numeric"
+ maxLength={8}
+/>
+-------------------code----------------------
+
+keyboardType numeric shows number keyboard.
+
+---
+
+# 5.6 Add Category Picker
+
+-------------------code----------------------
+<Picker
+ items={categories}
+ name="category"
+ placeholder="Category"
+/>
+-------------------code----------------------
+
+---
+
+# 5.7 Add Description Field
+
+-------------------code----------------------
+<FormField
+ name="description"
+ placeholder="Description"
+ multiline
+ numberOfLines={3}
+ maxLength={255}
+/>
+-------------------code----------------------
+
+multiline creates larger textbox.
+
+---
+
+# 5.8 Add Submit Button
+
+-------------------code----------------------
+<SubmitButton title="Post" />
+-------------------code----------------------
+
+---
+
+# 6. Full Final ListingEditScreen Code
+
+-------------------code----------------------
+import React from "react";
+import { StyleSheet } from "react-native";
+import * as Yup from "yup";
+
+import {
+  AppForm as Form,
+  AppFormField as FormField,
+  AppFormPicker as Picker,
+  SubmitButton,
+} from "../components/forms";
+import Screen from "../components/Screen";
+
+const validationSchema = Yup.object().shape({
+  title: Yup.string().required().min(1).label("Title"),
+  price: Yup.number().required().min(1).max(10000).label("Price"),
+  description: Yup.string().label("Description"),
+  category: Yup.object().required().nullable().label("Category"),
+});
+
+const categories = [
+  { label: "Furniture", value: 1 },
+  { label: "Clothing", value: 2 },
+  { label: "Camera", value: 3 },
+];
+
+function ListingEditScreen() {
+  return (
+    <Screen style={styles.container}>
+      <Form
+        initialValues={{
+          title: "",
+          price: "",
+          description: "",
+          category: null,
+        }}
+        onSubmit={(values) => console.log(values)}
+        validationSchema={validationSchema}
+      >
+        <FormField maxLength={255} name="title" placeholder="Title" />
+        <FormField
+          keyboardType="numeric"
+          maxLength={8}
+          name="price"
+          placeholder="Price"
+        />
+        <Picker items={categories} name="category" placeholder="Category" />
+        <FormField
+          maxLength={255}
+          multiline
+          name="description"
+          numberOfLines={3}
+          placeholder="Description"
+        />
+        <SubmitButton title="Post" />
+      </Form>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 10,
+  },
+});
+export default ListingEditScreen;
+-------------------code----------------------
+
+
+full forms/index.js
+-------------------code----------------------
+export { default as AppForm } from "./AppForm";
+export { default as AppFormField } from "./AppFormField";
+export { default as AppFormPicker } from "./AppFormPicker";
+export { default as ErrorMessage } from "./ErrorMessage";
+export { default as SubmitButton } from "./SubmitButton";
+-------------------code----------------------
+---
+
+# 7. Best Practices
+
+---
+
+## Always use useFormikContext in reusable components
+
+Example:
+
+SubmitButton
+AppFormField
+AppFormPicker
+
+---
+
+## Always use null for empty object fields
+
+Correct:
+
+-------------------code----------------------
+category: null
+-------------------code----------------------
+
+Wrong:
+
+-------------------code----------------------
+category: {}
+-------------------code----------------------
+
+---
+
+## Always use string for TextInput initial values
+
+Even numbers:
+
+Correct:
+
+-------------------code----------------------
+price: ""
+-------------------code----------------------
+
+---
+
+## Use alias for cleaner code
+
+Example:
+
+-------------------code----------------------
+AppFormField as FormField
+-------------------code----------------------
+
+---
+
+# 8. Component Architecture
+
+Final structure:
+
+-------------------code----------------------
+components
+
+ forms
+
+  AppForm.js
+
+  AppFormField.js
+
+  AppFormPicker.js
+
+  SubmitButton.js
+
+  ErrorMessage.js
+-------------------code----------------------
+
+---
+
+# 9. Data Flow Diagram
+
+User selects category
+
+↓
+
+AppPicker
+
+↓
+
+AppFormPicker
+
+↓
+
+setFieldValue
+
+↓
+
+Formik state
+
+↓
+
+Validation
+
+↓
+
+SubmitButton
+
+↓
+
+onSubmit
+
+---
+
+# 10. Summary
+
+You learned how to:
+
+Create AppFormPicker component
+Connect Picker to Formik
+Handle object selection in forms
+Build advanced Listing Edit Screen
+Use validation with Yup
+Handle number inputs correctly
+
+---
+
+# Final Result
+
+Clean professional form:
+
+-------------------code----------------------
+<Form>
+
+<FormField />
+
+<Picker />
+
+<FormField />
+
+<SubmitButton />
+
+</Form>
+-------------------code----------------------
+
+This is production-level architecture used in real apps.
+
+---
