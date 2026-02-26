@@ -4115,3 +4115,427 @@ Better readability
 Professional design
 
 ---
+
+*** 9- Building the Form Component ***
+
+# Creating a Reusable AppForm Component (Cleaner Formik Syntax)
+
+This lecture improves the Formik syntax by removing the ugly function wrapper and fragment used every time we build a form. The solution is to create a reusable **AppForm component** that encapsulates Formik.
+
+---
+
+# 1. Problem: Formik Syntax is Ugly and Repetitive
+
+## Current Formik Syntax
+
+Every time you use Formik, you must write:
+
+-------------------code----------------------
+<Formik
+  initialValues={{ email: "", password: "" }}
+  onSubmit={(values) => console.log(values)}
+  validationSchema={validationSchema}
+>
+  {() => (
+    <>
+      <AppFormField name="email" />
+      <SubmitButton title="Login" />
+    </>
+  )}
+</Formik>
+-------------------code----------------------
+
+Problems:
+
+* Requires function wrapper
+* Requires fragment <>
+* Repetitive boilerplate
+* Harder to read
+
+Goal:
+
+Make it cleaner like this:
+
+-------------------code----------------------
+<AppForm>
+  <AppFormField />
+  <SubmitButton />
+</AppForm>
+-------------------code----------------------
+
+---
+
+# 2. Solution: Create AppForm Component
+
+We encapsulate:
+
+* Formik
+* Function wrapper
+* Fragment
+
+Inside one reusable component.
+
+---
+
+# 3. Step 1: Create AppForm File
+
+Create file:
+
+-------------------code----------------------
+components/AppForm.js
+-------------------code----------------------
+
+---
+
+# 4. Step 2: Basic Component Structure
+
+Import Formik:
+
+-------------------code----------------------
+import { Formik } from "formik";
+-------------------code----------------------
+
+Create component:
+
+-------------------code----------------------
+function AppForm() {
+  return (
+    <Formik>
+
+    </Formik>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 5. Step 3: Add Dynamic Props
+
+We want AppForm to accept:
+
+* initialValues
+* onSubmit
+* validationSchema
+* children
+
+Update component:
+
+-------------------code----------------------
+function AppForm({
+  initialValues,
+  onSubmit,
+  validationSchema,
+  children
+}) {
+-------------------code----------------------
+
+Pass props to Formik:
+
+-------------------code----------------------
+<Formik
+  initialValues={initialValues}
+  onSubmit={onSubmit}
+  validationSchema={validationSchema}
+>
+-------------------code----------------------
+
+---
+
+# 6. Step 4: Render Children Inside Formik
+
+Formik requires a function as child.
+
+We encapsulate this logic:
+
+-------------------code----------------------
+{() => (
+  <>
+    {children}
+  </>
+)}
+-------------------code----------------------
+
+This allows us to write clean JSX in LoginScreen.
+
+---
+
+# 7. Final AppForm Component
+
+-------------------code----------------------
+import { Formik } from "formik";
+
+function AppForm({
+  initialValues,
+  onSubmit,
+  validationSchema,
+  children
+}) {
+
+  return (
+    <Formik
+      initialValues={initialValues}
+      onSubmit={onSubmit}
+      validationSchema={validationSchema}
+    >
+      {() => (
+        <>
+          {children}
+        </>
+      )}
+    </Formik>
+  );
+}
+
+export default AppForm;
+-------------------code----------------------
+
+---
+
+# 8. Step 5: Use AppForm in LoginScreen
+
+Before:
+
+-------------------code----------------------
+<Formik
+  initialValues={{ email: "", password: "" }}
+  onSubmit={(values) => console.log(values)}
+  validationSchema={validationSchema}
+>
+  {() => (
+    <>
+      <AppFormField name="email" />
+      <SubmitButton title="Login" />
+    </>
+  )}
+</Formik>
+-------------------code----------------------
+
+---
+
+After:
+
+-------------------code----------------------
+<AppForm
+  initialValues={{ email: "", password: "" }}
+  onSubmit={(values) => console.log(values)}
+  validationSchema={validationSchema}
+>
+
+  <AppFormField name="email" />
+
+  <AppFormField name="password" />
+
+  <SubmitButton title="Login" />
+
+</AppForm>
+-------------------code----------------------
+
+Much cleaner.
+
+---
+
+# 9. Final LoginScreen Code
+
+-------------------code----------------------
+import { Image, StyleSheet } from "react-native";
+import * as Yup from "yup";
+
+import AppForm from "../components/AppForm";
+import AppFormField from "../components/AppFormField";
+import Screen from "../components/Screen";
+import SubmitButton from "../components/SubmitButton";
+
+const validationSchema = Yup.object().shape({
+  email: Yup.string()
+    .required()
+    .email()
+    .label("Email"),
+  password: Yup.string()
+    .required()
+    .min(4)
+    .label("Password")
+});
+
+function LoginScreen() {
+  return (
+    <Screen style={styles.container}>
+      <Image
+        source={require("../assets/logo-red.png")}
+        style={styles.logo}
+      />
+      <AppForm
+        initialValues={{
+          email: "",
+          password: ""
+        }}
+        onSubmit={(values) => console.log(values)}
+        validationSchema={validationSchema}
+      >
+        <>
+          <AppFormField
+            name="email"
+            icon="email"
+            placeholder="Email"
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            textContentType="emailAddress"
+          />
+          <AppFormField
+            name="password"
+            icon="lock"
+            placeholder="Password"
+            autoCapitalize="none"
+            autoCorrect={false}
+            secureTextEntry
+            textContentType="password"
+          />
+          <SubmitButton title="Login" />
+        </>
+
+      </AppForm>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 10
+  },
+  logo: {
+    width: 80,
+    height: 80,
+    alignSelf: "center",
+    marginTop: 50,
+    marginBottom: 20
+  }
+
+});
+
+export default LoginScreen;
+-------------------code----------------------
+
+---
+
+# 10. Architecture Before vs After
+
+## Before
+
+LoginScreen
+
+Formik
+
+function
+
+fragment
+
+fields
+
+button
+
+Messy
+
+---
+
+## After
+
+LoginScreen
+
+AppForm
+
+AppFormField
+
+SubmitButton
+
+Clean and professional
+
+---
+
+# 11. Visual Structure
+
+Final clean structure:
+
+-------------------code----------------------
+LoginScreen
+
+ └── AppForm
+
+      ├── AppFormField
+      ├── AppFormField
+      └── SubmitButton
+-------------------code----------------------
+
+---
+
+# 12. Why This is Important
+
+This pattern:
+
+* Eliminates boilerplate
+* Makes forms easy to read
+* Makes forms reusable
+* Scales to large apps
+
+This is production-level architecture.
+
+---
+
+# 13. Best Practices
+
+Always encapsulate Formik inside reusable component
+
+Use children prop to render form fields
+
+Keep screens clean
+
+Separate logic from UI
+
+Follow reusable component architecture
+
+---
+
+# 14. Summary
+
+Problem:
+
+Formik syntax was ugly and repetitive
+
+Solution:
+
+Create reusable AppForm component
+
+Key concepts:
+
+Formik wrapper component
+
+children prop
+
+Reusable form container
+
+Benefits:
+
+Cleaner code
+
+Better readability
+
+Professional architecture
+
+Scalable forms
+
+---
+
+# Final Result (Very Clean Usage)
+
+-------------------code----------------------
+<AppForm>
+
+  <AppFormField name="email" />
+
+  <AppFormField name="password" />
+
+  <SubmitButton title="Login" />
+
+</AppForm>
+-------------------code----------------------
+
+This is the final professional Formik structure used in real-world React Native apps.
