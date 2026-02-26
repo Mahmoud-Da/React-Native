@@ -4539,3 +4539,555 @@ Scalable forms
 -------------------code----------------------
 
 This is the final professional Formik structure used in real-world React Native apps.
+
+
+*** 10- Organizing Components ***
+# React Native Form Architecture with Formik – Clean Structured Notes
+
+These notes explain how to:
+
+1. Create a reusable SubmitButton
+2. Create a reusable AppForm component
+3. Organize form components into a forms folder
+4. Use an index.js file for clean imports
+
+This removes duplication and makes your form code clean and scalable.
+
+---
+
+# 1. Problem: Repetitive handleSubmit on Every Button
+
+## 1.1 Issue
+
+Before improvement, every form button needed this:
+
+-------------------code----------------------
+<AppButton title="Login" onPress={handleSubmit} />
+-------------------code----------------------
+
+Problem:
+
+* Repetitive
+* Not clean
+* Breaks reusability principle
+
+We want to encapsulate this logic.
+
+---
+
+# 2. Solution: Create SubmitButton Component
+
+## 2.1 Create File
+
+Create:
+
+-------------------code----------------------
+components/forms/SubmitButton.js
+-------------------code----------------------
+
+---
+
+## 2.2 Use useFormikContext
+
+Formik provides a hook to access form functions anywhere.
+
+-------------------code----------------------
+useFormikContext()
+-------------------code----------------------
+
+This gives access to:
+
+* handleSubmit
+* errors
+* values
+* touched
+
+---
+
+## 2.3 Build SubmitButton
+
+-------------------code----------------------
+import React from "react";
+import { useFormikContext } from "formik";
+
+import AppButton from "../AppButton";
+
+function SubmitButton({ title }) {
+
+  const { handleSubmit } = useFormikContext();
+
+  return (
+    <AppButton
+      title={title}
+      onPress={handleSubmit}
+    />
+  );
+
+}
+
+export default SubmitButton;
+-------------------code----------------------
+
+---
+
+## 2.4 Usage in LoginScreen
+
+Before:
+
+-------------------code----------------------
+<AppButton title="Login" onPress={handleSubmit} />
+-------------------code----------------------
+
+After:
+
+-------------------code----------------------
+<SubmitButton title="Login" />
+-------------------code----------------------
+
+Cleaner and reusable.
+
+---
+
+# 3. Problem: Ugly Formik Function Syntax
+
+Formik requires this pattern:
+
+-------------------code----------------------
+<Formik>
+  {() => (
+    <>
+      components
+    </>
+  )}
+</Formik>
+-------------------code----------------------
+
+Problems:
+
+* Ugly
+* Repetitive
+* Hard to read
+
+---
+
+# 4. Solution: Create AppForm Component
+
+Encapsulate Formik completely.
+
+---
+
+## 4.1 Create File
+
+-------------------code----------------------
+components/forms/AppForm.js
+-------------------code----------------------
+
+---
+
+## 4.2 Build Component
+
+-------------------code----------------------
+import React from "react";
+import { Formik } from "formik";
+
+function AppForm({
+
+  initialValues,
+  onSubmit,
+  validationSchema,
+  children
+
+}) {
+
+  return (
+
+    <Formik
+      initialValues={initialValues}
+      onSubmit={onSubmit}
+      validationSchema={validationSchema}
+    >
+
+      {() => (
+
+        <>
+          {children}
+        </>
+
+      )}
+
+    </Formik>
+
+  );
+
+}
+
+export default AppForm;
+-------------------code----------------------
+
+---
+
+## 4.3 Usage in LoginScreen
+
+Before:
+
+-------------------code----------------------
+<Formik ...>
+
+ {() => (
+   <>
+     fields
+   </>
+ )}
+
+</Formik>
+-------------------code----------------------
+
+After:
+
+-------------------code----------------------
+<AppForm
+  initialValues={{ email:"", password:"" }}
+  onSubmit={values => console.log(values)}
+  validationSchema={validationSchema}
+>
+
+  fields
+
+</AppForm>
+-------------------code----------------------
+
+Much cleaner.
+
+---
+
+# 5. Organizing Components into forms Folder
+
+## 5.1 Problem
+
+Components folder became messy.
+
+Solution:
+
+Create folder:
+
+-------------------code----------------------
+components/forms/
+-------------------code----------------------
+
+Move form components:
+
+-------------------code----------------------
+AppForm.js
+AppFormField.js
+ErrorMessage.js
+SubmitButton.js
+-------------------code----------------------
+
+Do NOT move:
+
+-------------------code----------------------
+AppButton.js
+AppPicker.js
+-------------------code----------------------
+
+Because they can be used outside forms.
+
+---
+
+## 5.2 Important: Fix Imports After Moving
+
+Example fix:
+
+Before:
+
+-------------------code----------------------
+import AppTextInput from "./AppTextInput";
+-------------------code----------------------
+
+After moving file:
+
+-------------------code----------------------
+import AppTextInput from "../AppTextInput";
+-------------------code----------------------
+
+---
+
+## 5.3 Restart Metro if Needed
+
+If error:
+
+-------------------code----------------------
+Requiring unknown module
+-------------------code----------------------
+
+Run:
+
+-------------------code----------------------
+Ctrl + C
+
+npm start
+-------------------code----------------------
+
+or
+
+-------------------code----------------------
+expo start
+-------------------code----------------------
+
+---
+
+# 6. Create index.js for Clean Imports
+
+This is a very important professional technique.
+
+---
+
+## 6.1 Create File
+
+-------------------code----------------------
+components/forms/index.js
+-------------------code----------------------
+
+---
+
+## 6.2 Export All Components
+
+-------------------code----------------------
+export { default as AppForm } from "./AppForm";
+export { default as AppFormField } from "./AppFormField";
+export { default as ErrorMessage } from "./ErrorMessage";
+export { default as SubmitButton } from "./SubmitButton";
+
+-------------------code----------------------
+
+---
+
+# 7. Clean Import Usage
+
+## 7.1 Before
+
+-------------------code----------------------
+import AppForm from "../components/forms/AppForm";
+
+import AppFormField from "../components/forms/AppFormField";
+
+import SubmitButton from "../components/forms/SubmitButton";
+-------------------code----------------------
+
+---
+
+## 7.2 After
+
+-------------------code----------------------
+import {
+
+AppForm,
+AppFormField,
+SubmitButton
+
+} from "../components/forms";
+-------------------code----------------------
+
+Cleaner and professional.
+
+---
+
+# 8. Final LoginScreen Code
+
+-------------------code----------------------
+import { Image, StyleSheet } from "react-native";
+import * as Yup from "yup";
+
+import Screen from "../components/Screen";
+import {
+  AppForm,
+  AppFormField,
+  SubmitButton
+} from "../components/forms";
+
+const validationSchema = Yup.object().shape({
+  email: Yup.string()
+    .required()
+    .email()
+    .label("Email"),
+  password: Yup.string()
+    .required()
+    .min(4)
+    .label("Password")
+});
+
+function LoginScreen() {
+  return (
+    <Screen style={styles.container}>
+      <Image
+        source={require("../assets/logo-red.png")}
+        style={styles.logo}
+      />
+      <AppForm
+        initialValues={{
+          email: "",
+          password: ""
+        }}
+        onSubmit={(values) => console.log(values)}
+        validationSchema={validationSchema}
+      >
+        <>
+          <AppFormField
+            name="email"
+            icon="email"
+            placeholder="Email"
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            textContentType="emailAddress"
+          />
+          <AppFormField
+            name="password"
+            icon="lock"
+            placeholder="Password"
+            autoCapitalize="none"
+            autoCorrect={false}
+            secureTextEntry
+            textContentType="password"
+          />
+          <SubmitButton title="Login" />
+        </>
+
+      </AppForm>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 10
+  },
+  logo: {
+    width: 80,
+    height: 80,
+    alignSelf: "center",
+    marginTop: 50,
+    marginBottom: 20
+  }
+
+});
+
+export default LoginScreen;
+-------------------code----------------------
+
+---
+
+# 9. Final Folder Structure
+
+-------------------code----------------------
+components/
+
+ AppButton.js
+
+ Screen.js
+
+ forms/
+
+   AppForm.js
+
+   AppFormField.js
+
+   ErrorMessage.js
+
+   SubmitButton.js
+
+   index.js
+-------------------code----------------------
+
+---
+
+# 10. Best Practices
+
+## Always encapsulate Formik logic
+
+Never repeat:
+
+-------------------code----------------------
+handleSubmit
+errors
+touched
+-------------------code----------------------
+
+Encapsulate them in components.
+
+---
+
+## Always use index.js for exports
+
+Benefits:
+
+Clean imports
+
+Scalable
+
+Professional structure
+
+---
+
+## Restart Metro when moving files
+
+Fixes cache errors.
+
+---
+
+## Separate components by purpose
+
+Example:
+
+forms/
+
+lists/
+
+ui/
+
+---
+
+# 11. Summary
+
+You learned how to:
+
+Create SubmitButton component
+Create AppForm reusable wrapper
+Remove Formik boilerplate
+Organize components professionally
+Use index.js for clean imports
+
+Result:
+
+Before:
+
+Messy
+Repetitive
+Hard to scale
+
+After:
+
+Clean
+Reusable
+Professional
+Scalable
+
+---
+
+# Final Architecture Result
+
+LoginScreen becomes:
+
+-------------------code----------------------
+<AppForm>
+
+<AppFormField />
+
+<SubmitButton />
+
+</AppForm>
+-------------------code----------------------
+
+This is the professional production-level structure used in real React Native apps.
+
+---
