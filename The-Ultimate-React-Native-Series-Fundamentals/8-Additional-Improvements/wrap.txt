@@ -99,3 +99,330 @@ You are expected to:
 * Strengthen your debugging and architectural understanding.
 
 Complete the exercises first, then review the instructor’s solution to solidify your learning.
+
+*** 2- Adding Chevrons ***
+# Improving the ListItem Component (Adding a Chevron Icon)
+
+## 1. Goal of This Lecture
+
+Enhance the existing `ListItem` component by:
+
+1. Adding a chevron icon on the right side.
+2. Properly aligning the icon.
+3. Improving layout using Flexbox.
+4. Applying better styling practices.
+
+This simulates a small but realistic UI improvement in a production app.
+
+---
+
+# 2. Step 1 – Import MaterialCommunityIcons
+
+We need to import `MaterialCommunityIcons` from Expo vector icons.
+
+### Why?
+
+* We want to display a chevron icon.
+* Expo provides ready-to-use icon libraries.
+
+### Add This Import
+
+-------------------code----------------------
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+-------------------code----------------------
+
+### Important Cleanup
+
+* Remove unused imports like `TouchableOpacity` (if present).
+* Keep third-party imports grouped together.
+* Keep local project imports grouped separately.
+
+### Organized Import Structure
+
+-------------------code----------------------
+// React Native core
+import { Image, StyleSheet, TouchableHighlight, View } from 'react-native';
+
+// Third-party libraries
+import Swipeable from "react-native-gesture-handler/Swipeable";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+
+// Local imports
+import colors from '../config/colors';
+import AppText from './AppText';
+-------------------code----------------------
+
+Best Practice:
+
+* Always group imports by category.
+* Remove unused imports immediately.
+
+---
+
+# 3. Step 2 – Add the Chevron Icon
+
+We want to place the chevron icon to the right of the title/subtitle section.
+
+### Where to Add It?
+
+Inside the main container, right after `detailsContainer`.
+
+### Add This Code
+
+-------------------code----------------------
+<MaterialCommunityIcons
+  name="chevron-right"
+  size={25}
+/>
+-------------------code----------------------
+
+So the JSX becomes:
+
+-------------------code----------------------
+<View style={styles.container}>
+
+  {iconComponent}
+
+  {image && (
+    <Image
+      source={image}
+      style={styles.image}
+    />
+  )}
+
+  <View style={styles.detailsContainer}>
+    <AppText style={styles.title}>
+      {title}
+    </AppText>
+
+    {subtitle && (
+      <AppText style={styles.subtitle}>
+        {subtitle}
+      </AppText>
+    )}
+  </View>
+
+  <MaterialCommunityIcons
+    name="chevron-right"
+    size={25}
+  />
+
+</View>
+-------------------code----------------------
+
+At this stage, the icon appears — but alignment is not correct yet.
+
+---
+
+# 4. Step 3 – Push the Chevron to the Right
+
+Currently, the icon sits next to the text.
+
+We want:
+
+* Text to take available space.
+* Chevron to stay on the far right.
+
+### Solution: Use `flex: 1` on detailsContainer
+
+In styles:
+
+-------------------code----------------------
+detailsContainer: {
+  marginLeft: 10,
+  justifyContent: "center",
+  flex: 1,
+},
+-------------------code----------------------
+
+Why this works:
+
+* The container direction is `row`.
+* `flex: 1` makes `detailsContainer` expand.
+* The chevron gets pushed to the far right.
+
+---
+
+# 5. Step 4 – Vertically Center the Content
+
+Now we want everything centered vertically.
+
+Since:
+
+-------------------code----------------------
+flexDirection: 'row'
+-------------------code----------------------
+
+This means:
+
+* Main axis → horizontal
+* Cross axis → vertical
+
+To align items vertically, we use:
+
+-------------------code----------------------
+alignItems: 'center'
+-------------------code----------------------
+
+Update container style:
+
+-------------------code----------------------
+container: {
+  flexDirection: 'row',
+  padding: 15,
+  backgroundColor: colors.white,
+  alignItems: 'center',
+},
+-------------------code----------------------
+
+Now the icon, image, and text align properly.
+
+---
+
+# 6. Step 5 – Improve Icon Color
+
+The default icon color is pure black, which is too strong.
+
+We want to use medium gray from our color palette.
+
+Update icon:
+
+-------------------code----------------------
+<MaterialCommunityIcons
+  name="chevron-right"
+  size={25}
+  color={colors.medium}
+/>
+-------------------code----------------------
+
+Now the UI looks softer and more professional.
+
+---
+
+# 7. Full Final Code
+
+-------------------code----------------------
+import { Image, StyleSheet, TouchableHighlight, View } from 'react-native';
+import Swipeable from "react-native-gesture-handler/Swipeable";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+
+import colors from '../config/colors';
+import AppText from './AppText';
+
+function ListItem({
+  title,
+  subtitle,
+  image,
+  iconComponent,
+  onPress,
+  renderRightActions
+}) {
+  return (
+    <Swipeable renderRightActions={renderRightActions}>
+      <TouchableHighlight
+        underlayColor={colors.light}
+        onPress={onPress}
+      >
+        <View style={styles.container}>
+
+          {iconComponent}
+
+          {image && (
+            <Image
+              source={image}
+              style={styles.image}
+            />
+          )}
+
+          <View style={styles.detailsContainer}>
+            <AppText style={styles.title}>
+              {title}
+            </AppText>
+
+            {subtitle && (
+              <AppText style={styles.subtitle}>
+                {subtitle}
+              </AppText>
+            )}
+          </View>
+
+          <MaterialCommunityIcons
+            name="chevron-right"
+            size={25}
+            color={colors.medium}
+          />
+
+        </View>
+      </TouchableHighlight>
+    </Swipeable>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    padding: 15,
+    backgroundColor: colors.white,
+    alignItems: 'center',
+  },
+
+  detailsContainer: {
+    marginLeft: 10,
+    justifyContent: "center",
+    flex: 1,
+  },
+
+  image: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+  },
+
+  title: {
+    fontWeight: '500',
+  },
+
+  subtitle: {
+    color: colors.medium,
+  },
+});
+
+export default ListItem;
+-------------------code----------------------
+
+---
+
+# 8. Important Concepts Learned
+
+1. Proper import organization.
+2. Using vector icons in Expo.
+3. Flexbox layout in React Native.
+4. Understanding main axis vs cross axis.
+5. Using `flex: 1` to control layout.
+6. Using `alignItems` for vertical alignment.
+7. Using a centralized color palette.
+
+---
+
+# 9. Best Practices
+
+* Keep imports clean and grouped.
+* Remove unused code.
+* Use shared color configuration.
+* Use Flexbox intentionally, not randomly.
+* Think about UI balance and visual weight.
+* Keep components reusable and clean.
+
+---
+
+# 10. Summary
+
+In this lecture, we:
+
+1. Imported MaterialCommunityIcons.
+2. Added a chevron icon.
+3. Used `flex: 1` to push content.
+4. Used `alignItems: 'center'` for vertical alignment.
+5. Applied consistent styling using the color palette.
+
+This small improvement demonstrates how layout control and design polish can significantly improve UI quality in real-world React Native apps.
