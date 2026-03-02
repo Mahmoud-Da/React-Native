@@ -426,3 +426,334 @@ In this lecture, we:
 5. Applied consistent styling using the color palette.
 
 This small improvement demonstrates how layout control and design polish can significantly improve UI quality in real-world React Native apps.
+
+
+*** 3- Handling Long Text ***
+# Handling Long Text in React Native (Improving AppText and ListItem)
+
+## 1. Problem Overview
+
+Long text is a common UI issue in mobile applications.
+
+When a title or subtitle is too long:
+
+* It can overflow.
+* It can break layout.
+* It can make the UI look unprofessional.
+
+In our case:
+
+* The `ListItem` component looks bad when the title or subtitle is too long.
+
+Solution:
+
+* Truncate text using the `numberOfLines` prop.
+* Ensure our custom `AppText` component forwards all props correctly.
+
+---
+
+# 2. Step 1 – Truncate Title in ListItem
+
+In React Native, the `Text` component supports a prop called:
+
+-------------------code----------------------
+numberOfLines
+-------------------code----------------------
+
+When set:
+
+* It limits how many lines are displayed.
+* Extra text is truncated automatically.
+
+### Update Title
+
+Go to `ListItem.js` and update the title:
+
+-------------------code----------------------
+<AppText
+  style={styles.title}
+  numberOfLines={1}
+>
+  {title}
+</AppText>
+-------------------code----------------------
+
+Expected result:
+
+* Title should be limited to one line.
+* Extra text should be truncated.
+
+But nothing changes.
+
+Why?
+
+Because our `AppText` component does not pass additional props to the underlying `Text` component.
+
+---
+
+# 3. Step 2 – Fix AppText to Support Extra Props
+
+Current `AppText` implementation:
+
+-------------------code----------------------
+function AppText({ children }) {
+  return <Text style={defaultStyles.text}>{children}</Text>;
+}
+-------------------code----------------------
+
+Problem:
+
+* It only accepts `children`.
+* It ignores any additional props like:
+
+  * `numberOfLines`
+  * `ellipsizeMode`
+  * `onPress`
+  * `style`
+  * etc.
+
+We need to forward all extra props.
+
+---
+
+# 4. Step 3 – Use the Rest Operator
+
+We use the rest operator (`...rest`) to collect additional props.
+
+### Updated Version
+
+-------------------code----------------------
+function AppText({ children, style, ...otherProps }) {
+  return (
+    <Text style={[defaultStyles.text, style]} {...otherProps}>
+      {children}
+    </Text>
+  );
+}
+-------------------code----------------------
+
+What changed:
+
+1. Added `style` support.
+2. Used `...otherProps` to collect remaining props.
+3. Spread them into `<Text />`.
+
+Now:
+
+* `numberOfLines` works.
+* Any future prop works automatically.
+* The component is reusable and flexible.
+
+---
+
+# 5. Step 4 – Limit Subtitle Lines
+
+Now go back to `ListItem.js`.
+
+For the subtitle, allow more space.
+
+### Update Subtitle
+
+-------------------code----------------------
+<AppText
+  style={styles.subtitle}
+  numberOfLines={2}
+>
+  {subtitle}
+</AppText>
+-------------------code----------------------
+
+Result:
+
+* Title → maximum 1 line.
+* Subtitle → maximum 2 lines.
+* Layout stays clean and consistent.
+
+---
+
+# 6. Final AppText Code
+
+-------------------code----------------------
+import React from "react";
+import { Text } from "react-native";
+import defaultStyles from "../config/styles";
+
+function AppText({ children, style, ...otherProps }) {
+  return (
+    <Text style={[defaultStyles.text, style]} {...otherProps}>
+      {children}
+    </Text>
+  );
+}
+
+export default AppText;
+-------------------code----------------------
+
+---
+
+# 7. Final ListItem Text Usage Example
+
+-------------------code----------------------
+import { Image, StyleSheet, TouchableHighlight, View } from 'react-native';
+import Swipeable from "react-native-gesture-handler/Swipeable";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+
+import colors from '../config/colors';
+import AppText from './AppText';
+
+function ListItem({
+  title,
+  subtitle,
+  image,
+  iconComponent,
+  onPress,
+  renderRightActions
+}) {
+  return (
+    <Swipeable renderRightActions={renderRightActions}>
+      <TouchableHighlight
+        underlayColor={colors.light}
+        onPress={onPress}
+      >
+        <View style={styles.container}>
+
+          {iconComponent}
+
+          {image && (
+            <Image
+              source={image}
+              style={styles.image}
+            />
+          )}
+
+          <View style={styles.detailsContainer}>
+            <AppText style={styles.title} numberOfLines={1}>
+              {title}
+            </AppText>
+
+            {subtitle && (
+              <AppText style={styles.subtitle} numberOfLines={2}>
+                {subtitle}
+              </AppText>
+            )}
+          </View>
+
+          <MaterialCommunityIcons
+            name="chevron-right"
+            size={25}
+            color={colors.medium}
+          />
+
+        </View>
+      </TouchableHighlight>
+    </Swipeable>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    padding: 15,
+    backgroundColor: colors.white,
+    alignItems: 'center',
+  },
+
+  detailsContainer: {
+    marginLeft: 10,
+    justifyContent: "center",
+    flex: 1,
+  },
+
+  image: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+  },
+
+  title: {
+    fontWeight: '500',
+  },
+
+  subtitle: {
+    color: colors.medium,
+  },
+});
+
+export default ListItem;
+-------------------code----------------------
+
+---
+
+# 8. Important Concepts
+
+### 1. Always Test With Long Text
+
+Many UI bugs only appear when:
+
+* Text is unusually long.
+* Real user data is used.
+
+Never test with short placeholder text only.
+
+---
+
+### 2. The Rest Operator
+
+-------------------code----------------------
+...otherProps
+-------------------code----------------------
+
+Allows:
+
+* Flexible reusable components.
+* Clean abstraction.
+* Future-proof design.
+
+Without it:
+
+* Your custom component becomes limited.
+* You constantly need to modify it for new props.
+
+---
+
+### 3. Style Merging Pattern
+
+-------------------code----------------------
+style={[defaultStyles.text, style]}
+-------------------code----------------------
+
+Why use array syntax?
+
+* It merges default styles with custom styles.
+* Later styles override earlier ones.
+* Makes the component extensible.
+
+---
+
+# 9. Best Practices
+
+* Always design reusable components to forward props.
+* Never block native component capabilities.
+* Use `numberOfLines` for layout safety.
+* Test with edge cases (long text, empty text).
+* Keep UI consistent across screens.
+
+---
+
+# 10. Summary
+
+In this lecture, we:
+
+1. Identified a layout issue caused by long text.
+2. Used `numberOfLines` to truncate text.
+3. Fixed `AppText` to forward additional props.
+4. Applied line limits:
+
+   * Title → 1 line
+   * Subtitle → 2 lines
+5. Improved component reusability using the rest operator.
+
+Key takeaway:
+
+Reusable components must forward props properly.
+Always test UI components with real-world edge cases like long text.
