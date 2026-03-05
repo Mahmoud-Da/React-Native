@@ -2203,3 +2203,804 @@ In this lecture, we:
 Key takeaway:
 
 Design reusable components so that internal pieces can be replaced without rewriting the whole component. This is how you build scalable and maintainable React Native applications.
+
+
+*** 8- Building the CategoryPickerItem Component ***
+# Implementing a Custom Category Picker Item in React Native
+
+## 1. Goal of This Lecture
+
+The objective is to enhance the picker UI by displaying categories with icons and colors instead of a simple vertical list.
+
+Previously:
+
+* Picker displayed a flat list of text items.
+
+New design:
+
+* Grid of categories
+* Each category contains:
+
+  * Icon
+  * Background color
+  * Label
+
+Example structure:
+
+-------------------code----------------------
+[ Icon ]
+Furniture
+
+[ Icon ]
+Clothing
+
+[ Icon ]
+Camera
+-------------------code----------------------
+
+To achieve this, a new component called **CategoryPickerItem** is created.
+
+---
+
+# 2. Understanding the Current Architecture
+
+The **AppPicker** component renders picker items using a component passed through props.
+
+Example:
+
+-------------------code----------------------
+<FlatList
+  data={items}
+  renderItem={({ item }) => (
+    <PickerItemComponent
+      item={item}
+      onPress={() => {
+        setModalVisible(false);
+        onSelectItem(item);
+      }}
+    />
+  )}
+/>
+-------------------code----------------------
+
+Key idea:
+
+Instead of tightly coupling `AppPicker` to one specific item component, we allow the parent to choose which item component to render.
+
+This makes the architecture flexible.
+
+---
+
+# 3. Designing the CategoryPickerItem Component
+
+Create a new file:
+
+-------------------code----------------------
+components/CategoryPickerItem.js
+-------------------code----------------------
+
+Initially define the component with its props.
+
+### Required Props
+
+Both picker components must share the same interface:
+
+* `item`
+* `onPress`
+
+Implementation start:
+
+-------------------code----------------------
+function CategoryPickerItem({ item, onPress }) {
+  return null;
+}
+-------------------code----------------------
+
+---
+
+# 4. Why Use `item` Instead of Individual Props
+
+A naive approach would be:
+
+-------------------code----------------------
+<CategoryPickerItem
+  label="Furniture"
+  icon="chair"
+  backgroundColor="red"
+/>
+-------------------code----------------------
+
+This is **bad architecture** because:
+
+* Those props only make sense for categories.
+* `AppPicker` should remain generic.
+
+Instead we pass:
+
+-------------------code----------------------
+item={item}
+-------------------code----------------------
+
+Example item structure:
+
+-------------------code----------------------
+{
+  label: "Furniture",
+  value: 1,
+  icon: "floor-lamp",
+  backgroundColor: "#fc5c65"
+}
+-------------------code----------------------
+
+Advantages:
+
+* Cleaner API
+* More flexible
+* Easier to extend later
+
+---
+
+# 5. Updating PickerItem Interface
+
+Old interface:
+
+-------------------code----------------------
+label
+onPress
+-------------------code----------------------
+
+New interface:
+
+-------------------code----------------------
+item
+onPress
+-------------------code----------------------
+
+Now label is accessed as:
+
+-------------------code----------------------
+item.label
+-------------------code----------------------
+
+---
+
+# 6. Implementing CategoryPickerItem Layout
+
+### Step 1: Create Container
+
+-------------------code----------------------
+import { View, StyleSheet } from "react-native";
+
+<View style={styles.container}>
+</View>
+-------------------code----------------------
+
+---
+
+### Step 2: Add the Icon
+
+This project already includes a reusable **Icon component**.
+
+Use it like this:
+
+-------------------code----------------------
+<Icon
+  backgroundColor={item.backgroundColor}
+  name={item.icon}
+  size={80}
+/>
+-------------------code----------------------
+
+---
+
+### Step 3: Add the Label
+
+Use the reusable `AppText` component.
+
+-------------------code----------------------
+<AppText>{item.label}</AppText>
+-------------------code----------------------
+
+---
+
+# 7. Defining Category Data
+
+Categories are defined inside `ListingEditScreen`.
+
+Example:
+
+-------------------code----------------------
+const categories = [
+  {
+    label: "Furniture",
+    value: 1,
+    icon: "floor-lamp",
+    backgroundColor: "#fc5c65",
+  },
+  {
+    label: "Clothing",
+    value: 2,
+    icon: "shoe-heel",
+    backgroundColor: "#fd9644",
+  },
+  {
+    label: "Cameras",
+    value: 3,
+    icon: "camera",
+    backgroundColor: "#fed330",
+  },
+];
+-------------------code----------------------
+
+Each category now contains:
+
+* label
+* value
+* icon
+* backgroundColor
+
+---
+
+# 8. Creating a Grid Layout with FlatList
+
+React Native FlatList supports multiple columns.
+
+Property:
+
+-------------------code----------------------
+numColumns
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+<FlatList
+  data={items}
+  numColumns={3}
+/>
+-------------------code----------------------
+
+But hardcoding values is bad practice.
+
+Instead pass it as a prop.
+
+---
+
+# 9. Adding numberOfColumns Prop
+
+### Step 1 — AppPicker
+
+-------------------code----------------------
+function AppPicker({
+  numberOfColumns = 1
+})
+-------------------code----------------------
+
+Apply it to FlatList:
+
+-------------------code----------------------
+numColumns={numberOfColumns}
+-------------------code----------------------
+
+Default value ensures normal lists still work.
+
+---
+
+### Step 2 — AppFormPicker
+
+Pass the prop down:
+
+-------------------code----------------------
+<AppPicker
+  numberOfColumns={numberOfColumns}
+/>
+-------------------code----------------------
+
+---
+
+### Step 3 — ListingEditScreen
+
+Now specify grid layout:
+
+-------------------code----------------------
+<AppFormPicker
+  items={categories}
+  name="category"
+  placeholder="Category"
+  PickerItemComponent={CategoryPickerItem}
+  numberOfColumns={3}
+/>
+-------------------code----------------------
+
+---
+
+# 10. Styling the Category Item
+
+### Container Style
+
+-------------------code----------------------
+container: {
+  paddingHorizontal: 30,
+  paddingVertical: 15,
+  alignItems: "center",
+  width: "33%",
+}
+-------------------code----------------------
+
+Explanation:
+
+* padding adds spacing
+* alignItems centers icon and text
+* width ensures grid alignment
+
+---
+
+### Label Style
+
+-------------------code----------------------
+label: {
+  marginTop: 5,
+  textAlign: "center",
+}
+-------------------code----------------------
+
+This:
+
+* separates icon and text
+* centers label under icon
+
+---
+
+# 11. Final CategoryPickerItem Code
+
+-------------------code----------------------
+import React from "react";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
+
+import Icon from "./Icon";
+import AppText from "./AppText";
+
+function CategoryPickerItem({ item, onPress }) {
+  return (
+    <View style={styles.container}>
+      <TouchableOpacity onPress={onPress}>
+        <Icon
+          backgroundColor={item.backgroundColor}
+          name={item.icon}
+          size={80}
+        />
+      </TouchableOpacity>
+      <AppText style={styles.label}>{item.label}</AppText>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 30,
+    paddingVertical: 15,
+    alignItems: "center",
+    width: "33%",
+  },
+  label: {
+    marginTop: 5,
+    textAlign: "center",
+  },
+});
+
+export default CategoryPickerItem;
+-------------------code----------------------
+
+
+## AppPicker
+-------------------code----------------------
+import React, { useState } from "react";
+import {
+  View,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  Modal,
+  Button,
+  FlatList,
+} from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+
+import AppText from "./AppText";
+import defaultStyles from "../config/styles";
+import PickerItem from "./PickerItem";
+import Screen from "./Screen";
+
+function AppPicker({
+  icon,
+  items,
+  placeholder,
+  numberOfColumns = 1,
+  PickerItemComponent = PickerItem,
+  selectedItem,
+  onSelectItem,
+  width = "100%"
+}) {
+  const [modalVisible, setModalVisible] = useState(false);
+
+  return (
+    <>
+      <TouchableWithoutFeedback
+        onPress={() => setModalVisible(true)}
+      >
+        <View style={[styles.container, { width }]}>
+          {icon && (
+            <MaterialCommunityIcons
+              name={icon}
+              size={20}
+              color={defaultStyles.colors.medium}
+              style={styles.icon}
+            />
+          )}
+
+          {selectedItem ? (
+            <AppText style={styles.text}>
+              {selectedItem.label}
+            </AppText>
+          ) : (
+            <AppText style={styles.placeholder}>
+              {placeholder}
+            </AppText>
+          )}
+
+          <MaterialCommunityIcons
+            name="chevron-down"
+            size={20}
+            color={defaultStyles.colors.medium}
+          />
+        </View>
+      </TouchableWithoutFeedback>
+
+      <Modal visible={modalVisible} animationType="slide">
+        <Screen>
+          <Button
+            title="Close"
+            onPress={() => setModalVisible(false)}
+          />
+
+          <FlatList
+            data={items}
+            keyExtractor={(item) => item.value.toString()}
+            numColumns={numberOfColumns}
+            renderItem={({ item }) => (
+              <PickerItemComponent
+                item={item}
+                label={item.label}
+                onPress={() => {
+                  setModalVisible(false);
+                  onSelectItem(item);
+                }}
+              />
+            )}
+          />
+        </Screen>
+      </Modal>
+    </>
+  );
+}
+
+export default AppPicker;
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: defaultStyles.colors.light,
+    borderRadius: 25,
+    flexDirection: "row",
+    padding: 15,
+    marginVertical: 10,
+  },
+  icon: {
+    marginRight: 10,
+  },
+  placeholder: {
+    color: defaultStyles.colors.medium,
+    flex: 1,
+  },
+  text: {
+    flex: 1,
+  },
+});
+-------------------code----------------------
+
+## AppFormPicker
+
+-------------------code----------------------
+import React from "react";
+import { useFormikContext } from "formik";
+
+import AppPicker from "../AppPicker";
+import ErrorMessage from "./ErrorMessage";
+
+function AppFormPicker({
+  items,
+  name,
+  numberOfColumns,
+  PickerItemComponent,
+  placeholder,
+  width,
+}) {
+  const { errors, setFieldValue, touched, values } = useFormikContext();
+
+  return (
+    <>
+      <AppPicker
+        items={items}
+        numberOfColumns={numberOfColumns}
+        onSelectItem={(item) => setFieldValue(name, item)}
+        PickerItemComponent={PickerItemComponent}
+        placeholder={placeholder}
+        selectedItem={values[name]}
+        width={width}
+      />
+      <ErrorMessage error={errors[name]} visible={touched[name]} />
+    </>
+  );
+}
+
+export default AppFormPicker;
+-------------------code----------------------
+
+
+## ListingEditScreen
+
+-------------------code----------------------
+import React from "react";
+import { StyleSheet } from "react-native";
+import * as Yup from "yup";
+
+import Screen from "../components/Screen";
+import AppForm from "../components/forms/AppForm";
+import AppFormField from "../components/forms/AppFormField";
+import AppFormPicker from "../components/forms/AppFormPicker";
+import SubmitButton from "../components/forms/SubmitButton";
+import CategoryPickerItem from "../components/CategoryPickerItem";
+
+
+const validationSchema = Yup.object().shape({
+  title: Yup.string().required().min(1).label("Title"),
+  price: Yup.number().required().min(1).max(10000).label("Price"),
+  category: Yup.object().required().nullable().label("Category"),
+  description: Yup.string().label("Description"),
+});
+
+const categories = [
+  {
+    backgroundColor: "#fc5c65",
+    icon: "floor-lamp",
+    label: "Furniture",
+    value: 1,
+  },
+  {
+    backgroundColor: "#fd9644",
+    icon: "car",
+    label: "Cars",
+    value: 2,
+  },
+  {
+    backgroundColor: "#fed330",
+    icon: "camera",
+    label: "Cameras",
+    value: 3,
+  },
+  {
+    backgroundColor: "#26de81",
+    icon: "cards",
+    label: "Games",
+    value: 4,
+  },
+  {
+    backgroundColor: "#2bcbba",
+    icon: "shoe-heel",
+    label: "Clothing",
+    value: 5,
+  },
+  {
+    backgroundColor: "#45aaf2",
+    icon: "basketball",
+    label: "Sports",
+    value: 6,
+  },
+  {
+    backgroundColor: "#4b7bec",
+    icon: "headphones",
+    label: "Movies & Music",
+    value: 7,
+  },
+  {
+    backgroundColor: "#a55eea",
+    icon: "book-open-variant",
+    label: "Books",
+    value: 8,
+  },
+  {
+    backgroundColor: "#778ca3",
+    icon: "application",
+    label: "Other",
+    value: 9,
+  },
+];
+
+function ListingEditScreen() {
+  return (
+    <Screen style={styles.container}>
+      <AppForm
+        initialValues={{
+          title: "",
+          price: "",
+          category: null,
+          description: "",
+        }}
+        onSubmit={(values) => console.log(values)}
+        validationSchema={validationSchema}
+      >
+        <AppFormField
+          maxLength={255}
+          name="title"
+          placeholder="Title"
+        />
+
+        <AppFormField
+          keyboardType="numeric"
+          maxLength={8}
+          name="price"
+          placeholder="Price"
+          width={120}
+        />
+        <AppFormPicker
+          items={categories}
+          name="category"
+          numberOfColumns={3}
+          PickerItemComponent={CategoryPickerItem}
+          placeholder="Category"
+          width="50%"
+        />
+
+        <AppFormField
+          name="description"
+          placeholder="Description"
+          multiline
+          numberOfLines={3}
+        />
+
+        <SubmitButton title="Post" />
+      </AppForm>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 10,
+  },
+});
+
+export default ListingEditScreen;
+-------------------code----------------------
+
+---
+
+# 12. Important Behavior of FlatList
+
+React Native cannot dynamically change `numColumns`.
+
+Example issue:
+
+If you switch between:
+
+-------------------code----------------------
+numColumns = 1
+-------------------code----------------------
+
+and
+
+-------------------code----------------------
+numColumns = 3
+-------------------code----------------------
+
+The app may crash.
+
+Solution:
+
+Manually reload the app.
+
+---
+
+# 13. Best Practices
+
+### 1. Keep Component Interfaces Consistent
+
+Both picker components use:
+
+-------------------code----------------------
+item
+onPress
+-------------------code----------------------
+
+This ensures they are interchangeable.
+
+---
+
+### 2. Pass Objects Instead of Many Props
+
+Better:
+
+-------------------code----------------------
+item={item}
+-------------------code----------------------
+
+Instead of:
+
+-------------------code----------------------
+label
+icon
+backgroundColor
+-------------------code----------------------
+
+---
+
+### 3. Avoid Hardcoding Layout
+
+Use props instead:
+
+-------------------code----------------------
+numberOfColumns
+width
+-------------------code----------------------
+
+This keeps components reusable.
+
+---
+
+### 4. Build Flexible Components
+
+`AppPicker` is now reusable for:
+
+* categories
+* simple lists
+* future components
+
+---
+
+# 14. Final Result
+
+The picker now shows a **grid of colorful categories with icons** instead of a simple text list.
+
+Benefits:
+
+* Better UI
+* Better UX
+* Flexible architecture
+
+---
+
+# 15. Summary
+
+This lecture implemented a custom picker item component for categories.
+
+Key concepts learned:
+
+1. Creating a new reusable component (`CategoryPickerItem`)
+2. Passing full item objects instead of individual props
+3. Using `FlatList` with `numColumns` for grid layouts
+4. Designing flexible component architecture
+5. Maintaining consistent component interfaces
+
+Final architecture:
+
+-------------------code----------------------
+ListingEditScreen
+      ↓
+AppFormPicker
+      ↓
+AppPicker
+      ↓
+PickerItemComponent
+      ↓
+CategoryPickerItem
+-------------------code----------------------
+
+This layered design keeps the application modular, flexible, and scalable.
