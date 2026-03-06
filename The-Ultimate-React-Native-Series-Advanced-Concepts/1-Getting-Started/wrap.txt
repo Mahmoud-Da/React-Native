@@ -203,3 +203,224 @@ Students are encouraged to:
 * Practical tips and real-world practices will be emphasized throughout the course.
 
 ---
+
+
+*** 2- Prerequisites ***
+# React Native Advanced Course — Prerequisites and Requirements
+
+## 1. Introduction
+
+This lecture explains the **knowledge and skills required before starting the second part of the React Native course**. The instructor clarifies that this section builds on concepts and code developed earlier, so certain prerequisites are necessary for students to follow the material effectively.
+
+---
+
+# 2. Course Structure and Context
+
+## 2.1 This Is the Second Part of the React Native Series
+
+The course is a continuation of a previous React Native course.
+
+In the **first part of the series**, students:
+
+* Learned the fundamentals of React Native
+* Built a large portion of an application
+
+The current course will **continue development using that existing codebase**.
+
+Important implication:
+
+* The instructor will **not re-explain the code created in the first part**.
+* Students are expected to already understand the architecture and components previously built.
+
+### Recommendation
+
+The ideal learning path is:
+
+1. Complete the **first part of the React Native course**
+2. Then continue with this **advanced section**
+
+However, students who already have React Native experience may start directly with this course.
+
+---
+
+# 3. Required React Knowledge
+
+## 3.1 Familiarity with React Hooks
+
+Students should be **fairly comfortable using React Hooks**.
+
+You do not need to be an expert, but you should understand the basics.
+
+Key hooks required for this course include:
+
+### useState
+
+Used to manage component state.
+
+Example:
+
+-------------------code----------------------
+import React, { useState } from "react";
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <button onClick={() => setCount(count + 1)}>
+      {count}
+    </button>
+  );
+}
+-------------------code----------------------
+
+### useEffect
+
+Used to perform side effects such as data fetching or subscriptions.
+
+Example:
+
+-------------------code----------------------
+import React, { useEffect } from "react";
+
+useEffect(() => {
+  console.log("Component mounted");
+}, []);
+-------------------code----------------------
+
+Students should understand:
+
+* When to use `useState`
+* When to use `useEffect`
+* Basic hook behavior
+
+---
+
+## 3.2 Understanding React Context
+
+Students should also understand the **React Context API**, which allows data sharing across components without prop drilling.
+
+Basic example:
+
+-------------------code----------------------
+import React, { createContext } from "react";
+
+const AuthContext = createContext();
+-------------------code----------------------
+
+Context is often used for:
+
+* Authentication state
+* Global settings
+* Shared data across screens
+
+This course will rely on Context for **state management across the application**.
+
+---
+
+# 4. Required JavaScript Knowledge
+
+Students must also be comfortable with **modern JavaScript (ES6+) features**.
+
+These include:
+
+## 4.1 Arrow Functions
+
+Example:
+
+-------------------code----------------------
+const add = (a, b) => a + b;
+-------------------code----------------------
+
+Arrow functions are used extensively in React Native code.
+
+---
+
+## 4.2 Spread Operator
+
+Used to copy or merge objects and arrays.
+
+Example:
+
+-------------------code----------------------
+const user = { name: "John" };
+
+const updatedUser = {
+  ...user,
+  age: 25
+};
+-------------------code----------------------
+
+---
+
+## 4.3 Promises
+
+Promises represent asynchronous operations.
+
+Example:
+
+-------------------code----------------------
+fetch(url)
+  .then(response => response.json())
+  .then(data => console.log(data));
+-------------------code----------------------
+
+---
+
+## 4.4 Async and Await
+
+This course will rely heavily on **async/await** for asynchronous operations.
+
+Example:
+
+-------------------code----------------------
+async function loadData() {
+  const response = await fetch(url);
+  const data = await response.json();
+  console.log(data);
+}
+-------------------code----------------------
+
+Students should understand:
+
+* What asynchronous programming is
+* How `async` functions work
+* How `await` pauses execution until a promise resolves
+
+---
+
+# 5. Why These Prerequisites Matter
+
+The instructor emphasizes these prerequisites because the course will focus on **advanced application features**, not on explaining basic programming or JavaScript concepts.
+
+Without this foundation, students may struggle with topics such as:
+
+* Networking
+* Authentication
+* Navigation
+* Asynchronous data handling
+
+---
+
+# 6. Determining If You Are Ready for the Course
+
+You are a suitable student for this course if you:
+
+* Have basic React Native experience
+* Understand React hooks (`useState`, `useEffect`)
+* Understand React Context
+* Are comfortable with modern JavaScript
+* Understand promises and async/await
+
+If these requirements are met, you should be able to **follow the course effectively and continue building advanced React Native applications**.
+
+---
+
+# 7. Key Takeaways
+
+* This course builds directly on a previous React Native course.
+* Students should already understand the app built in the first part.
+* Basic knowledge of React Hooks and Context is required.
+* Strong familiarity with modern JavaScript features is necessary.
+* Async and await are heavily used throughout the course.
+
+Meeting these prerequisites ensures that students can focus on **learning advanced mobile application development concepts rather than basic programming topics**.
