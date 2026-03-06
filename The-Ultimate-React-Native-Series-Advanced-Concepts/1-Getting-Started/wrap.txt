@@ -424,3 +424,279 @@ If these requirements are met, you should be able to **follow the course effecti
 * Async and await are heavily used throughout the course.
 
 Meeting these prerequisites ensures that students can focus on **learning advanced mobile application development concepts rather than basic programming topics**.
+
+
+*** 5- Code Snippet ***
+# VS Code Setup for React Native Development — Code Snippets
+
+## 1. Introduction
+
+In this lecture, the instructor explains how to **improve development speed in React Native using code snippets in Visual Studio Code (VS Code)**.
+
+Although any code editor can be used, the instructor recommends **VS Code** because it supports powerful customization features such as **user-defined code snippets**.
+
+Code snippets allow developers to **quickly generate common code templates**, reducing repetitive typing and improving productivity.
+
+---
+
+# 2. Recommended Editor
+
+The instructor uses:
+
+* **Visual Studio Code (VS Code)**
+
+However, students are free to use **any editor they prefer**.
+
+If using VS Code, it is recommended to install and configure the provided **React Native function component snippet**.
+
+---
+
+# 3. Purpose of the Snippet
+
+The snippet allows developers to **automatically generate a React Native function component template**.
+
+Instead of manually writing the component structure, developers can simply type:
+
+-------------------code----------------------
+rnfc
+-------------------code----------------------
+
+Then VS Code will generate a **basic React Native component structure**.
+
+This template includes:
+
+* React import
+* React Native imports
+* Function component
+* View container
+* Stylesheet
+* Export statement
+
+---
+
+# 4. Generated Component Template
+
+When typing `rnfc`, the following structure will be generated automatically:
+
+-------------------code----------------------
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+
+function ComponentName(props) {
+  return (
+    <View style={styles.container}></View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {}
+});
+
+export default ComponentName;
+-------------------code----------------------
+
+The component name will automatically match the **file name** because of the variable:
+
+-------------------code----------------------
+${TM_FILENAME_BASE}
+-------------------code----------------------
+
+This helps maintain **consistent naming between files and components**.
+
+---
+
+# 5. Installing the Snippet in VS Code
+
+Follow these steps to install the snippet.
+
+## Step 1 — Open VS Code Settings
+
+In the top menu:
+
+1. Click **Code** (on macOS) or **File** (on Windows)
+2. Select **Preferences**
+3. Click **User Snippets**
+
+---
+
+## Step 2 — Open JavaScript Snippets File
+
+Search for:
+
+-------------------code----------------------
+javascript.json
+-------------------code----------------------
+
+This file stores **all custom snippets used in JavaScript files**.
+
+Important note:
+
+Do not delete any existing snippets that may already exist in this file.
+
+---
+
+## Step 3 — Add the Provided Snippet
+
+Copy the following snippet into the `javascript.json` file.
+
+-------------------code----------------------
+{
+  "Function Component": {
+    "prefix": "rnfc",
+    "body": [
+      "import React from 'react';",
+      "import { View, StyleSheet } from 'react-native';",
+      "",
+      "function ${TM_FILENAME_BASE}(props) {",
+      "  return (",
+      "    <View style={styles.container}>$0</View>",
+      "  );",
+      "}",
+      "",
+      "const styles = StyleSheet.create({",
+      "  container: {}",
+      "});",
+      "",
+      "export default ${TM_FILENAME_BASE};"
+    ]
+  }
+}
+-------------------code----------------------
+
+---
+
+# 6. How the Snippet Works
+
+The snippet contains three main parts.
+
+## 6.1 Snippet Name
+
+-------------------code----------------------
+"Function Component"
+-------------------code----------------------
+
+This is simply the **display name of the snippet**.
+
+---
+
+## 6.2 Prefix (Shortcut)
+
+-------------------code----------------------
+"prefix": "rnfc"
+-------------------code----------------------
+
+This is the **shortcut typed in the editor** to activate the snippet.
+
+Typing:
+
+-------------------code----------------------
+rnfc
+-------------------code----------------------
+
+and pressing **Enter or Tab** expands the template.
+
+---
+
+## 6.3 Body
+
+The `body` contains the **code that will be inserted automatically**.
+
+Example:
+
+-------------------code----------------------
+"body": [
+  "import React from 'react';",
+  "import { View, StyleSheet } from 'react-native';"
+]
+-------------------code----------------------
+
+Each string represents **one line of code**.
+
+---
+
+# 7. Snippet Variables
+
+VS Code snippets support special variables.
+
+### ${TM_FILENAME_BASE}
+
+This variable automatically inserts the **current file name without extension**.
+
+Example:
+
+If the file name is:
+
+-------------------code----------------------
+LoginScreen.js
+-------------------code----------------------
+
+The component will automatically become:
+
+-------------------code----------------------
+function LoginScreen()
+-------------------code----------------------
+
+---
+
+### $0
+
+This defines the **final cursor position after the snippet expands**.
+
+In this snippet:
+
+-------------------code----------------------
+<View style={styles.container}>$0</View>
+-------------------code----------------------
+
+The cursor will appear **inside the View**, ready for additional content.
+
+---
+
+# 8. Benefits of Using Snippets
+
+Using snippets provides several advantages:
+
+### Faster Development
+
+Reduces repetitive typing.
+
+### Consistent Structure
+
+Ensures all components follow the same structure.
+
+### Cleaner Code
+
+Encourages a standardized component layout.
+
+### Improved Productivity
+
+Developers can focus on logic instead of writing boilerplate code.
+
+---
+
+# 9. Best Practices
+
+* Do not delete existing snippets inside `javascript.json`.
+* Add new snippets **below existing entries**.
+* Save the file after adding the snippet.
+* Use clear naming conventions for component files.
+
+Example:
+
+-------------------code----------------------
+LoginScreen.js
+ListingDetailsScreen.js
+MessagesScreen.js
+-------------------code----------------------
+
+This ensures the snippet generates properly named components.
+
+---
+
+# 10. Key Takeaways
+
+* VS Code supports **custom code snippets** that improve development speed.
+* The `rnfc` snippet generates a **React Native function component template**.
+* The snippet should be added to the **javascript.json user snippets file**.
+* `${TM_FILENAME_BASE}` automatically uses the file name as the component name.
+* Snippets help maintain **clean, consistent, and efficient React Native code**.
