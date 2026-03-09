@@ -347,3 +347,208 @@ Because Expo continues to evolve, the list of supported features **continues to 
 * Expo simplifies access to native features through **built-in APIs**.
 * Developers can either **eject from Expo** or **use Expo's built-in components**.
 * This course will demonstrate how to use **Expo's Image Picker API** as an example of working with device features.
+
+*** 3- Using ImagePicker ***
+# Using the Expo Image Picker — Documentation Overview
+
+## 1. Introduction
+
+This lecture introduces the **Expo Image Picker component** and explains how to understand its documentation and install it in a React Native project.
+
+The Image Picker allows applications to **access images or videos from the user's device**, either by selecting files from the device library or by capturing media using the camera.
+
+---
+
+# 2. What the Image Picker Can Do
+
+The Expo Image Picker provides functionality to:
+
+* Select images from the device photo library
+* Select videos from the device library
+* Capture images using the device camera
+* Capture videos using the device camera
+
+This functionality is commonly used in applications that require:
+
+* User profile photos
+* Product listings
+* Social media uploads
+* Media sharing features
+
+---
+
+# 3. Platform Compatibility Table
+
+Each Expo API includes a **platform compatibility table** in its documentation.
+
+This table shows which platforms support the component.
+
+Typical platforms include:
+
+* iOS
+* Android
+* Web
+
+Before using any Expo component, developers should always check this table to ensure the component works on the desired platform.
+
+Important note:
+
+Some components **only work on real devices** and cannot be used in simulators or emulators.
+
+Examples of such components include:
+
+* Camera
+* Sensors
+* Certain hardware-based features
+
+Therefore, when testing device-related features, it may be necessary to **run the application on a physical device**.
+
+---
+
+# 4. Installing the Image Picker
+
+Installing Expo components is very simple.
+
+The documentation usually provides a single command that installs the required package.
+
+Example installation command:
+
+-------------------code----------------------
+expo install expo-image-picker
+-------------------code----------------------
+
+Running this command installs the correct version of the library compatible with the current Expo project.
+
+One advantage of Expo is that **no additional setup is required after installation**.
+
+---
+
+# 5. Difference Between Expo and Bare React Native
+
+The documentation also includes instructions for **bare React Native projects** (projects that do not use Expo).
+
+In those projects, additional setup steps are required.
+
+If a developer later decides to **eject from Expo**, these steps must be performed manually.
+
+---
+
+# 6. Native Configuration in Bare React Native
+
+When using the Image Picker in a bare React Native project, additional configuration is required for each platform.
+
+## 6.1 iOS Configuration
+
+For iOS, developers must modify a configuration file called:
+
+-------------------code----------------------
+Info.plist
+-------------------code----------------------
+
+The name **plist** stands for **Property List**.
+
+In this file, developers must add permission descriptions explaining why the application needs access to user data.
+
+Typical examples include:
+
+* Access to the camera
+* Access to the photo library
+
+After modifying the configuration, developers must run:
+
+-------------------code----------------------
+npx pod-install
+-------------------code----------------------
+
+This command installs the required native dependencies.
+
+---
+
+## 6.2 Android Configuration
+
+Android also requires configuration changes in the native project.
+
+These changes typically involve:
+
+* Adding permissions
+* Updating configuration files
+
+Although the setup is manageable, it adds complexity compared to Expo's simplified approach.
+
+---
+
+# 7. Documentation Quality in Expo
+
+One major advantage of Expo is the **quality of its documentation**.
+
+Expo documentation typically includes:
+
+* Installation instructions
+* Working code examples
+* Full API references
+* Method descriptions
+* Parameter explanations
+* Return value details
+
+This makes it easier for developers to quickly understand and implement features.
+
+---
+
+# 8. Comparison with Third-Party Libraries
+
+Many third-party libraries outside the Expo ecosystem may have issues such as:
+
+* Poor documentation
+* Lack of maintenance
+* Limited examples
+* Unresolved bugs
+
+When a library is poorly maintained and contains bugs, developers often have to **debug the problem themselves**.
+
+Expo reduces these issues because:
+
+* It is actively maintained
+* Its APIs are consistently documented
+* Its components are regularly updated
+
+---
+
+# 9. Installing the Image Picker in the Project
+
+To add the Image Picker to the project, run the following command in the terminal:
+
+-------------------code----------------------
+expo install expo-image-picker
+-------------------code----------------------
+
+Once installed, the application can import and use the component to access media on the device.
+
+---
+
+# 10. Device Permissions
+
+Accessing sensitive device data requires **explicit user permission**.
+
+Examples of sensitive information include:
+
+* Location data
+* Photos and videos
+* Camera access
+* Contacts
+
+Before the application can use these features, it must request permission from the user.
+
+If the user denies permission, the application must handle this situation gracefully.
+
+The next lesson focuses on **how to request and manage user permissions** when accessing device features.
+
+---
+
+# 11. Key Takeaways
+
+* The Expo Image Picker allows apps to access images and videos from the device.
+* The documentation includes a platform compatibility table to verify supported platforms.
+* Installation is simple when using Expo and requires only one command.
+* Bare React Native projects require additional native configuration.
+* Expo provides well-documented APIs with examples and detailed references.
+* Applications must request **user permission** before accessing sensitive device information such as photos or location.
