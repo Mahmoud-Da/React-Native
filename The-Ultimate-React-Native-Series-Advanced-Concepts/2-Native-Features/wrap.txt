@@ -110,3 +110,240 @@ These skills are essential for building **fully functional mobile apps**.
 * User **location data will be captured and attached to listings**.
 * These improvements transform the app into a **more realistic and feature-rich mobile application**.
 * Learning to use device features is an essential skill for professional React Native development.
+
+*** 2- Device Features ***
+# Accessing Native Device Features in React Native — Overview
+
+## 1. Introduction
+
+This lecture provides an **overview of how React Native applications access native device features**.
+
+Modern mobile apps often rely on device capabilities such as:
+
+* Camera
+* Contacts
+* Location
+* Calendar
+* Media library
+
+However, these features are **not fully included in the core React Native framework**. Instead, developers typically rely on **third-party libraries or tools like Expo** to access them.
+
+---
+
+# 2. Native Features in Core React Native
+
+React Native includes a **small set of built-in APIs** under its Core APIs section.
+
+These APIs provide limited access to device functionality.
+
+Examples include:
+
+* Displaying alerts
+* Handling the soft keyboard
+* Basic platform interactions
+
+Example of a simple alert:
+
+-------------------code----------------------
+import { Alert } from "react-native";
+
+Alert.alert("Hello", "This is an alert message");
+-------------------code----------------------
+
+Although useful, these APIs **do not provide access to most device hardware features**.
+
+For more advanced capabilities, additional libraries are required.
+
+---
+
+# 3. Third-Party Libraries for Native Features
+
+Most device features such as:
+
+* Camera
+* Contacts
+* Location services
+* Image selection
+
+are provided through **third-party React Native libraries**.
+
+One common example is the **Image Picker library**.
+
+This library allows developers to:
+
+* Select images from the device gallery
+* Capture photos using the device camera
+
+Example library:
+
+-------------------code----------------------
+react-native-image-picker
+-------------------code----------------------
+
+These libraries extend React Native by providing **access to native platform functionality**.
+
+---
+
+# 4. Additional Setup for Native Libraries
+
+Many third-party libraries require **extra configuration in native projects**.
+
+Typical installation steps include:
+
+1. Installing the library using npm or yarn
+
+Example:
+
+-------------------code----------------------
+npm install library-name
+-------------------code----------------------
+
+or
+
+-------------------code----------------------
+yarn add library-name
+-------------------code----------------------
+
+2. Running platform-specific setup
+
+For example, iOS projects may require commands such as:
+
+-------------------code----------------------
+cd ios
+pod install
+-------------------code----------------------
+
+Because these steps involve modifying **native Android or iOS code**, they are not always compatible with certain development environments.
+
+---
+
+# 5. Limitations When Using Expo
+
+When using **Expo**, developers typically **do not have direct access to native iOS or Android project files**.
+
+Because of this limitation:
+
+* Some third-party libraries cannot be used directly in Expo.
+* Libraries requiring native setup will not work unless additional steps are taken.
+
+---
+
+# 6. Options When Using Expo
+
+Developers using Expo have two main options.
+
+## Option 1: Eject from Expo
+
+Ejecting converts an Expo project into a **full React Native project**.
+
+Benefits:
+
+* Full access to native Android and iOS code
+* Ability to install any React Native library
+
+Drawbacks:
+
+* More complex setup
+* Loss of some Expo conveniences
+
+---
+
+## Option 2: Use Expo APIs
+
+Expo provides its own **collection of APIs that wrap native device functionality**.
+
+These APIs are designed to work **without requiring native configuration**.
+
+Advantages include:
+
+* Simple installation
+* No manual native setup
+* Excellent documentation
+* Faster development workflow
+
+Because of these benefits, the instructor prefers continuing with **Expo APIs whenever possible**.
+
+---
+
+# 7. Advantages of Using Expo
+
+Expo offers several benefits when working with device features.
+
+### Faster Development
+
+Expo reduces the amount of setup required for accessing native features.
+
+### Better Productivity
+
+Developers can focus on building features instead of configuring native code.
+
+### Strong Documentation
+
+Expo APIs are well documented and easy to understand.
+
+### Continuous Improvement
+
+Expo is actively developed and frequently adds new features.
+
+---
+
+# 8. Native Features Available in Expo
+
+Expo provides many APIs that allow access to device capabilities.
+
+Examples include:
+
+* Camera
+* Image picker
+* Contacts
+* Calendar
+* Location
+* Media library
+* Sensors
+
+These APIs are available through the **Expo documentation API reference**.
+
+Each feature has:
+
+* Detailed documentation
+* Installation instructions
+* Example usage
+
+---
+
+# 9. Focus of This Section
+
+In this section of the course, the instructor will demonstrate how to use:
+
+### Image Picker
+
+The Image Picker allows users to:
+
+* Select photos from the device gallery
+* Capture images using the camera
+* Attach images to app content
+
+Other native features follow **similar usage patterns**, so once the Image Picker is understood, it becomes easier to learn other APIs independently.
+
+---
+
+# 10. Recommended Learning Step
+
+Before continuing with the next lesson, students are encouraged to:
+
+1. Visit the Expo documentation.
+2. Review the list of available APIs.
+3. Familiarize themselves with the device features that can be integrated into apps.
+
+Because Expo continues to evolve, the list of supported features **continues to grow over time**.
+
+---
+
+# 11. Key Takeaways
+
+* React Native core provides **limited access to native device features**.
+* Most advanced features are implemented through **third-party libraries**.
+* Many of these libraries require **native project configuration**.
+* Expo simplifies access to native features through **built-in APIs**.
+* Developers can either **eject from Expo** or **use Expo's built-in components**.
+* This course will demonstrate how to use **Expo's Image Picker API** as an example of working with device features.
