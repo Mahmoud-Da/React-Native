@@ -1424,3 +1424,324 @@ This pattern is essential and will be reused for other features such as:
 * Camera access
 * Location services
 * File system access
+
+*** 5- Permissions Module ***
+# Using the Permissions API in React Native (Expo)
+
+## 1. Introduction
+
+In this lecture, we learn another way to **request user permissions** using the **Permissions API** from Expo.
+
+Previously, we used:
+
+-------------------code----------------------
+ImagePicker.requestCameraRollPermissionsAsync()
+-------------------code----------------------
+
+Now we explore a more general approach using:
+
+-------------------code----------------------
+expo-permissions
+-------------------code----------------------
+
+---
+
+# 2. Installing the Permissions API
+
+## Step 1 — Install Package
+
+Run the following command:
+
+-------------------code----------------------bash
+expo install expo-permissions
+-------------------code----------------------
+
+This package provides **centralized control for multiple permissions**.
+
+---
+
+# 3. Importing the Permissions Module
+
+## Step 2 — Import in Your Code
+
+-------------------code----------------------
+import * as Permissions from "expo-permissions";
+-------------------code----------------------
+
+This gives access to different permission types like:
+
+* Camera
+* Camera Roll (Photos)
+* Location
+* Audio
+* Calendar
+
+---
+
+# 4. Requesting Permission with Permissions API
+
+## Step 3 — Create Permission Function
+
+-------------------code----------------------
+const requestPermission = async () => {
+  const { granted } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+
+  if (!granted) {
+    alert("You need to enable permission to access the library.");
+  }
+};
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* `Permissions.askAsync()` requests permission
+* You pass the permission type:
+
+-------------------code----------------------
+Permissions.CAMERA_ROLL
+-------------------code----------------------
+
+* It returns an object with:
+
+-------------------code----------------------
+{ granted: true/false }
+-------------------code----------------------
+
+---
+
+# 5. Using Multiple Permissions
+
+One advantage of the Permissions API:
+
+## Step 4 — Request Multiple Permissions
+
+-------------------code----------------------
+const requestPermission = async () => {
+  const { granted } = await Permissions.askAsync(
+    Permissions.CAMERA_ROLL,
+    Permissions.LOCATION
+  );
+
+  if (!granted) {
+    alert("You need to enable permissions.");
+  }
+};
+-------------------code----------------------
+
+---
+
+## Behavior
+
+* User will see **multiple permission dialogs**
+* If the user denies **any one of them**:
+
+  * `granted` becomes `false`
+
+---
+
+# 6. Connecting with useEffect
+
+## Step 5 — Run on App Start
+
+-------------------code----------------------
+useEffect(() => {
+  requestPermission();
+}, []);
+-------------------code----------------------
+
+This ensures:
+
+* Permission is requested **only once**
+* Runs when app loads
+
+---
+
+# 7. Comparison with ImagePicker Method
+
+## ImagePicker Method
+
+-------------------code----------------------
+ImagePicker.requestCameraRollPermissionsAsync();
+-------------------code----------------------
+
+## Permissions API Method
+
+-------------------code----------------------
+Permissions.askAsync(Permissions.CAMERA_ROLL);
+-------------------code----------------------
+
+---
+
+## Key Insight
+
+The lecture explains:
+
+* The ImagePicker method **internally uses the Permissions API**
+* Both approaches are **functionally similar**
+
+---
+
+# 8. Which Approach Should You Use?
+
+## Permissions API
+
+Use when:
+
+* You need **multiple permissions at once**
+
+## ImagePicker Method
+
+Use when:
+
+* You only need **one specific permission**
+* Simpler and cleaner
+
+The instructor chooses:
+
+* **ImagePicker request method for simplicity**
+
+---
+
+# 9. Full Step-by-Step Code (Permissions API Version)
+
+## Step 1 — Imports
+
+-------------------code----------------------
+import { useEffect } from "react";
+import * as Permissions from "expo-permissions";
+import Screen from "./app/components/Screen";
+-------------------code----------------------
+
+---
+
+## Step 2 — Permission Function
+
+-------------------code----------------------
+const requestPermission = async () => {
+  const { granted } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+
+  if (!granted) {
+    alert("You need to enable permission to access the library.");
+  }
+};
+-------------------code----------------------
+
+---
+
+## Step 3 — useEffect
+
+-------------------code----------------------
+useEffect(() => {
+  requestPermission();
+}, []);
+-------------------code----------------------
+
+---
+
+## Step 4 — Render
+
+-------------------code----------------------
+return <Screen />;
+-------------------code----------------------
+
+---
+
+# 10. Full Final Code
+
+-------------------code----------------------
+import { useEffect } from "react";
+import * as Permissions from "expo-permissions";
+import Screen from "./app/components/Screen";
+
+export default function App() {
+  const requestPermission = async () => {
+    const { granted } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+
+    if (!granted) {
+      alert("You need to enable permission to access the library.");
+    }
+  };
+
+  useEffect(() => {
+    requestPermission();
+  }, []);
+
+  return <Screen />;
+}
+-------------------code----------------------
+
+---
+
+# 11. Important Notes and Best Practices
+
+## 11.1 Permissions Are Required
+
+Always request permission before accessing:
+
+* Photos
+* Camera
+* Location
+* Contacts
+
+---
+
+## 11.2 Handle Denied Permissions
+
+Always check:
+
+-------------------code----------------------
+if (!granted)
+-------------------code----------------------
+
+Never assume permission is granted.
+
+---
+
+## 11.3 useEffect Must Not Be Async
+
+Incorrect:
+
+-------------------code----------------------
+useEffect(async () => {})
+-------------------code----------------------
+
+Correct:
+
+* Use a separate async function
+
+---
+
+## 11.4 Use Empty Dependency Array
+
+-------------------code----------------------
+useEffect(() => {}, []);
+-------------------code----------------------
+
+Ensures:
+
+* Runs only once
+* Prevents repeated permission requests
+
+---
+
+## 11.5 Choose the Right Approach
+
+* Use **Permissions API** for flexibility
+* Use **ImagePicker method** for simplicity
+
+---
+
+# 12. Summary
+
+* The Permissions API allows requesting **one or multiple permissions**
+* It is installed using `expo-permissions`
+* Use `Permissions.askAsync()` to request access
+* It returns a result object with a `granted` boolean
+* If any permission is denied, `granted` becomes false
+* This approach is similar to ImagePicker’s request method
+* In practice, simpler methods are often preferred unless multiple permissions are needed
+
+This completes the permission handling part.
+Next step is learning how to **select images from the device library**.
