@@ -3267,3 +3267,376 @@ This component is now ready to be used inside:
 * Forms
 * Lists
 * Multi-image inputs
+
+*** 10- Building ImageInputList- Basics ***
+# Building ImageInputList (Multiple Image Selector)
+
+## 1. Introduction
+
+In this lecture, we build a new component:
+
+-------------------code----------------------
+ImageInputList
+-------------------code----------------------
+
+This component allows:
+
+* Displaying multiple images
+* Adding new images
+* Removing existing images
+
+It works together with the previously built `ImageInput` component.
+
+---
+
+# 2. Component Purpose and Design
+
+## 2.1 Responsibilities
+
+`ImageInputList` should:
+
+* Receive a list of image URIs
+* Render multiple `ImageInput` components
+* Handle adding images
+* Handle removing images
+
+---
+
+## 2.2 Important Design Decision
+
+* This component **does NOT manage state**
+* It only:
+
+  * Receives data via props
+  * Sends events back to parent
+
+This keeps it **clean and reusable**
+
+---
+
+# 3. Creating the Component
+
+## Step 1 — Create File
+
+-------------------code----------------------
+app/components/ImageInputList.js
+-------------------code----------------------
+
+---
+
+## Step 2 — Basic Structure
+
+-------------------code----------------------
+function ImageInputList({ imageUris = [], onAddImage, onRemoveImage }) {
+  return (
+    <View style={styles.container}>
+      {/* content here */}
+    </View>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 4. Layout Images Horizontally
+
+## Step 3 — Add Flexbox Styling
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: "row"
+  }
+});
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* `flexDirection: "row"` → places images side by side
+
+---
+
+# 5. Rendering Existing Images
+
+## Step 4 — Map Through imageUris
+
+-------------------code----------------------
+{imageUris.map((uri) => (
+  <ImageInput
+    key={uri}
+    imageUri={uri}
+    onChangeImage={() => onRemoveImage(uri)}
+  />
+))}
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* `map()` creates one `ImageInput` per image
+* `key` is required in React lists
+* `onChangeImage` → used here to **delete image**
+
+---
+
+# 6. Adding New Images
+
+## Step 5 — Add Empty ImageInput
+
+-------------------code----------------------
+<ImageInput
+  onChangeImage={(uri) => onAddImage(uri)}
+/>
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* This input has **no imageUri**
+* Acts as a button to add a new image
+* When user selects an image → triggers `onAddImage`
+
+---
+
+# 7. Adding Spacing Between Images
+
+## Step 6 — Wrap Each Item in View
+
+-------------------code----------------------
+{imageUris.map((uri) => (
+  <View key={uri} style={styles.image}>
+    <ImageInput
+      imageUri={uri}
+      onChangeImage={() => onRemoveImage(uri)}
+    />
+  </View>
+))}
+-------------------code----------------------
+
+---
+
+## Step 7 — Add Margin
+
+-------------------code----------------------
+image: {
+  marginRight: 10
+}
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* Adds spacing between images
+* Keeps UI clean
+
+---
+
+# 8. Updating App.js
+
+## Step 8 — State Setup
+
+-------------------code----------------------
+const [imageUris, setImageUris] = useState([]);
+-------------------code----------------------
+
+---
+
+## Step 9 — Add Image Handler
+
+-------------------code----------------------
+const handleAdd = (uri) => {
+  setImageUris([...imageUris, uri]);
+};
+-------------------code----------------------
+
+---
+
+## Step 10 — Remove Image Handler
+
+-------------------code----------------------
+const handleRemove = (uri) => {
+  setImageUris(imageUris.filter((imageUri) => imageUri !== uri));
+};
+-------------------code----------------------
+
+---
+
+## Explanation
+
+### Adding
+
+-------------------code----------------------
+[...imageUris, uri]
+-------------------code----------------------
+
+* Copies existing array
+* Adds new item
+
+---
+
+### Removing
+
+-------------------code----------------------
+filter((imageUri) => imageUri !== uri)
+-------------------code----------------------
+
+* Keeps all items except the one to remove
+
+---
+
+# 9. Using ImageInputList in App
+
+## Step 11 — Render Component
+
+-------------------code----------------------
+<ImageInputList
+  imageUris={imageUris}
+  onAddImage={handleAdd}
+  onRemoveImage={handleRemove}
+/>
+-------------------code----------------------
+
+---
+
+# 10. Full Final Code
+
+## ImageInputList.js
+
+-------------------code----------------------
+import React from "react";
+import { View, StyleSheet } from "react-native";
+import ImageInput from "./ImageInput";
+
+function ImageInputList({ imageUris = [], onAddImage, onRemoveImage }) {
+  return (
+    <View style={styles.container}>
+      {imageUris.map((uri) => (
+        <View key={uri} style={styles.image}>
+          <ImageInput
+            imageUri={uri}
+            onChangeImage={() => onRemoveImage(uri)}
+          />
+        </View>
+      ))}
+
+      <ImageInput onChangeImage={(uri) => onAddImage(uri)} />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: "row"
+  },
+  image: {
+    marginRight: 10
+  }
+});
+
+export default ImageInputList;
+-------------------code----------------------
+
+---
+
+## App.js
+
+-------------------code----------------------
+import { useState } from "react";
+import Screen from "./app/components/Screen";
+import ImageInputList from "./app/components/ImageInputList";
+
+export default function App() {
+  const [imageUris, setImageUris] = useState([]);
+
+  const handleAdd = (uri) => {
+    setImageUris([...imageUris, uri]);
+  };
+
+  const handleRemove = (uri) => {
+    setImageUris(imageUris.filter((imageUri) => imageUri !== uri));
+  };
+
+  return (
+    <Screen>
+      <ImageInputList
+        imageUris={imageUris}
+        onAddImage={handleAdd}
+        onRemoveImage={handleRemove}
+      />
+    </Screen>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 11. Important Notes and Best Practices
+
+## 11.1 Do Not Store State in Child
+
+* `ImageInputList` does not use `useState`
+* Parent (`App`) controls state
+
+---
+
+## 11.2 Use Props for Communication
+
+* `onAddImage`
+* `onRemoveImage`
+
+---
+
+## 11.3 Use Unique Keys
+
+-------------------code----------------------
+key={uri}
+-------------------code----------------------
+
+Required for list rendering
+
+---
+
+## 11.4 Keep Components Simple
+
+* `ImageInput` → single image
+* `ImageInputList` → list logic
+
+---
+
+## 11.5 Avoid Inline Functions When Possible
+
+Instead of:
+
+-------------------code----------------------
+(uri) => handleAdd(uri)
+-------------------code----------------------
+
+Use:
+
+-------------------code----------------------
+handleAdd
+-------------------code----------------------
+
+Cleaner and simpler
+
+---
+
+# 12. Summary
+
+* Built `ImageInputList` for handling multiple images
+* Used `map()` to render multiple `ImageInput` components
+* Added support for:
+
+  * Adding images
+  * Removing images
+* Managed state in parent component (`App`)
+* Used spread operator to add items
+* Used filter method to remove items
+* Improved UI with spacing between images
+
+This completes the multi-image selection system and prepares you for integrating it into forms.
