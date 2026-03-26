@@ -2384,3 +2384,397 @@ The instructor emphasizes:
 * Breaking problems into smaller steps is a key development skill
 
 This approach helps you build complex features in a **clear, structured, and maintainable way**.
+
+*** 8- Building ImageInput- Layout ***
+# Building the ImageInput Component in React Native
+
+## 1. Introduction
+
+In this lecture, we start building a reusable component called:
+
+-------------------code----------------------
+ImageInput
+-------------------code----------------------
+
+This component will:
+
+* Display a placeholder (camera icon) when no image is selected
+* Display an image when one is provided
+* Act as a base for future features (add/delete images)
+
+---
+
+# 2. Creating the Component
+
+## Step 1 — Create File
+
+Create a new file:
+
+-------------------code----------------------
+app/components/ImageInput.js
+-------------------code----------------------
+
+---
+
+## Step 2 — Generate Component Template
+
+Using the snippet:
+
+-------------------code----------------------
+rnfc
+-------------------code----------------------
+
+This generates a basic React Native function component.
+
+---
+
+## Step 3 — Basic Component Structure
+
+-------------------code----------------------
+function ImageInput(props) {
+  return (
+    <View style={styles.container}></View>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 3. Styling the Container
+
+## Step 4 — Add Styles
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: colors.light,
+    borderRadius: 15,
+    height: 100,
+    width: 100,
+    alignItems: "center",
+    justifyContent: "center"
+  }
+});
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* `backgroundColor` → light background
+* `borderRadius` → rounded corners
+* `height/width` → fixed size
+* `alignItems` + `justifyContent` → center content
+
+---
+
+# 4. Rendering the Component
+
+## Step 5 — Use in App.js
+
+-------------------code----------------------
+import ImageInput from "./app/components/ImageInput";
+
+export default function App() {
+  return <ImageInput />;
+}
+-------------------code----------------------
+
+Now you should see a styled square container.
+
+---
+
+# 5. Showing Camera Icon (No Image)
+
+## Step 6 — Import Icon Library
+
+-------------------code----------------------
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+-------------------code----------------------
+
+---
+
+## Step 7 — Add imageUri Prop
+
+-------------------code----------------------
+function ImageInput({ imageUri }) {
+-------------------code----------------------
+
+---
+
+## Step 8 — Conditional Rendering (No Image)
+
+-------------------code----------------------
+{!imageUri && (
+  <MaterialCommunityIcons
+    name="camera"
+    size={40}
+    color={colors.medium}
+  />
+)}
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* If no image → show camera icon
+* `!imageUri` means "image does not exist"
+
+---
+
+# 6. Displaying Selected Image
+
+## Step 9 — Import Image Component
+
+-------------------code----------------------
+import { Image } from "react-native";
+-------------------code----------------------
+
+---
+
+## Step 10 — Conditional Rendering (Image Exists)
+
+-------------------code----------------------
+{imageUri && (
+  <Image source={{ uri: imageUri }} style={styles.image} />
+)}
+-------------------code----------------------
+
+---
+
+## Step 11 — Add Image Styles
+
+-------------------code----------------------
+image: {
+  width: "100%",
+  height: "100%"
+}
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* Image fills entire container
+* Uses URI from state
+
+---
+
+# 7. Testing with Real Image
+
+## Step 12 — Pass imageUri from App
+
+-------------------code----------------------
+export default function App() {
+  const [imageUri, setImageUri] = useState(null);
+
+  return <ImageInput imageUri={imageUri} />;
+}
+-------------------code----------------------
+
+After selecting an image, it should appear inside the container.
+
+---
+
+# 8. Fixing Border Radius Issue
+
+## Problem
+
+* Image appears but **rounded corners disappear**
+
+## Reason
+
+* Image is slightly larger than container
+* It overflows outside rounded edges
+
+---
+
+## Step 13 — Fix with overflow
+
+-------------------code----------------------
+container: {
+  backgroundColor: colors.light,
+  borderRadius: 15,
+  height: 100,
+  width: 100,
+  alignItems: "center",
+  justifyContent: "center",
+  overflow: "hidden"
+}
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* `overflow: "hidden"` clips extra image parts
+* Keeps rounded corners visible
+
+---
+
+# 9. Full Step-by-Step Implementation
+
+## Step 1 — Imports
+
+-------------------code----------------------
+import React from "react";
+import { View, StyleSheet, Image } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import colors from "../config/colors";
+-------------------code----------------------
+
+---
+
+## Step 2 — Component
+
+-------------------code----------------------
+function ImageInput({ imageUri }) {
+  return (
+    <View style={styles.container}>
+      {!imageUri && (
+        <MaterialCommunityIcons
+          name="camera"
+          size={40}
+          color={colors.medium}
+        />
+      )}
+
+      {imageUri && (
+        <Image source={{ uri: imageUri }} style={styles.image} />
+      )}
+    </View>
+  );
+}
+-------------------code----------------------
+
+---
+
+## Step 3 — Styles
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: colors.light,
+    borderRadius: 15,
+    height: 100,
+    width: 100,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden"
+  },
+  image: {
+    width: "100%",
+    height: "100%"
+  }
+});
+-------------------code----------------------
+
+---
+
+# 10. Full Final Code
+
+-------------------code----------------------
+import React from "react";
+import { View, StyleSheet, Image } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import colors from "../config/colors";
+
+function ImageInput({ imageUri }) {
+  return (
+    <View style={styles.container}>
+      {!imageUri && (
+        <MaterialCommunityIcons
+          name="camera"
+          size={40}
+          color={colors.medium}
+        />
+      )}
+
+      {imageUri && (
+        <Image source={{ uri: imageUri }} style={styles.image} />
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: colors.light,
+    borderRadius: 15,
+    height: 100,
+    width: 100,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden"
+  },
+  image: {
+    width: "100%",
+    height: "100%"
+  }
+});
+
+export default ImageInput;
+-------------------code----------------------
+
+---
+
+# 11. Important Notes and Best Practices
+
+## 11.1 Use Conditional Rendering
+
+-------------------code----------------------
+!imageUri → show icon  
+imageUri → show image
+-------------------code----------------------
+
+---
+
+## 11.2 Always Handle Overflow
+
+-------------------code----------------------
+overflow: "hidden"
+-------------------code----------------------
+
+Important when using:
+
+* borderRadius
+* images
+
+---
+
+## 11.3 Keep Components Reusable
+
+* `ImageInput` should not handle logic yet
+* Only display UI
+* Logic will be added later
+
+---
+
+## 11.4 Clean Style Order
+
+Organize styles like:
+
+-------------------code----------------------
+alignItems
+justifyContent
+-------------------code----------------------
+
+Improves readability.
+
+---
+
+# 12. Summary
+
+* Created a reusable `ImageInput` component
+* Styled a container with rounded corners
+* Displayed a camera icon when no image exists
+* Displayed an image when `imageUri` is provided
+* Fixed border radius issue using `overflow: hidden`
+* Used conditional rendering to switch between states
+
+This component is the **foundation** for building:
+
+* Image selection
+* Image deletion
+* Multiple image lists
