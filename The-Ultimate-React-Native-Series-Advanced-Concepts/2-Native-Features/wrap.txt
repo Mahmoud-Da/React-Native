@@ -3922,3 +3922,366 @@ Avoid layout issues:
 * Improved usability and user experience
 
 The `ImageInputList` component is now fully functional and user-friendly, ready for integration into forms.
+
+
+*** 12- Building FormImagePicker ***
+# Integrating ImageInputList with Formik (FormImagePicker)
+
+## 1. Introduction
+
+In this lecture, we create a new component:
+
+-------------------code----------------------
+FormImagePicker
+-------------------code----------------------
+
+This component integrates:
+
+* `ImageInputList` (UI for images)
+* `Formik` (form state management)
+* `ErrorMessage` (validation feedback)
+
+This follows the same pattern used for:
+
+* `AppFormField` (text input)
+* `AppFormPicker` (dropdown)
+
+---
+
+# 2. Goal of FormImagePicker
+
+## 2.1 Responsibilities
+
+* Display multiple images using `ImageInputList`
+* Connect image data to Formik state
+* Handle adding and removing images
+* Show validation errors
+
+---
+
+## 2.2 Key Concept
+
+* No local state
+* All data comes from **Formik context**
+
+---
+
+# 3. Creating the Component
+
+## Step 1 — Create File
+
+-------------------code----------------------
+app/components/forms/FormImagePicker.js
+-------------------code----------------------
+
+---
+
+## Step 2 — Basic Structure
+
+-------------------code----------------------
+import React from "react";
+
+function FormImagePicker() {
+  return null;
+}
+
+export default FormImagePicker;
+-------------------code----------------------
+
+---
+
+# 4. Using Formik Context
+
+## Step 3 — Import Hook
+
+-------------------code----------------------
+import { useFormikContext } from "formik";
+-------------------code----------------------
+
+---
+
+## Step 4 — Access Form State
+
+-------------------code----------------------
+const { values, errors, touched, setFieldValue } = useFormikContext();
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* `values` → form data
+* `errors` → validation errors
+* `touched` → tracks user interaction
+* `setFieldValue` → update form state
+
+---
+
+# 5. Adding Props
+
+## Step 5 — Add name Prop
+
+-------------------code----------------------
+function FormImagePicker({ name })
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* `name` → identifies the field in Formik
+* Example: `"images"`
+
+---
+
+# 6. Connecting ImageInputList
+
+## Step 6 — Render Component
+
+-------------------code----------------------
+<ImageInputList imageUris={values[name]} />
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* `values[name]` → array of image URIs
+
+---
+
+# 7. Handling Add Image
+
+## Step 7 — Create handleAdd
+
+-------------------code----------------------
+const handleAdd = (uri) => {
+  const imageUris = values[name];
+  setFieldValue(name, [...imageUris, uri]);
+};
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* Copies existing images
+* Adds new URI
+* Updates Formik state
+
+---
+
+# 8. Handling Remove Image
+
+## Step 8 — Create handleRemove
+
+-------------------code----------------------
+const handleRemove = (uri) => {
+  const imageUris = values[name];
+  setFieldValue(
+    name,
+    imageUris.filter((imageUri) => imageUri !== uri)
+  );
+};
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* Removes selected image from array
+
+---
+
+# 9. Pass Handlers to Component
+
+## Step 9 — Update ImageInputList
+
+-------------------code----------------------
+<ImageInputList
+  imageUris={values[name]}
+  onAddImage={handleAdd}
+  onRemoveImage={handleRemove}
+/>
+-------------------code----------------------
+
+---
+
+# 10. Adding Error Message
+
+## Step 10 — Import Component
+
+-------------------code----------------------
+import ErrorMessage from "./ErrorMessage";
+-------------------code----------------------
+
+---
+
+## Step 11 — Render Error
+
+-------------------code----------------------
+<ErrorMessage error={errors[name]} visible={touched[name]} />
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* Shows error only if field is touched
+
+---
+
+# 11. Using Fragment
+
+## Step 12 — Wrap Components
+
+-------------------code----------------------
+<>
+  <ImageInputList ... />
+  <ErrorMessage ... />
+</>
+-------------------code----------------------
+
+---
+
+## Why Fragment?
+
+* Allows returning multiple components
+* Avoids unnecessary View wrapper
+
+---
+
+# 12. Code Refactoring (Optional Improvement)
+
+## Step 13 — Create Alias
+
+-------------------code----------------------
+const imageUris = values[name];
+-------------------code----------------------
+
+---
+
+## Replace Usage
+
+-------------------code----------------------
+imageUris
+-------------------code----------------------
+
+instead of:
+
+-------------------code----------------------
+values[name]
+-------------------code----------------------
+
+---
+
+## Benefit
+
+* Cleaner and more readable code
+
+---
+
+# 13. Full Final Code
+
+## FormImagePicker.js
+
+-------------------code----------------------
+import React from "react";
+import { useFormikContext } from "formik";
+
+import ImageInputList from "../ImageInputList";
+import ErrorMessage from "./ErrorMessage";
+
+function FormImagePicker({ name }) {
+  const { values, errors, touched, setFieldValue } = useFormikContext();
+
+  const imageUris = values[name];
+
+  const handleAdd = (uri) => {
+    setFieldValue(name, [...imageUris, uri]);
+  };
+
+  const handleRemove = (uri) => {
+    setFieldValue(
+      name,
+      imageUris.filter((imageUri) => imageUri !== uri)
+    );
+  };
+
+  return (
+    <>
+      <ImageInputList
+        imageUris={imageUris}
+        onAddImage={handleAdd}
+        onRemoveImage={handleRemove}
+      />
+      <ErrorMessage error={errors[name]} visible={touched[name]} />
+    </>
+  );
+}
+
+export default FormImagePicker;
+-------------------code----------------------
+
+---
+
+# 14. Important Notes and Best Practices
+
+## 14.1 Do Not Use Local State
+
+* Formik manages all form data
+* Avoid `useState` inside form components
+
+---
+
+## 14.2 Always Use setFieldValue
+
+-------------------code----------------------
+setFieldValue(name, value)
+-------------------code----------------------
+
+* Updates specific field in Formik
+
+---
+
+## 14.3 Keep Components Consistent
+
+Follow same pattern as:
+
+* `AppFormField`
+* `AppFormPicker`
+
+---
+
+## 14.4 Use name Prop Carefully
+
+* Must match Formik field name
+* Example:
+
+-------------------code----------------------
+<FormImagePicker name="images" />
+-------------------code----------------------
+
+---
+
+## 14.5 Avoid Code Duplication
+
+* Use alias:
+
+-------------------code----------------------
+const imageUris = values[name];
+-------------------code----------------------
+
+---
+
+# 15. Summary
+
+* Created `FormImagePicker` to integrate images with Formik
+* Used `useFormikContext` to access form state
+* Passed image data via `values[name]`
+* Used `setFieldValue` to update images
+* Implemented add and remove logic
+* Displayed validation errors using `ErrorMessage`
+* Followed reusable and clean architecture
+
+This component completes the integration of image selection into form handling and prepares it for use inside a full form such as a listing editor.
