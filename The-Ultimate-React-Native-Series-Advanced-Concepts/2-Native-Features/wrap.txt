@@ -3640,3 +3640,285 @@ Cleaner and simpler
 * Improved UI with spacing between images
 
 This completes the multi-image selection system and prepares you for integrating it into forms.
+
+
+*** 11- Building ImageInputList- Scrolling ***
+# Enhancing ImageInputList with Scrolling
+
+## 1. Introduction
+
+In this lecture, we improve the `ImageInputList` component by solving a UI problem:
+
+* When many images are added, the **camera icon disappears**
+* User can no longer add new images
+
+### Solution
+
+* Enable **horizontal scrolling**
+* Automatically scroll to the end when a new image is added
+
+---
+
+# 2. Problem Explanation
+
+## 2.1 Current Behavior
+
+* Images are displayed in a row
+* When the row overflows:
+
+  * Extra images go off-screen
+  * Add button (camera icon) becomes hidden
+
+---
+
+## 2.2 Goal
+
+* Allow horizontal scrolling
+* Keep "Add Image" accessible
+* Improve user experience with auto-scroll
+
+---
+
+# 3. Adding Horizontal Scrolling
+
+## Step 1 — Import ScrollView
+
+-------------------code----------------------
+import { ScrollView } from "react-native";
+-------------------code----------------------
+
+---
+
+## Step 2 — Wrap Content
+
+-------------------code----------------------
+<ScrollView horizontal>
+  {/* images */}
+</ScrollView>
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* `horizontal` → enables horizontal scrolling
+* Default is vertical scrolling
+
+---
+
+# 4. Updated Layout Structure
+
+## Step 3 — Wrap Inside View
+
+-------------------code----------------------
+<View>
+  <ScrollView horizontal>
+    {/* images */}
+  </ScrollView>
+</View>
+-------------------code----------------------
+
+---
+
+## Why Wrap with View?
+
+* `ScrollView` expands to fill available space
+* Wrapping it in `View`:
+
+  * Limits its size
+  * Prevents layout issues in forms
+
+---
+
+# 5. Auto-Scroll to End
+
+## 5.1 Problem
+
+* When adding new image:
+
+  * It appears off-screen
+  * User must scroll manually
+
+---
+
+## 5.2 Solution
+
+Use:
+
+* `useRef` → get reference to ScrollView
+* `scrollToEnd()` → scroll automatically
+
+---
+
+# 6. Using useRef
+
+## Step 4 — Import Hook
+
+-------------------code----------------------
+import { useRef } from "react";
+-------------------code----------------------
+
+---
+
+## Step 5 — Create Reference
+
+-------------------code----------------------
+const scrollView = useRef();
+-------------------code----------------------
+
+---
+
+## Step 6 — Attach to ScrollView
+
+-------------------code----------------------
+<ScrollView ref={scrollView} horizontal>
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* `scrollView.current` → gives access to ScrollView instance
+
+---
+
+# 7. Trigger Auto Scroll
+
+## Step 7 — Use onContentSizeChange
+
+-------------------code----------------------
+onContentSizeChange={() => scrollView.current.scrollToEnd()}
+-------------------code----------------------
+
+---
+
+## Full ScrollView Example
+
+-------------------code----------------------
+<ScrollView
+  ref={scrollView}
+  horizontal
+  onContentSizeChange={() => scrollView.current.scrollToEnd()}
+>
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* Runs when content size changes
+* Automatically scrolls to the end
+
+---
+
+# 8. Complete Updated Component
+
+## ImageInputList.js
+
+-------------------code----------------------
+import React, { useRef } from "react";
+import { View, StyleSheet, ScrollView } from "react-native";
+import ImageInput from "./ImageInput";
+
+function ImageInputList({ imageUris = [], onAddImage, onRemoveImage }) {
+  const scrollView = useRef();
+
+  return (
+    <View>
+      <ScrollView
+        horizontal
+        ref={scrollView}
+        onContentSizeChange={() => scrollView.current.scrollToEnd()}
+      >
+        {imageUris.map((uri) => (
+          <View key={uri} style={styles.image}>
+            <ImageInput
+              imageUri={uri}
+              onChangeImage={() => onRemoveImage(uri)}
+            />
+          </View>
+        ))}
+
+        <ImageInput onChangeImage={(uri) => onAddImage(uri)} />
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: "row"
+  },
+  image: {
+    marginRight: 10
+  }
+});
+
+export default ImageInputList;
+-------------------code----------------------
+
+---
+
+# 9. Important Notes and Best Practices
+
+## 9.1 Always Use ScrollView for Overflow
+
+* Use `ScrollView` when content can exceed screen width
+
+---
+
+## 9.2 Use horizontal for Row Layouts
+
+-------------------code----------------------
+<ScrollView horizontal />
+-------------------code----------------------
+
+---
+
+## 9.3 Use useRef for Component Methods
+
+* Access instance methods like:
+
+-------------------code----------------------
+scrollView.current.scrollToEnd()
+-------------------code----------------------
+
+---
+
+## 9.4 Wrap ScrollView in View
+
+Avoid layout issues:
+
+-------------------code----------------------
+<View>
+  <ScrollView />
+</View>
+-------------------code----------------------
+
+---
+
+## 9.5 Auto Scroll Improves UX
+
+* Keeps latest content visible
+* Removes need for manual scrolling
+
+---
+
+## 9.6 Ref Does Not Provide IntelliSense
+
+* `useRef()` is generic
+* No auto-suggestions for methods
+* Still works correctly
+
+---
+
+# 10. Summary
+
+* Identified UI issue: add button becomes hidden
+* Solved using `ScrollView` with horizontal scrolling
+* Used `useRef` to access ScrollView methods
+* Implemented auto-scroll using `onContentSizeChange`
+* Prevented layout issues by wrapping in a `View`
+* Improved usability and user experience
+
+The `ImageInputList` component is now fully functional and user-friendly, ready for integration into forms.
