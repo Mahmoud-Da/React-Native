@@ -542,3 +542,371 @@ export default function App() {
 Next step:
 
 * Learn how to fully implement and customize **Stack Navigator** in real apps
+
+*** 3- Stack Navigator ***
+# 1. Overview of the Lecture
+
+This lecture focuses on **implementing Stack Navigation using React Navigation v5** and understanding how navigation works internally.
+
+Key ideas:
+
+* Each navigator (Stack, Tab, Drawer) is a **separate package**
+* Build a **Stack Navigator** to move between screens
+* Use a **Navigation Container** to manage navigation state
+* Define routes using `Stack.Screen`
+
+---
+
+# 2. Key Concepts
+
+### 2.1 Navigator
+
+A navigator controls how users move between screens.
+
+### 2.2 Stack Navigator
+
+* Works like a browser history (push/pop)
+* Screens are stacked on top of each other
+
+### 2.3 Navigation Container
+
+* Wraps the entire app
+* Manages navigation state
+
+---
+
+# 3. Step 1 – Install Stack Navigator
+
+Each navigator is installed separately.
+
+-------------------code----------------------
+npm install @react-navigation/stack@5.3.5
+-------------------code----------------------
+
+---
+
+# 4. Step 2 – Create Test Screens
+
+Before integrating into your real app structure, the lecture isolates navigation.
+
+### Example screens:
+
+-------------------code----------------------
+import React from "react";
+import { Text } from "react-native";
+import Screen from "./app/components/Screen";
+
+function TweetsScreen() {
+  return (
+    <Screen>
+      <Text>Tweets</Text>
+    </Screen>
+  );
+}
+
+function TweetDetailsScreen() {
+  return (
+    <Screen>
+      <Text>Tweet Details</Text>
+    </Screen>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 5. Step 3 – Create Stack Navigator
+
+### Import and initialize:
+
+-------------------code----------------------
+import { createStackNavigator } from "@react-navigation/stack";
+
+const Stack = createStackNavigator();
+-------------------code----------------------
+
+### Important:
+
+* `Stack` is an **object with components**
+
+  * `Stack.Navigator`
+  * `Stack.Screen`
+
+---
+
+# 6. Step 4 – Define Routes
+
+Create a navigator component:
+
+-------------------code----------------------
+function AppNavigator() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="Tweets" component={TweetsScreen} />
+      <Stack.Screen name="TweetDetails" component={TweetDetailsScreen} />
+    </Stack.Navigator>
+  );
+}
+-------------------code----------------------
+
+### Explanation:
+
+* `name` → unique route identifier
+* `component` → screen to render
+
+---
+
+# 7. Step 5 – Wrap with Navigation Container
+
+-------------------code----------------------
+import { NavigationContainer } from "@react-navigation/native";
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <AppNavigator />
+    </NavigationContainer>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 8. Understanding Navigation Behavior
+
+### 8.1 Default Screen
+
+* The **first `Stack.Screen`** is shown initially
+
+### 8.2 Changing Initial Screen
+
+-------------------code----------------------
+<Stack.Navigator initialRouteName="Tweets">
+-------------------code----------------------
+
+---
+
+### 8.3 Header Behavior
+
+* Automatically added in Stack Navigator
+* Can be customized:
+
+  * Title
+  * Colors
+  * Buttons
+
+---
+
+# 9. Applying This to Your Project Structure
+
+You already have a clean structure:
+
+-------------------code----------------------
+app/
+  screens/
+  components/
+  navigation/   (you should add this)
+-------------------code----------------------
+
+### Recommended improvement:
+
+Create a new folder:
+
+-------------------code----------------------
+app/navigation/
+  AppNavigator.js
+-------------------code----------------------
+
+---
+
+# 10. Step 6 – Real App Integration
+
+### Example using your screens:
+
+-------------------code----------------------
+import React from "react";
+import { createStackNavigator } from "@react-navigation/stack";
+import ListingsScreen from "../screens/ListingsScreen";
+import ListingDetailsScreen from "../screens/ListingDetailsScreen";
+
+const Stack = createStackNavigator();
+
+function AppNavigator() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="Listings" component={ListingsScreen} />
+      <Stack.Screen name="ListingDetails" component={ListingDetailsScreen} />
+    </Stack.Navigator>
+  );
+}
+
+export default AppNavigator;
+-------------------code----------------------
+
+---
+
+# 11. Update App.js
+
+-------------------code----------------------
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import AppNavigator from "./app/navigation/AppNavigator";
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <AppNavigator />
+    </NavigationContainer>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 12. Full Final Code
+
+## 12.1 app/navigation/AppNavigator.js
+
+-------------------code----------------------
+import React from "react";
+import { createStackNavigator } from "@react-navigation/stack";
+import ListingsScreen from "../screens/ListingsScreen";
+import ListingDetailsScreen from "../screens/ListingDetailsScreen";
+
+const Stack = createStackNavigator();
+
+function AppNavigator() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="Listings" component={ListingsScreen} />
+      <Stack.Screen name="ListingDetails" component={ListingDetailsScreen} />
+    </Stack.Navigator>
+  );
+}
+
+export default AppNavigator;
+-------------------code----------------------
+
+---
+
+## 12.2 App.js
+
+-------------------code----------------------
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import AppNavigator from "./app/navigation/AppNavigator";
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <AppNavigator />
+    </NavigationContainer>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 13. Important Notes & Best Practices
+
+* Always wrap your app with `NavigationContainer`
+* Keep navigators in a **separate folder (navigation/)**
+* Use **clear route names** (e.g., `ListingDetails`)
+* Follow naming convention:
+
+  * `Stack` → navigator object
+  * `AppNavigator` → component
+* Avoid putting navigation logic inside screens
+* Start simple (Stack only), then scale
+
+---
+
+# 14. Summary
+
+* Stack Navigator allows moving between screens like a stack
+* You define routes using `Stack.Screen`
+* The app must be wrapped in `NavigationContainer`
+* First screen is default unless `initialRouteName` is set
+* Navigation structure should be separated from UI
+
+Flow learned:
+
+1. Install stack navigator
+2. Create screens
+3. Create navigator
+4. Define routes
+5. Wrap with navigation container
+6. Integrate into real app
+
+Next step:
+
+* Navigate between screens using `navigation.navigate()`
+
+Here is the **same lecture code**, but rewritten using **arrow functions only**, without any structural improvements.
+
+---
+
+# App.js (Arrow Functions Version)
+
+-------------------code----------------------
+import React from "react";
+import { Text } from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+
+import Screen from "./app/components/Screen";
+
+const Stack = createStackNavigator();
+
+const Tweets = () => {
+  return (
+    <Screen>
+      <Text>Tweets</Text>
+    </Screen>
+  );
+};
+
+const TweetDetails = () => {
+  return (
+    <Screen>
+      <Text>Tweet Details</Text>
+    </Screen>
+  );
+};
+
+const StackNavigator = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="Tweets" component={Tweets} />
+      <Stack.Screen name="TweetDetails" component={TweetDetails} />
+    </Stack.Navigator>
+  );
+};
+
+const App = () => {
+  return (
+    <NavigationContainer>
+      <StackNavigator />
+    </NavigationContainer>
+  );
+};
+
+export default App;
+-------------------code----------------------
+
+---
+
+# Notes
+
+* Same logic as lecture, only changed:
+
+  * `function Name()` → `const Name = () => {}`
+* No shortcuts (kept `return` for clarity like lecture)
+* Structure remains:
+
+  * Screens inside same file
+  * Stack navigator defined locally
+  * App wrapped with `NavigationContainer`
+
+---
+
