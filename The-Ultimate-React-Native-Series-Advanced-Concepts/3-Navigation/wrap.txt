@@ -272,3 +272,273 @@ Core flow learned:
 5. Add interactions
 
 This is the foundation for building real-world mobile apps.
+
+
+*** 2- Installing React Navigation ***
+# 1. Overview of the Lecture
+
+This lecture explains how to **set up navigation using React Navigation** and introduces the main types of navigators.
+
+Key focus:
+
+* Installing React Navigation (version 5)
+* Understanding required dependencies
+* Learning the three main navigator types
+* Preparing to use **Stack Navigator** and **Tab Navigator**
+
+---
+
+# 2. What is React Navigation?
+
+**React Navigation** is a popular library used in React Native apps to manage navigation between screens.
+
+Official documentation:
+[React Navigation](https://reactnavigation.org?utm_source=chatgpt.com)
+
+Important note from the lecture:
+
+* The version used is **v5 (specifically 5.3.2)**
+* Version 5 is **different from older versions**, so follow the same version for compatibility
+
+---
+
+# 3. Step 1 – Install React Navigation
+
+Install the core library:
+
+-------------------code----------------------
+npm install @react-navigation/native@5.3.2
+-------------------code----------------------
+
+---
+
+# 4. Step 2 – Install Required Dependencies
+
+React Navigation depends on additional libraries.
+
+### If using Expo (recommended in this lecture):
+
+-------------------code----------------------
+expo install react-native-gesture-handler react-native-reanimated react-native-screens react-native-safe-area-context
+-------------------code----------------------
+
+### Explanation:
+
+* Expo ensures compatibility with your current environment
+* This avoids version conflicts
+
+---
+
+# 5. Step 3 – Bare React Native Setup (Important Note)
+
+If you are **not using Expo** or you eject later:
+
+-------------------code----------------------
+npm install react-native-gesture-handler react-native-reanimated react-native-screens react-native-safe-area-context
+-------------------code----------------------
+
+Then:
+
+* Perform additional native setup (linking, configuration)
+* Follow official docs for platform-specific steps
+
+---
+
+# 6. Types of Navigators
+
+React Navigation provides **three main navigator types**:
+
+---
+
+## 6.1 Stack Navigator
+
+Used to move between screens like a stack.
+
+### Concept:
+
+* Screens are stacked on top of each other
+* You can:
+
+  * **Push** a new screen
+  * **Pop** back to previous screen
+
+### Example:
+
+-------------------code----------------------
+navigation.navigate("Details");
+navigation.goBack();
+-------------------code----------------------
+
+### Use case:
+
+* Moving from a list → details screen
+
+---
+
+## 6.2 Tab Navigator
+
+Used to create tabs (usually at the bottom).
+
+### Concept:
+
+* Each tab represents a main section
+* Users can switch between them easily
+
+### Use case:
+
+* Home / Settings / Profile tabs
+
+---
+
+## 6.3 Drawer Navigator
+
+Used to create a side menu (drawer).
+
+### Concept:
+
+* Slide from the left side
+* Contains navigation links
+
+### Use case:
+
+* Apps with many sections
+
+Note:
+
+* Not covered in this course (left for self-study)
+
+---
+
+# 7. Key Insight
+
+All navigators:
+
+* Have **similar APIs**
+* Follow the same structure
+* Once you learn one → others are easy
+
+---
+
+# 8. Step 4 – Basic Stack Navigator Example
+
+-------------------code----------------------
+import React from "react";
+import { createStackNavigator } from "@react-navigation/stack";
+import { NavigationContainer } from "@react-navigation/native";
+import { Button, Text, View } from "react-native";
+
+const Stack = createStackNavigator();
+
+function HomeScreen({ navigation }) {
+  return (
+    <View>
+      <Button
+        title="Go to Details"
+        onPress={() => navigation.navigate("Details")}
+      />
+    </View>
+  );
+}
+
+function DetailsScreen({ navigation }) {
+  return (
+    <View>
+      <Text>Details Screen</Text>
+      <Button title="Go Back" onPress={() => navigation.goBack()} />
+    </View>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 9. Step 5 – Wrap with Navigation Container
+
+-------------------code----------------------
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Details" component={DetailsScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 10. Full Final Code
+
+-------------------code----------------------
+import React from "react";
+import { createStackNavigator } from "@react-navigation/stack";
+import { NavigationContainer } from "@react-navigation/native";
+import { Button, Text, View } from "react-native";
+
+const Stack = createStackNavigator();
+
+function HomeScreen({ navigation }) {
+  return (
+    <View>
+      <Button
+        title="Go to Details"
+        onPress={() => navigation.navigate("Details")}
+      />
+    </View>
+  );
+}
+
+function DetailsScreen({ navigation }) {
+  return (
+    <View>
+      <Text>Details Screen</Text>
+      <Button title="Go Back" onPress={() => navigation.goBack()} />
+    </View>
+  );
+}
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Details" component={DetailsScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 11. Important Notes & Best Practices
+
+* Always use the **same library version** as the course (v5.3.2 here)
+* Use **Expo installation** when possible to avoid issues
+* Keep navigation structure **simple and modular**
+* Learn Stack first → then Tabs → then Drawer
+* Avoid mixing too many navigator types early
+* Follow official docs for updates and breaking changes
+
+---
+
+# 12. Summary
+
+* React Navigation is the standard library for navigation in React Native
+* Installation requires:
+
+  * Core package
+  * Supporting dependencies
+* There are three navigator types:
+
+  1. Stack (most important)
+  2. Tabs
+  3. Drawer
+* Stack Navigator works like browser navigation (push/pop)
+* Expo simplifies setup and dependency management
+
+Next step:
+
+* Learn how to fully implement and customize **Stack Navigator** in real apps
