@@ -910,3 +910,262 @@ export default App;
 
 ---
 
+*** 4- Navigating Between Screens ***
+# 1. Overview of the Lecture
+
+This lecture explains **how to navigate between screens** in React Navigation and how to access the navigation system from both:
+
+* Screen components
+* Non-screen (child) components
+
+Key topics:
+
+* `navigation.navigate()`
+* Difference between `navigate` and `push`
+* Using the **navigation prop**
+* Using the **useNavigation hook**
+
+---
+
+# 2. Navigation Between Screens
+
+React Navigation provides a **navigation prop** to screen components.
+
+### Key idea:
+
+* Every screen automatically receives a `navigation` object
+* This object allows moving between screens
+
+---
+
+# 3. Step 1 – Add a Button to Navigate
+
+### Inside `Tweets` screen:
+
+-------------------code----------------------
+import { Button } from "react-native";
+
+const Tweets = ({ navigation }) => {
+  return (
+    <Screen>
+      <Button
+        title="View Tweet"
+        onPress={() => navigation.navigate("TweetDetails")}
+      />
+    </Screen>
+  );
+};
+-------------------code----------------------
+
+### Explanation:
+
+* `navigation.navigate("TweetDetails")`
+  → moves user to the **TweetDetails screen**
+
+---
+
+# 4. What Happens Automatically
+
+* A **header** is shown (Stack Navigator default)
+* A **back button** appears automatically
+* Navigation state is managed internally
+
+---
+
+# 5. Understanding the Navigation Object
+
+The `navigation` object provides methods like:
+
+* `navigate()` → go to a screen
+* `goBack()` → go back
+* `reset()` → reset navigation state
+
+### Stack-specific methods:
+
+* `push()` → add new screen instance
+* `replace()` → replace current screen
+* `pop()` → go back one screen
+* `popToTop()` → go to first screen
+
+---
+
+# 6. navigate vs push (Important Concept)
+
+### 6.1 navigate()
+
+-------------------code----------------------
+navigation.navigate("Tweets");
+-------------------code----------------------
+
+* Ensures **only one instance** of the screen exists
+* If already on that screen → nothing happens
+
+---
+
+### 6.2 push()
+
+-------------------code----------------------
+navigation.push("Tweets");
+-------------------code----------------------
+
+* Always creates a **new instance**
+* Stack grows (you can go back multiple times)
+
+---
+
+### Key Difference:
+
+| Method   | Behavior                        |
+| -------- | ------------------------------- |
+| navigate | Reuses existing screen          |
+| push     | Always adds new screen instance |
+
+---
+
+# 7. Navigation in Child Components (Problem)
+
+The `navigation` prop is **only available in screens**:
+
+-------------------code----------------------
+<Stack.Screen name="Tweets" component={Tweets} />
+-------------------code----------------------
+
+So:
+
+* `Tweets` → has navigation prop
+* Child components inside it → DO NOT
+
+---
+
+# 8. Step 2 – Use useNavigation Hook
+
+To access navigation in non-screen components:
+
+-------------------code----------------------
+import { useNavigation } from "@react-navigation/native";
+-------------------code----------------------
+
+---
+
+# 9. Step 3 – Create Custom Link Component
+
+-------------------code----------------------
+import React from "react";
+import { Button } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+
+const Link = () => {
+  const navigation = useNavigation();
+
+  return (
+    <Button
+      title="Click"
+      onPress={() => navigation.navigate("TweetDetails")}
+    />
+  );
+};
+-------------------code----------------------
+
+### Explanation:
+
+* `useNavigation()` gives access to navigation object
+* Works inside any component
+
+---
+
+# 10. Step 4 – Use Link in Tweets Screen
+
+-------------------code----------------------
+const Tweets = () => {
+  return (
+    <Screen>
+      <Link />
+    </Screen>
+  );
+};
+-------------------code----------------------
+
+---
+
+# 11. Full Final Code
+
+-------------------code----------------------
+import React from "react";
+import { Text, Button } from "react-native";
+import { NavigationContainer, useNavigation } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+
+import Screen from "./app/components/Screen";
+
+const Stack = createStackNavigator();
+
+const Link = () => {
+  const navigation = useNavigation();
+
+  return (
+    <Button
+      title="Click"
+      onPress={() => navigation.navigate("TweetDetails")}
+    />
+  );
+};
+
+const Tweets = () => (
+  <Screen>
+    <Link />
+  </Screen>
+);
+
+const TweetDetails = () => (
+  <Screen>
+    <Text>Tweet Details</Text>
+  </Screen>
+);
+
+const StackNavigator = () => (
+  <Stack.Navigator>
+    <Stack.Screen name="Tweets" component={Tweets} />
+    <Stack.Screen name="TweetDetails" component={TweetDetails} />
+  </Stack.Navigator>
+);
+
+const App = () => (
+  <NavigationContainer>
+    <StackNavigator />
+  </NavigationContainer>
+);
+
+export default App;
+-------------------code----------------------
+
+---
+
+# 12. Important Notes & Best Practices
+
+* Use `navigate()` for normal navigation
+* Use `push()` only when you need multiple instances
+* Never pass navigation deeply through props → use `useNavigation`
+* Keep navigation logic inside screens or hooks
+* Name routes clearly and consistently
+
+---
+
+# 13. Summary
+
+* Navigation between screens is done using `navigation.navigate()`
+* Screen components receive `navigation` automatically
+* Child components must use `useNavigation()`
+* `navigate` vs `push` is a critical distinction:
+
+  * `navigate` avoids duplicates
+  * `push` creates new instances
+
+Flow learned:
+
+1. Add button
+2. Use navigation prop
+3. Navigate to screen
+4. Use hook for child components
+5. Understand stack behavior
+
+This is the foundation for handling navigation interactions in real apps.
