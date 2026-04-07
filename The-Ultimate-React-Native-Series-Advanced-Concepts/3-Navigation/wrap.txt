@@ -1169,3 +1169,202 @@ Flow learned:
 5. Understand stack behavior
 
 This is the foundation for handling navigation interactions in real apps.
+
+*** 5- Passing Parameters to Routes ***
+# 1. Overview of the Lecture
+
+This lecture explains how to **pass data (parameters) between screens** in React Navigation.
+
+Key ideas:
+
+* Use `navigation.navigate()` with parameters
+* Access data using the `route` prop
+* Understand how data flows between screens
+
+---
+
+# 2. Why Passing Parameters is Important
+
+When navigating, you often need to send data such as:
+
+* Item ID (e.g., tweet ID)
+* Full object (e.g., tweet data)
+
+Example:
+
+* Tap a tweet → open its details → show correct data
+
+---
+
+# 3. Step 1 – Pass Parameters with navigate()
+
+The `navigate()` function accepts a second argument (an object).
+
+### Example:
+
+-------------------code----------------------
+navigation.navigate("TweetDetails", { id: 1 });
+-------------------code----------------------
+
+### Explanation:
+
+* First argument → screen name
+* Second argument → parameters object
+* You can pass:
+
+  * Single value (`id`)
+  * Multiple values (`id`, `title`, etc.)
+  * Entire object
+
+---
+
+# 4. Step 2 – Add Button with Parameters
+
+-------------------code----------------------
+const Tweets = ({ navigation }) => (
+  <Screen>
+    <Button
+      title="View Tweet"
+      onPress={() =>
+        navigation.navigate("TweetDetails", { id: 1 })
+      }
+    />
+  </Screen>
+);
+-------------------code----------------------
+
+---
+
+# 5. Step 3 – Access Parameters in Target Screen
+
+React Navigation provides a **route prop** to screen components.
+
+### Example:
+
+-------------------code----------------------
+const TweetDetails = ({ route }) => {
+  return (
+    <Screen>
+      <Text>{route.params.id}</Text>
+    </Screen>
+  );
+};
+-------------------code----------------------
+
+### Explanation:
+
+* `route.params` contains the object passed from previous screen
+* Access values using keys (`id`, `title`, etc.)
+
+---
+
+# 6. How Data Flow Works
+
+1. User taps button
+2. `navigate("TweetDetails", { id: 1 })` is called
+3. React Navigation passes `{ id: 1 }`
+4. Target screen receives it via `route.params`
+
+---
+
+# 7. Step 4 – Access Params in Child Components (Advanced)
+
+Problem:
+
+* `route` prop is only available in **screen components**
+
+Solution:
+
+* Use `useRoute()` hook
+
+-------------------code----------------------
+import { useRoute } from "@react-navigation/native";
+
+const CustomComponent = () => {
+  const route = useRoute();
+
+  return <Text>{route.params.id}</Text>;
+};
+-------------------code----------------------
+
+---
+
+# 8. Full Final Code
+
+-------------------code----------------------
+import React from "react";
+import { Text, Button } from "react-native";
+import {
+  NavigationContainer,
+} from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+
+import Screen from "./app/components/Screen";
+
+const Stack = createStackNavigator();
+
+const Tweets = ({ navigation }) => (
+  <Screen>
+    <Button
+      title="View Tweet"
+      onPress={() =>
+        navigation.navigate("TweetDetails", { id: 1 })
+      }
+    />
+  </Screen>
+);
+
+const TweetDetails = ({ route }) => (
+  <Screen>
+    <Text>Tweet ID: {route.params.id}</Text>
+  </Screen>
+);
+
+const StackNavigator = () => (
+  <Stack.Navigator>
+    <Stack.Screen name="Tweets" component={Tweets} />
+    <Stack.Screen name="TweetDetails" component={TweetDetails} />
+  </Stack.Navigator>
+);
+
+const App = () => (
+  <NavigationContainer>
+    <StackNavigator />
+  </NavigationContainer>
+);
+
+export default App;
+-------------------code----------------------
+
+---
+
+# 9. Important Notes & Best Practices
+
+* Always pass parameters as an **object**
+* Use clear names (`id`, `item`, `user`, etc.)
+* Avoid passing large objects unless necessary
+* Validate params before using them:
+
+-------------------code----------------------
+route?.params?.id
+-------------------code----------------------
+
+* Use `useRoute()` only when needed (child components)
+
+---
+
+# 10. Summary
+
+* `navigate()` can send data using a second argument
+* Data is received via `route.params`
+* Screen components automatically get `route`
+* Child components use `useRoute()` hook
+
+Flow learned:
+
+1. Add button
+2. Pass params using navigate
+3. Receive params via route
+4. Use params in UI
+
+This is essential for building real apps where screens depend on dynamic data.
