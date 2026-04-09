@@ -1368,3 +1368,219 @@ Flow learned:
 4. Use params in UI
 
 This is essential for building real apps where screens depend on dynamic data.
+
+*** 6- Setting Screen Titles ***
+# 1. Overview of the Lecture
+
+This lecture explains how to **customize screen titles** in React Navigation.
+
+Key ideas:
+
+* Default title comes from route name
+* Use `options` prop to customize title
+* Set **static titles**
+* Set **dynamic titles based on route parameters**
+
+---
+
+# 2. Default Screen Title
+
+By default:
+
+-------------------code----------------------
+<Stack.Screen name="TweetDetails" component={TweetDetails} />
+-------------------code----------------------
+
+* The header title = `"TweetDetails"`
+
+---
+
+# 3. Step 1 – Set Static Title
+
+Use the `options` prop on `Stack.Screen`.
+
+### Example:
+
+-------------------code----------------------
+<Stack.Screen
+  name="TweetDetails"
+  component={TweetDetails}
+  options={{ title: "Tweet Details" }}
+/>
+-------------------code----------------------
+
+### Result:
+
+* Title becomes: **Tweet Details** (instead of TweetDetails)
+
+---
+
+# 4. Step 2 – Set Dynamic Title
+
+Sometimes you want the title based on data (e.g., tweet ID).
+
+### Use a function instead of an object:
+
+-------------------code----------------------
+<Stack.Screen
+  name="TweetDetails"
+  component={TweetDetails}
+  options={({ route }) => ({
+    title: "Tweet " + route.params.id,
+  })}
+/>
+-------------------code----------------------
+
+---
+
+# 5. Important Syntax Detail
+
+When using arrow function returning object:
+
+-------------------code----------------------
+options={({ route }) => ({
+  title: "Tweet " + route.params.id,
+})}
+-------------------code----------------------
+
+### Why parentheses?
+
+* `{}` alone → treated as code block
+* `({})` → treated as returned object
+
+---
+
+# 6. How Dynamic Title Works
+
+1. Navigate with params:
+
+-------------------code----------------------
+navigation.navigate("TweetDetails", { id: 1 });
+-------------------code----------------------
+
+2. Access inside options:
+
+-------------------code----------------------
+route.params.id
+-------------------code----------------------
+
+3. Title updates dynamically:
+
+* Example → `Tweet 1`
+
+---
+
+# 7. Step 3 – Complete Example with Navigation
+
+### Tweets Screen
+
+-------------------code----------------------
+const Tweets = ({ navigation }) => (
+  <Screen>
+    <Button
+      title="View Tweet"
+      onPress={() =>
+        navigation.navigate("TweetDetails", { id: 1 })
+      }
+    />
+  </Screen>
+);
+-------------------code----------------------
+
+---
+
+### TweetDetails Screen
+
+-------------------code----------------------
+const TweetDetails = ({ route }) => (
+  <Screen>
+    <Text>Tweet ID: {route.params.id}</Text>
+  </Screen>
+);
+-------------------code----------------------
+
+---
+
+# 8. Full Final Code
+
+-------------------code----------------------
+import React from "react";
+import { Text, Button } from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+
+import Screen from "./app/components/Screen";
+
+const Stack = createStackNavigator();
+
+const Tweets = ({ navigation }) => (
+  <Screen>
+    <Button
+      title="View Tweet"
+      onPress={() =>
+        navigation.navigate("TweetDetails", { id: 1 })
+      }
+    />
+  </Screen>
+);
+
+const TweetDetails = ({ route }) => (
+  <Screen>
+    <Text>Tweet ID: {route.params.id}</Text>
+  </Screen>
+);
+
+const StackNavigator = () => (
+  <Stack.Navigator>
+    <Stack.Screen name="Tweets" component={Tweets} />
+    <Stack.Screen
+      name="TweetDetails"
+      component={TweetDetails}
+      options={({ route }) => ({
+        title: "Tweet " + route.params.id,
+      })}
+    />
+  </Stack.Navigator>
+);
+
+const App = () => (
+  <NavigationContainer>
+    <StackNavigator />
+  </NavigationContainer>
+);
+
+export default App;
+-------------------code----------------------
+
+---
+
+# 9. Important Notes & Best Practices
+
+* Use `options` for all header customization
+* Prefer dynamic titles when screen depends on data
+* Always wrap returned object in `()` when using arrow function
+* Ensure params exist before using them:
+
+-------------------code----------------------
+route?.params?.id
+-------------------code----------------------
+
+* Keep titles short and user-friendly
+
+---
+
+# 10. Summary
+
+* Default title = route name
+* Use `options` to override title
+* Static title → simple object
+* Dynamic title → function using `route`
+
+Flow learned:
+
+1. Define screen
+2. Add `options`
+3. Use static or dynamic title
+4. Access route params for dynamic behavior
+
+This is essential for making your app feel **dynamic and user-friendly**.
