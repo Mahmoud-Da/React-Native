@@ -2253,3 +2253,261 @@ Flow learned:
 4. Use dynamic props for consistency
 
 This makes your app navigation look **professional and user-friendly**.
+
+
+*** 10- Nesting Navigators ***
+# 1. Overview of the Lecture
+
+This lecture explains **nesting navigators** in React Navigation.
+
+Key idea:
+
+* Combine **Tab Navigator + Stack Navigator**
+* Fix navigation errors and enable deep navigation inside tabs
+
+---
+
+# 2. The Problem
+
+### Current setup:
+
+* App uses only **Tab Navigator**
+* Tabs:
+
+  * Feed → Tweets screen
+  * Account → Account screen
+
+### Issue:
+
+When navigating:
+
+-------------------code----------------------
+navigation.navigate("TweetDetails");
+-------------------code----------------------
+
+You get error:
+
+-------------------code----------------------
+The action 'NAVIGATE' was not handled by any navigator
+-------------------code----------------------
+
+### Why?
+
+* Tab Navigator **does not know about `TweetDetails`**
+* It only knows:
+
+  * Feed
+  * Account
+
+---
+
+# 3. Solution – Nesting Navigators
+
+### Concept:
+
+Instead of:
+
+-------------------code----------------------
+<Tab.Screen name="Feed" component={Tweets} />
+-------------------code----------------------
+
+Use:
+
+-------------------code----------------------
+<Tab.Screen name="Feed" component={FeedNavigator} />
+-------------------code----------------------
+
+Where `FeedNavigator` is a **Stack Navigator**.
+
+---
+
+# 4. Step 1 – Create Stack Navigator for Feed
+
+-------------------code---------------------- id="k1z9rm"
+import { createStackNavigator } from "@react-navigation/stack";
+
+const Stack = createStackNavigator();
+
+const FeedNavigator = () => (
+  <Stack.Navigator>
+    <Stack.Screen name="Tweets" component={Tweets} />
+    <Stack.Screen name="TweetDetails" component={TweetDetails} />
+  </Stack.Navigator>
+);
+-------------------code----------------------
+
+---
+
+# 5. Step 2 – Use Stack Inside Tab
+
+-------------------code---------------------- id="t7m2qp"
+<Tab.Screen name="Feed" component={FeedNavigator} />
+-------------------code----------------------
+
+---
+
+# 6. Step 3 – Keep Account Tab Simple
+
+-------------------code---------------------- id="w8f4xn"
+const Account = () => (
+  <Screen>
+    <Text>Account</Text>
+  </Screen>
+);
+-------------------code----------------------
+
+---
+
+# 7. Step 4 – Final Tab Navigator
+
+-------------------code---------------------- id="p3c8vd"
+const TabNavigator = () => (
+  <Tab.Navigator>
+    <Tab.Screen name="Feed" component={FeedNavigator} />
+    <Tab.Screen name="Account" component={Account} />
+  </Tab.Navigator>
+);
+-------------------code----------------------
+
+---
+
+# 8. Why Nesting Works
+
+### Before:
+
+* Tab Navigator didn’t know about `TweetDetails`
+
+### After:
+
+* Feed tab → uses Stack Navigator
+* Stack Navigator knows:
+
+  * Tweets
+  * TweetDetails
+
+So navigation works correctly.
+
+---
+
+# 9. Independent Navigation State (Important Concept)
+
+Each tab has its **own navigation stack**.
+
+### Example:
+
+1. Go to Feed → open TweetDetails
+2. Switch to Account
+3. Go back to Feed
+
+Result:
+
+* Still on **TweetDetails** (state preserved)
+
+---
+
+# 10. Naming Best Practice
+
+Instead of generic names:
+
+-------------------code----------------------
+StackNavigator
+-------------------code----------------------
+
+Use specific names:
+
+-------------------code----------------------
+FeedNavigator
+AccountNavigator
+-------------------code----------------------
+
+---
+
+# 11. Full Final Code
+
+-------------------code---------------------- id="h6k2np"
+import React from "react";
+import { Text, Button } from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createStackNavigator } from "@react-navigation/stack";
+
+import Screen from "./app/components/Screen";
+
+const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+
+const Tweets = ({ navigation }) => (
+  <Screen>
+    <Button
+      title="View Tweet"
+      onPress={() => navigation.navigate("TweetDetails")}
+    />
+  </Screen>
+);
+
+const TweetDetails = () => (
+  <Screen>
+    <Text>Tweet Details</Text>
+  </Screen>
+);
+
+const Account = () => (
+  <Screen>
+    <Text>Account</Text>
+  </Screen>
+);
+
+// Feed Stack Navigator
+const FeedNavigator = () => (
+  <Stack.Navigator>
+    <Stack.Screen name="Tweets" component={Tweets} />
+    <Stack.Screen name="TweetDetails" component={TweetDetails} />
+  </Stack.Navigator>
+);
+
+// Tab Navigator
+const TabNavigator = () => (
+  <Tab.Navigator>
+    <Tab.Screen name="Feed" component={FeedNavigator} />
+    <Tab.Screen name="Account" component={Account} />
+  </Tab.Navigator>
+);
+
+const App = () => (
+  <NavigationContainer>
+    <TabNavigator />
+  </NavigationContainer>
+);
+
+export default App;
+-------------------code----------------------
+
+---
+
+# 12. Important Notes & Best Practices
+
+* Always nest Stack inside Tabs (not the opposite)
+* Each tab should have its **own stack**
+* Use clear naming (`FeedNavigator`, not `StackNavigator`)
+* Keep navigation modular (separate navigators later)
+* This pattern is used in most real-world apps
+
+---
+
+# 13. Summary
+
+* Problem: Tab Navigator didn’t know about detail screen
+* Solution: Nest Stack Navigator inside Tab
+* Result:
+
+  * Navigation works correctly
+  * Each tab keeps its own state
+
+Flow learned:
+
+1. Identify navigation error
+2. Create stack navigator
+3. Replace tab screen with stack
+4. Enable deep navigation inside tabs
+
+This is a **core architecture pattern** in React Native apps.

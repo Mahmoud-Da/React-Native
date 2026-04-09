@@ -1,16 +1,26 @@
 import React from "react";
-import { Text } from "react-native";
+import { Text, Button } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { createStackNavigator } from "@react-navigation/stack";
 
 import Screen from "./app/components/Screen";
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
 
-const Tweets = () => (
+const Tweets = ({ navigation }) => (
   <Screen>
-    <Text>Tweets</Text>
+    <Button
+      title="View Tweet"
+      onPress={() => navigation.navigate("TweetDetails")}
+    />
+  </Screen>
+);
+
+const TweetDetails = () => (
+  <Screen>
+    <Text>Tweet Details</Text>
   </Screen>
 );
 
@@ -20,41 +30,19 @@ const Account = () => (
   </Screen>
 );
 
+// Feed Stack Navigator
+const FeedNavigator = () => (
+  <Stack.Navigator>
+    <Stack.Screen name="Tweets" component={Tweets} />
+    <Stack.Screen name="TweetDetails" component={TweetDetails} />
+  </Stack.Navigator>
+);
+
+// Tab Navigator
 const TabNavigator = () => (
-  <Tab.Navigator
-    tabBarOptions={{
-      activeBackgroundColor: "tomato",
-      activeTintColor: "white",
-      inactiveBackgroundColor: "lightgray",
-      inactiveTintColor: "black",
-    }}
-  >
-    <Tab.Screen
-      name="Feed"
-      component={Tweets}
-      options={{
-        tabBarIcon: ({ size, color }) => (
-          <MaterialCommunityIcons
-            name="home"
-            size={size}
-            color={color}
-          />
-        ),
-      }}
-    />
-    <Tab.Screen
-      name="Account"
-      component={Account}
-      options={{
-        tabBarIcon: ({ size, color }) => (
-          <MaterialCommunityIcons
-            name="account"
-            size={size}
-            color={color}
-          />
-        ),
-      }}
-    />
+  <Tab.Navigator>
+    <Tab.Screen name="Feed" component={FeedNavigator} />
+    <Tab.Screen name="Account" component={Account} />
   </Tab.Navigator>
 );
 
