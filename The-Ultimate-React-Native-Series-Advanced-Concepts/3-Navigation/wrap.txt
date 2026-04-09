@@ -2017,3 +2017,239 @@ Flow learned:
 Next step:
 
 * Customize tab icons, colors, and styles
+
+*** 9- Customizing Tabs ***
+# 1. Overview of the Lecture
+
+This lecture explains how to **customize Bottom Tabs UI** in React Navigation.
+
+Key ideas:
+
+* Use `tabBarOptions` to style tabs
+* Customize active/inactive colors
+* Add icons to tabs
+* Use dynamic props (`color`, `size`) for icons
+
+---
+
+# 2. Tab Customization Basics
+
+The `Tab.Navigator` supports a prop called:
+
+-------------------code----------------------
+tabBarOptions={{}}
+-------------------code----------------------
+
+This is similar to `screenOptions` in Stack Navigator.
+
+---
+
+# 3. Step 1 – Customize Tab Colors
+
+-------------------code----------------------
+<Tab.Navigator
+  tabBarOptions={{
+    activeBackgroundColor: "tomato",
+    activeTintColor: "white",
+    inactiveBackgroundColor: "lightgray",
+    inactiveTintColor: "black",
+  }}
+>
+-------------------code----------------------
+
+### Explanation:
+
+* `activeBackgroundColor` → background of selected tab
+* `activeTintColor` → text/icon color when active
+* `inactiveBackgroundColor` → background of other tabs
+* `inactiveTintColor` → text/icon color when inactive
+
+---
+
+# 4. Step 2 – Add Icons to Tabs
+
+### Import icon library (Expo):
+
+-------------------code----------------------
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+-------------------code----------------------
+
+---
+
+# 5. Step 3 – Add Icon to Each Tab
+
+-------------------code----------------------
+<Tab.Screen
+  name="Feed"
+  component={Tweets}
+  options={{
+    tabBarIcon: ({ size }) => (
+      <MaterialCommunityIcons name="home" size={size} />
+    ),
+  }}
+/>
+-------------------code----------------------
+
+---
+
+# 6. Step 4 – Use Dynamic Size and Color
+
+React Navigation provides `size` and `color` automatically.
+
+-------------------code----------------------
+<Tab.Screen
+  name="Feed"
+  component={Tweets}
+  options={{
+    tabBarIcon: ({ size, color }) => (
+      <MaterialCommunityIcons
+        name="home"
+        size={size}
+        color={color}
+      />
+    ),
+  }}
+/>
+-------------------code----------------------
+
+### Explanation:
+
+* `size` → recommended icon size
+* `color` → matches active/inactive tab colors
+
+---
+
+# 7. Step 5 – Add Icon for Second Tab
+
+-------------------code----------------------
+<Tab.Screen
+  name="Account"
+  component={Account}
+  options={{
+    tabBarIcon: ({ size, color }) => (
+      <MaterialCommunityIcons
+        name="account"
+        size={size}
+        color={color}
+      />
+    ),
+  }}
+/>
+-------------------code----------------------
+
+---
+
+# 8. How It Works
+
+* Active tab:
+
+  * Background → tomato
+  * Text/Icon → white
+* Inactive tab:
+
+  * Background → light gray
+  * Text/Icon → black
+
+Icons automatically adapt using `color` prop.
+
+---
+
+# 9. Full Final Code
+
+-------------------code----------------------
+import React from "react";
+import { Text } from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+
+import Screen from "./app/components/Screen";
+
+const Tab = createBottomTabNavigator();
+
+const Tweets = () => (
+  <Screen>
+    <Text>Tweets</Text>
+  </Screen>
+);
+
+const Account = () => (
+  <Screen>
+    <Text>Account</Text>
+  </Screen>
+);
+
+const TabNavigator = () => (
+  <Tab.Navigator
+    tabBarOptions={{
+      activeBackgroundColor: "tomato",
+      activeTintColor: "white",
+      inactiveBackgroundColor: "lightgray",
+      inactiveTintColor: "black",
+    }}
+  >
+    <Tab.Screen
+      name="Feed"
+      component={Tweets}
+      options={{
+        tabBarIcon: ({ size, color }) => (
+          <MaterialCommunityIcons
+            name="home"
+            size={size}
+            color={color}
+          />
+        ),
+      }}
+    />
+    <Tab.Screen
+      name="Account"
+      component={Account}
+      options={{
+        tabBarIcon: ({ size, color }) => (
+          <MaterialCommunityIcons
+            name="account"
+            size={size}
+            color={color}
+          />
+        ),
+      }}
+    />
+  </Tab.Navigator>
+);
+
+const App = () => (
+  <NavigationContainer>
+    <TabNavigator />
+  </NavigationContainer>
+);
+
+export default App;
+-------------------code----------------------
+
+---
+
+# 10. Important Notes & Best Practices
+
+* Always use `size` and `color` from props (don’t hardcode)
+* Keep icons consistent across tabs
+* Use meaningful icons (home, account, settings)
+* Avoid too many tabs (max 5 recommended)
+* Maintain contrast for accessibility
+
+---
+
+# 11. Summary
+
+* `tabBarOptions` controls tab styling
+* Customize active and inactive colors
+* Add icons using `tabBarIcon`
+* Use dynamic `size` and `color` from React Navigation
+
+Flow learned:
+
+1. Add tab styles
+2. Import icons
+3. Add icon per tab
+4. Use dynamic props for consistency
+
+This makes your app navigation look **professional and user-friendly**.
