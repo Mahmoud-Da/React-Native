@@ -2766,3 +2766,269 @@ Flow:
 4. Display passed data
 
 This is the foundation of a **real production app navigation system**.
+
+*** 12- Building AuthNavigator ***
+# 1. Overview of the Lecture
+
+This lecture introduces **authentication navigation flow**.
+
+Key idea:
+
+* Separate navigation for **unauthenticated users**
+* Create a dedicated **Auth Navigator**
+* Replace the main app navigator temporarily
+
+---
+
+# 2. Why Authentication Navigation?
+
+Apps usually have two flows:
+
+1. **Auth Flow**
+
+   * Welcome
+   * Login
+   * Register
+
+2. **Main App Flow**
+
+   * Feed
+   * Account
+
+This lecture focuses on building the **Auth Flow**.
+
+---
+
+# 3. Step 1 – Create Navigation Folder
+
+Inside your project:
+
+-------------------code----------------------
+app/
+  navigation/
+-------------------code----------------------
+
+Purpose:
+
+* Keep navigation code organized and separate from UI
+
+---
+
+# 4. Step 2 – Create AuthNavigator File
+
+Create:
+
+-------------------code----------------------
+app/navigation/AuthNavigator.js
+-------------------code----------------------
+
+---
+
+# 5. Step 3 – Setup Stack Navigator
+
+-------------------code----------------------
+import React from "react";
+import { createStackNavigator } from "@react-navigation/stack";
+
+import WelcomeScreen from "../screens/WelcomeScreen";
+import LoginScreen from "../screens/LoginScreen";
+import RegisterScreen from "../screens/RegisterScreen";
+
+const Stack = createStackNavigator();
+-------------------code----------------------
+
+---
+
+# 6. Step 4 – Define Auth Screens
+
+-------------------code----------------------
+const AuthNavigator = () => (
+  <Stack.Navigator>
+    <Stack.Screen
+      name="Welcome"
+      component={WelcomeScreen}
+      options={{ headerShown: false }}
+    />
+    <Stack.Screen name="Login" component={LoginScreen} />
+    <Stack.Screen name="Register" component={RegisterScreen} />
+  </Stack.Navigator>
+);
+
+export default AuthNavigator;
+-------------------code----------------------
+
+---
+
+# 7. Step 5 – Navigate from Welcome Screen
+
+### Login button:
+
+-------------------code----------------------
+const WelcomeScreen = ({ navigation }) => (
+  <Screen>
+    <Button
+      title="Login"
+      onPress={() => navigation.navigate("Login")}
+    />
+  </Screen>
+);
+-------------------code----------------------
+
+---
+
+### Register button:
+
+-------------------code----------------------
+<Button
+  title="Register"
+  onPress={() => navigation.navigate("Register")}
+/>
+-------------------code----------------------
+
+---
+
+# 8. Step 6 – Use AuthNavigator in App.js
+
+Replace your current TabNavigator with AuthNavigator.
+
+---
+
+# 9. Updated App.js (Based on Your Code)
+
+-------------------code----------------------
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+
+import AuthNavigator from "./app/navigation/AuthNavigator";
+
+const App = () => (
+  <NavigationContainer>
+    <AuthNavigator />
+  </NavigationContainer>
+);
+
+export default App;
+-------------------code----------------------
+
+---
+
+# 10. What Changed from Your Previous Code
+
+### Before:
+
+* App used `TabNavigator`
+
+-------------------code----------------------
+<TabNavigator />
+-------------------code----------------------
+
+### After:
+
+* App uses `AuthNavigator`
+
+-------------------code----------------------
+<AuthNavigator />
+-------------------code----------------------
+
+---
+
+# 11. Header Customization
+
+To remove header on Welcome screen:
+
+-------------------code----------------------
+options={{ headerShown: false }}
+-------------------code----------------------
+
+---
+
+# 12. Behavior After Implementation
+
+* App starts at **Welcome screen**
+* User can:
+
+  * Go to Login
+  * Go to Register
+* Header removed from Welcome only
+* Other screens still show header
+
+---
+
+# 13. Important Notes & Best Practices
+
+* Always separate navigation into `navigation/` folder
+* Keep Auth flow independent from main app flow
+* Use Stack Navigator for authentication screens
+* Hide header for landing screens (like Welcome)
+* Keep route names consistent (`Login`, `Register`)
+
+---
+
+# 14. Full Final Code
+
+## 14.1 app/navigation/AuthNavigator.js
+
+-------------------code----------------------
+import React from "react";
+import { createStackNavigator } from "@react-navigation/stack";
+
+import WelcomeScreen from "../screens/WelcomeScreen";
+import LoginScreen from "../screens/LoginScreen";
+import RegisterScreen from "../screens/RegisterScreen";
+
+const Stack = createStackNavigator();
+
+const AuthNavigator = () => (
+  <Stack.Navigator>
+    <Stack.Screen
+      name="Welcome"
+      component={WelcomeScreen}
+      options={{ headerShown: false }}
+    />
+    <Stack.Screen name="Login" component={LoginScreen} />
+    <Stack.Screen name="Register" component={RegisterScreen} />
+  </Stack.Navigator>
+);
+
+export default AuthNavigator;
+-------------------code----------------------
+
+---
+
+## 14.2 App.js
+
+-------------------code----------------------
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+
+import AuthNavigator from "./app/navigation/AuthNavigator";
+
+const App = () => (
+  <NavigationContainer>
+    <AuthNavigator />
+  </NavigationContainer>
+);
+
+export default App;
+-------------------code----------------------
+
+---
+
+# 15. Summary
+
+* Created a dedicated **Auth Navigator**
+* Used Stack Navigator for auth screens
+* Connected buttons using `navigation.navigate`
+* Replaced main app navigation with auth flow
+
+Flow learned:
+
+1. Create navigation folder
+2. Build AuthNavigator
+3. Add screens (Welcome, Login, Register)
+4. Handle navigation between them
+5. Use AuthNavigator in App
+
+Next step:
+
+* Switch between AuthNavigator and AppNavigator dynamically (based on login state)
