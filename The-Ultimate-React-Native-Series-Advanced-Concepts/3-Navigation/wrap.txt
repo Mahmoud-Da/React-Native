@@ -3245,3 +3245,212 @@ Flow learned:
 4. Apply theme to app
 
 This ensures your app has a **consistent and professional design system**.
+
+*** 14- Building AppNavigator ***
+# 1. Overview of the Lecture
+
+This lecture focuses on building the **main App Navigator using Bottom Tabs**.
+
+Key idea:
+
+* Create a **Tab Navigator for the main app**
+* Replace Auth navigation temporarily
+* Prepare structure for switching between Auth and App later
+
+---
+
+# 2. Goal of App Navigator
+
+Create a navigator with **3 main tabs**:
+
+1. Listings (Feed)
+2. Listing Edit (Create/Edit item)
+3. Account
+
+---
+
+# 3. Step 1 – Create AppNavigator File
+
+Create a new file:
+
+-------------------code----------------------
+app/navigation/AppNavigator.js
+-------------------code----------------------
+
+---
+
+# 4. Step 2 – Import Dependencies
+
+-------------------code----------------------
+import React from "react";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+
+import ListingsScreen from "../screens/ListingsScreen";
+import ListingEditScreen from "../screens/ListingEditScreen";
+import AccountScreen from "../screens/AccountScreen";
+-------------------code----------------------
+
+---
+
+# 5. Step 3 – Initialize Tab Navigator
+
+-------------------code----------------------
+const Tab = createBottomTabNavigator();
+-------------------code----------------------
+
+---
+
+# 6. Step 4 – Create AppNavigator Component
+
+-------------------code----------------------
+const AppNavigator = () => (
+  <Tab.Navigator>
+    <Tab.Screen name="Listings" component={ListingsScreen} />
+    <Tab.Screen name="ListingEdit" component={ListingEditScreen} />
+    <Tab.Screen name="Account" component={AccountScreen} />
+  </Tab.Navigator>
+);
+-------------------code----------------------
+
+---
+
+# 7. Step 5 – Export Navigator
+
+-------------------code----------------------
+export default AppNavigator;
+-------------------code----------------------
+
+---
+
+# 8. Step 6 – Use AppNavigator in App.js
+
+Replace `AuthNavigator` with `AppNavigator`.
+
+-------------------code----------------------
+import AppNavigator from "./app/navigation/AppNavigator";
+-------------------code----------------------
+
+---
+
+### Update App Component:
+
+-------------------code----------------------
+const App = () => (
+  <NavigationContainer>
+    <AppNavigator />
+  </NavigationContainer>
+);
+-------------------code----------------------
+
+---
+
+# 9. Behavior After Implementation
+
+* App shows **3 tabs at the bottom**
+* Each tab opens a screen:
+
+  * Listings
+  * Listing Edit
+  * Account
+* Navigation between tabs works correctly
+
+---
+
+# 10. Important Note (Current Limitation)
+
+You **cannot navigate to ListingDetails yet**
+
+Reason:
+
+* No Stack Navigator is defined inside tabs
+* Tabs only know about their direct screens
+
+Solution (next step):
+
+* Use **nested Stack Navigator inside Listings tab**
+
+---
+
+# 11. Future Architecture (Important Concept)
+
+Later, your app will switch between:
+
+-------------------code----------------------
+isLoggedIn ? <AppNavigator /> : <AuthNavigator />
+-------------------code----------------------
+
+---
+
+# 12. Full Final Code
+
+## 12.1 app/navigation/AppNavigator.js
+
+-------------------code----------------------
+import React from "react";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+
+import ListingsScreen from "../screens/ListingsScreen";
+import ListingEditScreen from "../screens/ListingEditScreen";
+import AccountScreen from "../screens/AccountScreen";
+
+const Tab = createBottomTabNavigator();
+
+const AppNavigator = () => (
+  <Tab.Navigator>
+    <Tab.Screen name="Listings" component={ListingsScreen} />
+    <Tab.Screen name="ListingEdit" component={ListingEditScreen} />
+    <Tab.Screen name="Account" component={AccountScreen} />
+  </Tab.Navigator>
+);
+
+export default AppNavigator;
+-------------------code----------------------
+
+---
+
+## 12.2 App.js
+
+-------------------code----------------------
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+
+import AppNavigator from "./app/navigation/AppNavigator";
+
+const App = () => (
+  <NavigationContainer>
+    <AppNavigator />
+  </NavigationContainer>
+);
+
+export default App;
+-------------------code----------------------
+
+---
+
+# 13. Important Notes & Best Practices
+
+* Keep navigators in a separate `navigation/` folder
+* Each tab should represent a **main feature**
+* Avoid putting too many tabs (max 5 recommended)
+* Use clear naming (`Listings`, `Account`)
+* Prepare for **conditional navigation (Auth vs App)**
+
+---
+
+# 14. Summary
+
+* Created main **App Navigator using Bottom Tabs**
+* Added 3 main screens as tabs
+* Replaced AuthNavigator with AppNavigator
+* Learned limitation of tabs (no deep navigation yet)
+
+Flow learned:
+
+1. Create AppNavigator
+2. Add Tab screens
+3. Use in App.js
+4. Prepare for authentication logic
+
+Next step:
+
+* Add **Stack Navigator inside tabs** to support detailed navigation
