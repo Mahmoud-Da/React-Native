@@ -2511,3 +2511,258 @@ Flow learned:
 4. Enable deep navigation inside tabs
 
 This is a **core architecture pattern** in React Native apps.
+*** 11- Exercises ***
+# 1. Overview of the Exercise
+
+This lecture is an **exercise prompt** where you apply everything learned about navigation.
+
+Goal:
+
+* Implement **complete navigation flow** in your app
+* Combine:
+
+  * Tabs
+  * Stack navigation
+  * Screen transitions
+  * User interactions (tap, pull)
+
+---
+
+# 2. Features to Implement
+
+Your app should support:
+
+### 2.1 Tab Navigation
+
+* Switch between main sections
+
+  * Feed (Listings)
+  * Account
+
+---
+
+### 2.2 Stack Navigation inside Tabs
+
+* Tap on a card → open **details screen**
+
+---
+
+### 2.3 Interaction
+
+* Tap → navigate to details
+* Pull down → refresh (already implemented earlier)
+
+---
+
+# 3. Step-by-Step Implementation Plan
+
+---
+
+# 3.1 Step 1 – Create Stack Navigator (Feed)
+
+-------------------code----------------------
+import { createStackNavigator } from "@react-navigation/stack";
+
+const Stack = createStackNavigator();
+
+const FeedNavigator = () => (
+  <Stack.Navigator>
+    <Stack.Screen name="Listings" component={ListingsScreen} />
+    <Stack.Screen name="ListingDetails" component={ListingDetailsScreen} />
+  </Stack.Navigator>
+);
+-------------------code----------------------
+
+---
+
+# 3.2 Step 2 – Create Tab Navigator
+
+-------------------code----------------------
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+
+const Tab = createBottomTabNavigator();
+
+const TabNavigator = () => (
+  <Tab.Navigator>
+    <Tab.Screen name="Feed" component={FeedNavigator} />
+    <Tab.Screen name="Account" component={AccountScreen} />
+  </Tab.Navigator>
+);
+-------------------code----------------------
+
+---
+
+# 3.3 Step 3 – Enable Navigation from Card
+
+Inside `ListingsScreen`:
+
+-------------------code----------------------
+const ListingsScreen = ({ navigation }) => {
+  return (
+    <FlatList
+      data={listings}
+      keyExtractor={(item) => item.id.toString()}
+      renderItem={({ item }) => (
+        <Card
+          title={item.title}
+          onPress={() =>
+            navigation.navigate("ListingDetails", item)
+          }
+        />
+      )}
+    />
+  );
+};
+-------------------code----------------------
+
+---
+
+# 3.4 Step 4 – Receive Data in Details Screen
+
+-------------------code----------------------
+const ListingDetailsScreen = ({ route }) => {
+  const listing = route.params;
+
+  return (
+    <Screen>
+      <Text>{listing.title}</Text>
+      <Text>{listing.price}</Text>
+    </Screen>
+  );
+};
+-------------------code----------------------
+
+---
+
+# 3.5 Step 5 – Wrap App with Navigation Container
+
+-------------------code----------------------
+import { NavigationContainer } from "@react-navigation/native";
+
+const App = () => (
+  <NavigationContainer>
+    <TabNavigator />
+  </NavigationContainer>
+);
+-------------------code----------------------
+
+---
+
+# 4. Full Final Code
+
+-------------------code----------------------
+import React from "react";
+import { Text, FlatList } from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createStackNavigator } from "@react-navigation/stack";
+
+import Screen from "./app/components/Screen";
+import Card from "./app/components/Card";
+
+const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+
+const listings = [
+  { id: 1, title: "Red Jacket", price: "$100" },
+  { id: 2, title: "Blue Couch", price: "$300" },
+];
+
+const ListingsScreen = ({ navigation }) => (
+  <Screen>
+    <FlatList
+      data={listings}
+      keyExtractor={(item) => item.id.toString()}
+      renderItem={({ item }) => (
+        <Card
+          title={item.title}
+          onPress={() =>
+            navigation.navigate("ListingDetails", item)
+          }
+        />
+      )}
+    />
+  </Screen>
+);
+
+const ListingDetailsScreen = ({ route }) => {
+  const listing = route.params;
+
+  return (
+    <Screen>
+      <Text>{listing.title}</Text>
+      <Text>{listing.price}</Text>
+    </Screen>
+  );
+};
+
+const AccountScreen = () => (
+  <Screen>
+    <Text>Account</Text>
+  </Screen>
+);
+
+const FeedNavigator = () => (
+  <Stack.Navigator>
+    <Stack.Screen name="Listings" component={ListingsScreen} />
+    <Stack.Screen name="ListingDetails" component={ListingDetailsScreen} />
+  </Stack.Navigator>
+);
+
+const TabNavigator = () => (
+  <Tab.Navigator>
+    <Tab.Screen name="Feed" component={FeedNavigator} />
+    <Tab.Screen name="Account" component={AccountScreen} />
+  </Tab.Navigator>
+);
+
+const App = () => (
+  <NavigationContainer>
+    <TabNavigator />
+  </NavigationContainer>
+);
+
+export default App;
+-------------------code----------------------
+
+---
+
+# 5. Important Notes & Best Practices
+
+* Always use **Stack inside Tabs**
+* Pass data using `navigation.navigate(screen, params)`
+* Keep each tab **independent**
+* Use meaningful names (`ListingDetails`, not `Screen2`)
+* Separate navigation logic into its own folder later
+* Test navigation flows thoroughly
+
+---
+
+# 6. What You Should Practice
+
+Spend 30–40 minutes implementing:
+
+* Tab navigation
+* Stack navigation
+* Card → Details navigation
+* Passing and reading params
+
+---
+
+# 7. Summary
+
+This exercise combines all previous concepts:
+
+* Tabs for main navigation
+* Stack for detailed navigation
+* Passing data between screens
+* Handling user interaction
+
+Flow:
+
+1. Create stack navigator
+2. Add it to tabs
+3. Navigate from list → details
+4. Display passed data
+
+This is the foundation of a **real production app navigation system**.
