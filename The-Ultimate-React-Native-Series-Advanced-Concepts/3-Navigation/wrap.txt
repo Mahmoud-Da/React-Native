@@ -3802,3 +3802,290 @@ Flow:
 5. Read params in details screen
 
 This is the **core pattern for list → detail navigation** in real apps.
+
+*** 16- Building AccountNavigator ***
+# 1. Overview of the Lecture
+
+This lecture extends navigation by adding a **Stack Navigator for the Account tab**.
+
+Key ideas:
+
+* Each tab should have its **own stack**
+* Add navigation from **Account → Messages**
+* Make list items dynamic using `targetScreen`
+
+---
+
+# 2. Why Add Account Navigator?
+
+Current issue:
+
+* Account tab has only one screen
+* Cannot navigate to other screens like **Messages**
+
+Solution:
+
+* Create a **dedicated Account Stack Navigator**
+
+---
+
+# 3. Step 1 – Create AccountNavigator
+
+Create a new file:
+
+-------------------code----------------------
+app/navigation/AccountNavigator.js
+-------------------code----------------------
+
+---
+
+## 3.1 Setup Navigator
+
+-------------------code----------------------
+import React from "react";
+import { createStackNavigator } from "@react-navigation/stack";
+
+import AccountScreen from "../screens/AccountScreen";
+import MessagesScreen from "../screens/MessagesScreen";
+
+const Stack = createStackNavigator();
+-------------------code----------------------
+
+---
+
+## 3.2 Define Screens
+
+-------------------code----------------------
+const AccountNavigator = () => (
+  <Stack.Navigator>
+    <Stack.Screen name="Account" component={AccountScreen} />
+    <Stack.Screen name="Messages" component={MessagesScreen} />
+  </Stack.Navigator>
+);
+
+export default AccountNavigator;
+-------------------code----------------------
+
+---
+
+# 4. Step 2 – Use AccountNavigator in Tabs
+
+Update `AppNavigator.js`:
+
+-------------------code----------------------
+import AccountNavigator from "./AccountNavigator";
+-------------------code----------------------
+
+---
+
+### Replace AccountScreen:
+
+-------------------code----------------------
+<Tab.Screen name="Account" component={AccountNavigator} />
+-------------------code----------------------
+
+---
+
+# 5. Step 3 – Add targetScreen to Menu Items
+
+Update `AccountScreen.js`:
+
+-------------------code----------------------
+const menuItems = [
+  {
+    title: "My Listings",
+    icon: {
+      name: "format-list-bulleted",
+      backgroundColor: colors.primary,
+    },
+  },
+  {
+    title: "My Messages",
+    icon: {
+      name: "email",
+      backgroundColor: colors.secondary,
+    },
+    targetScreen: "Messages",
+  },
+];
+-------------------code----------------------
+
+---
+
+# 6. Step 4 – Handle onPress Navigation
+
+Update `AccountScreen`:
+
+---
+
+## 6.1 Get Navigation Prop
+
+-------------------code----------------------
+function AccountScreen({ navigation }) {
+-------------------code----------------------
+
+---
+
+## 6.2 Add onPress to ListItem
+
+-------------------code----------------------
+<ListItem
+  title={item.title}
+  IconComponent={
+    <Icon
+      name={item.icon.name}
+      backgroundColor={item.icon.backgroundColor}
+    />
+  }
+  onPress={() => navigation.navigate(item.targetScreen)}
+/>
+-------------------code----------------------
+
+---
+
+# 7. How It Works
+
+* Each menu item defines its own `targetScreen`
+* `navigation.navigate()` uses this dynamically
+* Only items with `targetScreen` will navigate
+
+---
+
+# 8. Behavior After Implementation
+
+* Tap **My Messages** → opens Messages screen
+* Tap **My Listings** → error (not implemented yet)
+* Navigation works through Account stack
+
+---
+
+# 9. Full Final Code
+
+---
+
+## 9.1 AccountNavigator.js
+
+-------------------code----------------------
+import React from "react";
+import { createStackNavigator } from "@react-navigation/stack";
+
+import AccountScreen from "../screens/AccountScreen";
+import MessagesScreen from "../screens/MessagesScreen";
+
+const Stack = createStackNavigator();
+
+const AccountNavigator = () => (
+  <Stack.Navigator>
+    <Stack.Screen name="Account" component={AccountScreen} />
+    <Stack.Screen name="Messages" component={MessagesScreen} />
+  </Stack.Navigator>
+);
+
+export default AccountNavigator;
+-------------------code----------------------
+
+---
+
+## 9.2 AppNavigator.js (Updated)
+
+-------------------code----------------------
+import React from "react";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+
+import FeedNavigator from "./FeedNavigator";
+import ListingEditScreen from "../screens/ListingEditScreen";
+import AccountNavigator from "./AccountNavigator";
+
+const Tab = createBottomTabNavigator();
+
+const AppNavigator = () => (
+  <Tab.Navigator>
+    <Tab.Screen name="Feed" component={FeedNavigator} />
+    <Tab.Screen name="ListingEdit" component={ListingEditScreen} />
+    <Tab.Screen name="Account" component={AccountNavigator} />
+  </Tab.Navigator>
+);
+
+export default AppNavigator;
+-------------------code----------------------
+
+---
+
+## 9.3 AccountScreen.js (Updated Parts)
+
+-------------------code----------------------
+const menuItems = [
+  {
+    title: "My Listings",
+    icon: {
+      name: "format-list-bulleted",
+      backgroundColor: colors.primary,
+    },
+  },
+  {
+    title: "My Messages",
+    icon: {
+      name: "email",
+      backgroundColor: colors.secondary,
+    },
+    targetScreen: "Messages",
+  },
+];
+-------------------code----------------------
+
+-------------------code----------------------
+function AccountScreen({ navigation }) {
+-------------------code----------------------
+
+-------------------code----------------------
+<FlatList
+  data={menuItems}
+  keyExtractor={(menuItem) => menuItem.title}
+  ItemSeparatorComponent={ListItemSeparator}
+  renderItem={({ item }) => (
+    <ListItem
+      title={item.title}
+      IconComponent={
+        <Icon
+          name={item.icon.name}
+          backgroundColor={item.icon.backgroundColor}
+        />
+      }
+      onPress={() => navigation.navigate(item.targetScreen)}
+    />
+  )}
+/>
+-------------------code----------------------
+
+---
+
+# 10. Important Notes & Best Practices
+
+* Each tab should have its **own stack navigator**
+* Avoid hardcoding navigation targets
+* Use `targetScreen` for flexibility
+* Always ensure target screen exists
+* Keep navigation logic clean and reusable
+
+---
+
+# 11. Summary
+
+* Created **Account Stack Navigator**
+* Connected Account → Messages navigation
+* Used dynamic routing with `targetScreen`
+* Integrated AccountNavigator into tabs
+
+Flow learned:
+
+1. Create AccountNavigator
+2. Add screens (Account, Messages)
+3. Replace tab screen
+4. Add navigation logic to list items
+
+This completes the pattern:
+
+* Feed → Stack
+* Account → Stack
+
+This is a **real-world scalable navigation architecture**.
