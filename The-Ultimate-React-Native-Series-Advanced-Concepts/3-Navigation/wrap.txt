@@ -4089,3 +4089,615 @@ This completes the pattern:
 * Account → Stack
 
 This is a **real-world scalable navigation architecture**.
+
+*** 17- Beautifying the Tabs ***
+# 1. Overview of the Lecture
+
+This lecture focuses on improving the bottom tab navigation UI by:
+
+* Adding icons to tabs
+* Creating a custom round middle button
+* Navigating to the Listing Edit screen
+* Removing unnecessary headers
+
+At the end, the app looks much more professional and closer to a real marketplace app.
+
+---
+
+# 2. Adding Icons to Tabs
+
+React Navigation allows custom icons using:
+
+-------------------code----------------------
+tabBarIcon
+-------------------code----------------------
+
+The lecture uses:
+
+-------------------code----------------------
+@expo/vector-icons
+-------------------code----------------------
+
+Specifically:
+
+-------------------code----------------------
+MaterialCommunityIcons
+-------------------code----------------------
+
+---
+
+# 3. Step 1 – Import Icons
+
+Inside `AppNavigator.js`:
+
+-------------------code----------------------
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+-------------------code----------------------
+
+---
+
+# 4. Step 2 – Add Icons to Each Tab
+
+Each tab gets its own icon using the `options` prop.
+
+---
+
+## Feed Tab
+
+-------------------code----------------------
+<Tab.Screen
+  name="Feed"
+  component={FeedNavigator}
+  options={{
+    tabBarIcon: ({ color, size }) => (
+      <MaterialCommunityIcons
+        name="home"
+        color={color}
+        size={size}
+      />
+    ),
+  }}
+/>
+-------------------code----------------------
+
+---
+
+## Listing Edit Tab
+
+-------------------code----------------------
+<Tab.Screen
+  name="ListingEdit"
+  component={ListingEditScreen}
+  options={{
+    tabBarIcon: ({ color, size }) => (
+      <MaterialCommunityIcons
+        name="plus-circle"
+        color={color}
+        size={size}
+      />
+    ),
+  }}
+/>
+-------------------code----------------------
+
+---
+
+## Account Tab
+
+-------------------code----------------------
+<Tab.Screen
+  name="Account"
+  component={AccountNavigator}
+  options={{
+    tabBarIcon: ({ color, size }) => (
+      <MaterialCommunityIcons
+        name="account"
+        color={color}
+        size={size}
+      />
+    ),
+  }}
+/>
+-------------------code----------------------
+
+---
+
+# 5. Why Use color and size from Props?
+
+Instead of hardcoding values:
+
+-------------------code----------------------
+size={30}
+color="red"
+-------------------code----------------------
+
+Use values React Navigation provides:
+
+-------------------code----------------------
+({ color, size })
+-------------------code----------------------
+
+Benefits:
+
+* Correct active/inactive colors
+* Proper sizing
+* Consistent UI
+
+---
+
+# 6. Creating a Custom Middle Button
+
+The middle tab becomes a large floating action button.
+
+Create:
+
+-------------------code----------------------
+app/navigation/NewListingButton.js
+-------------------code----------------------
+
+---
+
+# 7. Step 3 – Build NewListingButton Component
+
+---
+
+## 7.1 Basic Structure
+
+-------------------code----------------------
+import React from "react";
+import { View, StyleSheet } from "react-native";
+
+const NewListingButton = () => {
+  return <View style={styles.container}></View>;
+};
+
+export default NewListingButton;
+-------------------code----------------------
+
+---
+
+## 7.2 Add Circle Styles
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: colors.primary,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
+});
+-------------------code----------------------
+
+Explanation:
+
+* Width = Height
+* BorderRadius = half the size
+
+This creates a perfect circle.
+
+---
+
+# 8. Step 4 – Move Button Up
+
+Without positioning, the button sits too low.
+
+Add:
+
+-------------------code----------------------
+bottom: 20,
+-------------------code----------------------
+
+Updated style:
+
+-------------------code----------------------
+container: {
+  backgroundColor: colors.primary,
+  width: 80,
+  height: 80,
+  borderRadius: 40,
+  bottom: 20,
+},
+-------------------code----------------------
+
+---
+
+# 9. Step 5 – Add White Border
+
+Add:
+
+-------------------code----------------------
+borderColor: colors.white,
+borderWidth: 10,
+-------------------code----------------------
+
+Updated:
+
+-------------------code----------------------
+container: {
+  alignItems: "center",
+  backgroundColor: colors.primary,
+  borderColor: colors.white,
+  borderRadius: 40,
+  borderWidth: 10,
+  bottom: 20,
+  height: 80,
+  justifyContent: "center",
+  width: 80,
+},
+-------------------code----------------------
+
+---
+
+# 10. Step 6 – Add Plus Icon
+
+Import icons:
+
+-------------------code----------------------
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+-------------------code----------------------
+
+Render icon:
+
+-------------------code----------------------
+<MaterialCommunityIcons
+  name="plus"
+  color={colors.white}
+  size={40}
+/>
+-------------------code----------------------
+
+---
+
+# 11. Step 7 – Make Button Touchable
+
+Wrap with `TouchableOpacity`.
+
+-------------------code----------------------
+import { TouchableOpacity } from "react-native";
+-------------------code----------------------
+
+---
+
+## Touchable Structure
+
+-------------------code----------------------
+const NewListingButton = ({ onPress }) => {
+  return (
+    <TouchableOpacity onPress={onPress}>
+      <View style={styles.container}>
+        <MaterialCommunityIcons
+          name="plus"
+          color={colors.white}
+          size={40}
+        />
+      </View>
+    </TouchableOpacity>
+  );
+};
+-------------------code----------------------
+
+---
+
+# 12. Step 8 – Use Custom Button in Tab Navigator
+
+Instead of `tabBarIcon`, use:
+
+-------------------code----------------------
+tabBarButton
+-------------------code----------------------
+
+---
+
+## Custom Middle Button
+
+-------------------code----------------------
+<Tab.Screen
+  name="ListingEdit"
+  component={ListingEditScreen}
+  options={({ navigation }) => ({
+    tabBarButton: () => (
+      <NewListingButton
+        onPress={() => navigation.navigate("ListingEdit")}
+      />
+    ),
+  })}
+/>
+-------------------code----------------------
+
+---
+
+# 13. Why Use options as a Function?
+
+Normally:
+
+-------------------code----------------------
+options={{}}
+-------------------code----------------------
+
+But when needing navigation:
+
+-------------------code----------------------
+options={({ navigation }) => ({})}
+-------------------code----------------------
+
+This gives access to:
+
+* `navigation`
+* `route`
+
+---
+
+# 14. Remove Headers from Feed Screens
+
+Inside `FeedNavigator.js`:
+
+---
+
+## Before
+
+-------------------code----------------------
+<Stack.Navigator>
+-------------------code----------------------
+
+---
+
+## After
+
+-------------------code----------------------
+<Stack.Navigator
+  screenOptions={{
+    headerShown: false,
+  }}
+>
+-------------------code----------------------
+
+---
+
+# 15. Why Remove Headers?
+
+The modal already looks clean.
+
+Removing headers:
+
+* Saves space
+* Looks modern
+* Improves UX
+
+---
+
+# 16. Full Final Code
+
+---
+
+# 16.1 NewListingButton.js
+
+-------------------code----------------------
+import React from "react";
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+
+import colors from "../config/colors";
+
+const NewListingButton = ({ onPress }) => {
+  return (
+    <TouchableOpacity onPress={onPress}>
+      <View style={styles.container}>
+        <MaterialCommunityIcons
+          name="plus"
+          color={colors.white}
+          size={40}
+        />
+      </View>
+    </TouchableOpacity>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: "center",
+    backgroundColor: colors.primary,
+    borderColor: colors.white,
+    borderRadius: 40,
+    borderWidth: 10,
+    bottom: 20,
+    height: 80,
+    justifyContent: "center",
+    width: 80,
+  },
+});
+
+export default NewListingButton;
+-------------------code----------------------
+
+---
+
+# 16.2 AppNavigator.js
+
+-------------------code----------------------
+import React from "react";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+
+import FeedNavigator from "./FeedNavigator";
+import ListingEditScreen from "../screens/ListingEditScreen";
+import AccountNavigator from "./AccountNavigator";
+import NewListingButton from "./NewListingButton";
+
+const Tab = createBottomTabNavigator();
+
+const AppNavigator = () => (
+  <Tab.Navigator>
+    <Tab.Screen
+      name="Feed"
+      component={FeedNavigator}
+      options={{
+        tabBarIcon: ({ color, size }) => (
+          <MaterialCommunityIcons
+            name="home"
+            color={color}
+            size={size}
+          />
+        ),
+      }}
+    />
+
+    <Tab.Screen
+      name="ListingEdit"
+      component={ListingEditScreen}
+      options={({ navigation }) => ({
+        tabBarButton: () => (
+          <NewListingButton
+            onPress={() => navigation.navigate("ListingEdit")}
+          />
+        ),
+      })}
+    />
+
+    <Tab.Screen
+      name="Account"
+      component={AccountNavigator}
+      options={{
+        tabBarIcon: ({ color, size }) => (
+          <MaterialCommunityIcons
+            name="account"
+            color={color}
+            size={size}
+          />
+        ),
+      }}
+    />
+  </Tab.Navigator>
+);
+
+export default AppNavigator;
+-------------------code----------------------
+
+---
+
+# 16.3 FeedNavigator.js
+
+-------------------code----------------------
+import React from "react";
+import { createStackNavigator } from "@react-navigation/stack";
+
+import ListingsScreen from "../screens/ListingsScreen";
+import ListingDetailsScreen from "../screens/ListingDetailsScreen";
+
+const Stack = createStackNavigator();
+
+const FeedNavigator = () => (
+  <Stack.Navigator
+    mode="modal"
+    screenOptions={{
+      headerShown: false,
+    }}
+  >
+    <Stack.Screen
+      name="Listings"
+      component={ListingsScreen}
+    />
+
+    <Stack.Screen
+      name="ListingDetails"
+      component={ListingDetailsScreen}
+    />
+  </Stack.Navigator>
+);
+
+export default FeedNavigator;
+-------------------code----------------------
+
+---
+
+# 17. Important Notes & Best Practices
+
+## Keep Navigation Code Separate
+
+Store navigation components inside:
+
+-------------------code----------------------
+app/navigation
+-------------------code----------------------
+
+This keeps project structure clean.
+
+---
+
+## Use tabBarButton for Fully Custom Buttons
+
+Use:
+
+* `tabBarIcon` → simple icons
+* `tabBarButton` → fully custom UI
+
+---
+
+## Use React Navigation Props
+
+Always prefer:
+
+-------------------code----------------------
+({ color, size })
+-------------------code----------------------
+
+instead of hardcoded values.
+
+---
+
+## Keep Components Reusable
+
+`NewListingButton` accepts:
+
+-------------------code----------------------
+onPress
+-------------------code----------------------
+
+So navigation logic stays outside the component.
+
+---
+
+# 18. Final Navigation Structure
+
+-------------------code----------------------text
+NavigationContainer
+│
+├── AppNavigator (Tabs)
+│   ├── FeedNavigator (Stack)
+│   │   ├── ListingsScreen
+│   │   └── ListingDetailsScreen
+│   │
+│   ├── ListingEditScreen
+│   │
+│   └── AccountNavigator (Stack)
+│       ├── AccountScreen
+│       └── MessagesScreen
+-------------------code----------------------
+
+---
+
+# 19. Summary
+
+In this lecture you learned how to:
+
+* Add tab icons
+* Customize tab appearance
+* Create a floating middle action button
+* Navigate using a custom tab button
+* Remove headers globally
+* Build a cleaner real-world navigation structure
+
+Main concepts learned:
+
+1. `tabBarIcon`
+2. `tabBarButton`
+3. Custom navigation components
+4. Floating action button UI
+5. Nested navigators
+6. Global screen options
+
+Your app navigation is now structured like a professional production app.
