@@ -2827,3 +2827,207 @@ In this lecture you learned:
 * How to improve code readability with better prop names
 
 The app now loads real listings dynamically from the backend instead of using hardcoded data.
+
+*** 6- Inspecting API Calls ***
+# 1. Debugging API Calls in React Native
+
+When working with APIs, errors are common:
+
+* Request might not be sent
+* Server might fail
+* Response might be incorrect
+* Data might not match expectations
+
+To properly debug these issues, we use **React Native Debugger**.
+
+---
+
+# 2. What is React Native Debugger?
+
+React Native Debugger is a standalone debugging tool that combines:
+
+1. Chrome DevTools (JavaScript debugging)
+2. React DevTools (UI inspection)
+3. Redux DevTools (state debugging)
+
+It helps you inspect:
+
+* API requests
+* API responses
+* Redux state
+* Component tree
+
+---
+
+# 3. Installing React Native Debugger
+
+## Option 1: Mac (Homebrew)
+
+-------------------code----------------------
+brew install --cask react-native-debugger
+-------------------code----------------------
+
+This installs it into Applications.
+
+---
+
+## Option 2: Windows / Others
+
+Go to the GitHub releases page and download:
+
+* Windows `.exe`
+* macOS `.dmg`
+* Linux builds (if available)
+
+---
+
+# 4. Opening React Native Debugger
+
+When you open it, you will see:
+
+* “Waiting for React to connect”
+* Port usually set to `8081`
+
+This means your app is not connected yet.
+
+---
+
+# 5. Connecting Your App to the Debugger
+
+## Step 1: Open a new debugger window
+
+In React Native Debugger:
+
+* Go to **Debugger menu**
+* Click **New Window**
+* Change port to:
+
+-------------------code----------------------
+19001
+-------------------code----------------------
+
+---
+
+## Step 2: Enable Remote Debugging in App
+
+On your React Native app:
+
+* Open developer menu
+* Enable **Remote JS Debugging**
+
+Now the app connects to the debugger.
+
+---
+
+# 6. Inspecting API Requests
+
+Once connected:
+
+## Step 1: Enable Network Inspection
+
+* Right-click inside debugger
+* Enable **Network Inspect**
+
+---
+
+## Step 2: Reload App
+
+You will now see network calls:
+
+* API endpoints
+* Request headers
+* Response body
+* Status codes
+
+---
+
+## Step 3: Filter Requests
+
+If too many requests appear:
+
+* Filter by **XHR**
+
+This shows only API calls.
+
+---
+
+# 7. Example Debug Flow
+
+When calling an API like:
+
+```js
+listingsApi.getListings();
+```
+
+In React Native Debugger you can see:
+
+* Request URL
+* Response data
+* Errors (if any)
+
+This helps confirm whether:
+
+* API was called
+* Backend responded correctly
+* Data format is correct
+
+---
+
+# 8. Important Best Practices
+
+## 1. Always disable debugging in production
+
+Remote debugging slows down the app significantly.
+
+---
+
+## 2. Use debugger only during development
+
+Do not rely on it for production diagnostics.
+
+---
+
+## 3. Check network tab first for API issues
+
+Before checking code, verify:
+
+* Request is sent
+* Response is correct
+
+---
+
+## 4. Turn off debugging when done
+
+Always disable:
+
+* Remote JS Debugging
+
+to restore normal performance.
+
+---
+
+# 9. Full Debugging Workflow
+
+1. Open React Native Debugger
+2. Set correct port (19001)
+3. Enable Remote Debugging
+4. Enable Network Inspect
+5. Reload app
+6. Check API requests
+7. Disable debugging when finished
+
+---
+
+# 10. Summary
+
+In this lecture you learned:
+
+* Why API debugging is important
+* What React Native Debugger is
+* How to install it
+* How to connect it to your app
+* How to inspect API requests and responses
+* How to filter network calls
+* Why remote debugging slows performance
+
+This tool is essential for understanding how your app communicates with the backend and for quickly identifying API issues.
