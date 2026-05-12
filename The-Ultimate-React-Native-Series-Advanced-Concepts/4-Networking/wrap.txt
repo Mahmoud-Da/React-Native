@@ -3316,3 +3316,181 @@ In this lecture you learned:
 * Best practices for clean error handling
 
 Now the app gracefully handles network failures instead of showing a blank screen.
+
+
+*** 8- Simulating a Slow Connection ***
+# 1. Simulating Slow Networks in React Native
+
+When building real apps, users may have:
+
+* Weak internet
+* Mobile data (3G/4G)
+* Network delays
+* Offline situations
+
+To ensure good user experience, we must **test performance under slow conditions**.
+
+---
+
+# 2. Using React Native Debugger for Network Throttling
+
+We use React Native Debugger to simulate slow networks.
+
+---
+
+## Step 1: Open React Native Debugger
+
+Make sure it is connected to your app:
+
+* Port: `19001`
+* Status: “Waiting for React to connect” → then connected
+
+---
+
+## Step 2: Enable Network Throttling
+
+Go to the **Network tab**:
+
+You will see a dropdown:
+
+* Online (default)
+* Fast 3G
+* Slow 3G
+* Offline
+* Custom profile
+
+---
+
+## Step 3: Choose a Slow Profile
+
+Select:
+
+-------------------code----------------------
+Slow 3G
+-------------------code----------------------
+
+This simulates:
+
+* High latency
+* Slow downloads
+* Delayed API responses
+
+You will also see:
+
+* “Network throttling enabled” indicator
+
+---
+
+# 3. What Happens in the App
+
+After enabling slow network:
+
+1. Open the app
+2. Enable Remote Debugging
+3. Reload app
+
+### Observed behavior:
+
+* Blank screen appears
+* Listings take ~2 seconds to load
+* Then data appears
+
+---
+
+# 4. Problem Identified
+
+This creates a bad user experience:
+
+* User sees empty screen
+* No feedback during loading
+* App feels broken or frozen
+
+---
+
+# 5. Why This Happens
+
+The delay occurs because:
+
+* JavaScript bundle loads slowly (first time)
+* API request takes time under throttling
+* UI waits for response before rendering data
+
+---
+
+# 6. Required Improvement (Next Step Preview)
+
+We should show a **loading indicator** while data is being fetched.
+
+Instead of:
+
+* Blank screen
+
+We should show:
+
+* Loading spinner or animation
+
+---
+
+# 7. Key Concept: Always Test Under Real Conditions
+
+When building apps, always test:
+
+* Slow 3G
+* Offline mode
+* High latency
+* Poor networks
+
+This ensures your app feels:
+
+* Smooth
+* Reliable
+* Professional
+
+---
+
+# 8. Best Practices
+
+## 1. Always simulate slow networks
+
+Do not test only on fast WiFi.
+
+---
+
+## 2. Use throttling during development
+
+Helps detect:
+
+* Loading issues
+* UX problems
+* API delays
+
+---
+
+## 3. Avoid blank screens
+
+Always show:
+
+* Loader
+* Skeleton UI
+* Placeholder content
+
+---
+
+## 4. Test before production
+
+Ensure performance matches real-world usage.
+
+---
+
+# 9. Summary
+
+In this lecture you learned:
+
+* How to simulate slow networks using React Native Debugger
+* How to enable network throttling (Slow 3G)
+* How app behavior changes under poor connection
+* Why blank screens are a UX problem
+* Importance of testing real-world network conditions
+* Why loading indicators are necessary
+
+Next step: improving UX by adding a loading state while fetching data.
