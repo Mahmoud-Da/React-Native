@@ -2299,3 +2299,531 @@ Main concepts:
 * Cleaner architecture
 * Reusable API functions
 * Encapsulation of HTTP logic
+
+
+*** 5- Fetching Data ***
+# 1. Connecting React Native to the Backend API
+
+In this lecture, the app is updated to load listings from a backend server instead of using hardcoded data.
+
+The main goals are:
+
+* Create an API layer
+* Fetch data from the backend
+* Store data in state
+* Render server data dynamically
+* Update image handling for URLs
+
+---
+
+# 2. Importing the API Layer
+
+Previously, the listings were hardcoded directly inside the screen.
+
+Now we import the API module.
+
+-------------------code----------------------
+import listingsApi from "../api/listings";
+-------------------code----------------------
+
+This API module handles all communication with the backend.
+
+---
+
+# 3. Removing Hardcoded Data
+
+Before:
+
+-------------------code----------------------
+const listings = [
+  {
+    id: 1,
+    title: "Red jacket for sale",
+    price: 100,
+    image: require("../assets/jacket.jpg"),
+  },
+];
+-------------------code----------------------
+
+Now we remove this array completely because the data will come from the server.
+
+---
+
+# 4. Creating State for Listings
+
+We need a state variable to store the data returned from the API.
+
+## Import Hooks
+
+-------------------code----------------------
+import React, { useEffect, useState } from "react";
+-------------------code----------------------
+
+## Create State
+
+-------------------code----------------------
+const [listings, setListings] = useState([]);
+-------------------code----------------------
+
+Explanation:
+
+* `listings` → stores the array of listings
+* `setListings` → updates the state
+* `[]` → initial empty array
+
+---
+
+# 5. Loading Data When the Screen Renders
+
+We use the `useEffect` hook to load data when the component first mounts.
+
+## Step 1 — Create an Async Function
+
+-------------------code----------------------
+const loadListings = async () => {
+  const response = await listingsApi.getListings();
+
+  setListings(response.data);
+};
+-------------------code----------------------
+
+Explanation:
+
+* `getListings()` calls the backend
+* `response.data` contains the listings array
+* `setListings()` stores the data in state
+
+---
+
+## Step 2 — Call the Function Inside useEffect
+
+-------------------code----------------------
+useEffect(() => {
+  loadListings();
+}, []);
+-------------------code----------------------
+
+Explanation:
+
+* `[]` means this runs only once
+* Similar to `componentDidMount`
+
+---
+
+# 6. Why We Don’t Use async Directly in useEffect
+
+This is incorrect:
+
+-------------------code----------------------
+useEffect(async () => {
+  // wrong
+}, []);
+-------------------code----------------------
+
+React does not allow async functions directly inside `useEffect`.
+
+Correct approach:
+
+-------------------code----------------------
+useEffect(() => {
+  loadListings();
+}, []);
+-------------------code----------------------
+
+---
+
+# 7. Backend Response Structure
+
+The backend no longer returns:
+
+-------------------code----------------------
+image
+-------------------code----------------------
+
+Instead it returns:
+
+-------------------code----------------------
+images
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+{
+  id: 1,
+  title: "Jacket",
+  price: 100,
+  images: [
+    {
+      url: "https://...",
+      thumbnailUrl: "https://..."
+    }
+  ]
+}
+-------------------code----------------------
+
+---
+
+# 8. Updating the Card Component Usage
+
+Old code:
+
+-------------------code----------------------
+image={item.image}
+-------------------code----------------------
+
+New code:
+
+-------------------code----------------------
+imageUrl={item.images[0].url}
+-------------------code----------------------
+
+Explanation:
+
+* `images` is an array
+* We take the first image
+* We use the `url` property
+
+---
+
+# 9. Renaming image → imageUrl
+
+This improves readability.
+
+Before:
+
+-------------------code----------------------
+<Card image={item.image} />
+-------------------code----------------------
+
+After:
+
+-------------------code----------------------
+<Card imageUrl={item.images[0].url} />
+-------------------code----------------------
+
+Now it is clear the component expects a URL string.
+
+---
+
+# 10. Updating the Card Component
+
+## Old Props
+
+-------------------code----------------------
+function Card({ title, subTitle, image, onPress })
+-------------------code----------------------
+
+## New Props
+
+-------------------code----------------------
+function Card({ title, subTitle, imageUrl, onPress })
+-------------------code----------------------
+
+---
+
+# 11. Loading Images from URLs
+
+Before:
+
+-------------------code----------------------
+<Image source={image} />
+-------------------code----------------------
+
+This only works with local images using `require()`.
+
+For URLs, React Native requires:
+
+-------------------code----------------------
+<Image source={{ uri: imageUrl }} />
+-------------------code----------------------
+
+Explanation:
+
+* `uri` must be inside an object
+* Required for remote images
+
+---
+
+# 12. Updated ListingsScreen Step-by-Step
+
+## Imports
+
+-------------------code----------------------
+import React, { useEffect, useState } from "react";
+import { FlatList, StyleSheet } from "react-native";
+
+import Card from "../components/Card";
+import colors from "../config/colors";
+import routes from "../navigation/routes";
+import Screen from "../components/Screen";
+import listingsApi from "../api/listings";
+-------------------code----------------------
+
+---
+
+## Create State
+
+-------------------code----------------------
+const [listings, setListings] = useState([]);
+-------------------code----------------------
+
+---
+
+## Create loadListings Function
+
+-------------------code----------------------
+const loadListings = async () => {
+  const response = await listingsApi.getListings();
+
+  setListings(response.data);
+};
+-------------------code----------------------
+
+---
+
+## Load Data on Mount
+
+-------------------code----------------------
+useEffect(() => {
+  loadListings();
+}, []);
+-------------------code----------------------
+
+---
+
+## Render Listings
+
+-------------------code----------------------
+<FlatList
+  data={listings}
+  keyExtractor={(listing) => listing.id.toString()}
+  renderItem={({ item }) => (
+    <Card
+      title={item.title}
+      subTitle={"$" + item.price}
+      imageUrl={item.images[0].url}
+      onPress={() =>
+        navigation.navigate(routes.LISTING_DETAILS, item)
+      }
+    />
+  )}
+/>
+-------------------code----------------------
+
+---
+
+# 13. Full Final Code — ListingsScreen.js
+
+-------------------code----------------------
+import React, { useEffect, useState } from "react";
+import { FlatList, StyleSheet } from "react-native";
+
+import Card from "../components/Card";
+import colors from "../config/colors";
+import routes from "../navigation/routes";
+import Screen from "../components/Screen";
+import listingsApi from "../api/listings";
+
+const ListingsScreen = ({ navigation }) => {
+  const [listings, setListings] = useState([]);
+
+  const loadListings = async () => {
+    const response = await listingsApi.getListings();
+
+    setListings(response.data);
+  };
+
+  useEffect(() => {
+    loadListings();
+  }, []);
+
+  return (
+    <Screen style={styles.screen}>
+      <FlatList
+        data={listings}
+        keyExtractor={(listing) => listing.id.toString()}
+        renderItem={({ item }) => (
+          <Card
+            title={item.title}
+            subTitle={"$" + item.price}
+            imageUrl={item.images[0].url}
+            onPress={() =>
+              navigation.navigate(routes.LISTING_DETAILS, item)
+            }
+          />
+        )}
+      />
+    </Screen>
+  );
+};
+
+const styles = StyleSheet.create({
+  screen: {
+    padding: 20,
+    backgroundColor: colors.light,
+  },
+});
+
+export default ListingsScreen;
+-------------------code----------------------
+
+---
+
+# 14. Full Final Code — Card.js
+
+-------------------code----------------------
+import React from "react";
+import {
+  View,
+  StyleSheet,
+  Image,
+  TouchableWithoutFeedback,
+} from "react-native";
+
+import Text from "./Text";
+import colors from "../config/colors";
+
+const Card = ({ title, subTitle, imageUrl, onPress }) => {
+  return (
+    <TouchableWithoutFeedback onPress={onPress}>
+      <View style={styles.card}>
+        <Image style={styles.image} source={{ uri: imageUrl }} />
+
+        <View style={styles.detailsContainer}>
+          <Text style={styles.title} numberOfLines={1}>
+            {title}
+          </Text>
+
+          <Text style={styles.subTitle} numberOfLines={2}>
+            {subTitle}
+          </Text>
+        </View>
+      </View>
+    </TouchableWithoutFeedback>
+  );
+};
+
+const styles = StyleSheet.create({
+  card: {
+    borderRadius: 15,
+    backgroundColor: colors.white,
+    marginBottom: 20,
+    overflow: "hidden",
+  },
+
+  detailsContainer: {
+    padding: 20,
+  },
+
+  image: {
+    width: "100%",
+    height: 200,
+  },
+
+  subTitle: {
+    color: colors.secondary,
+    fontWeight: "bold",
+  },
+
+  title: {
+    marginBottom: 7,
+  },
+});
+
+export default Card;
+-------------------code----------------------
+
+---
+
+# 15. Important Notes and Best Practices
+
+## Use an API Layer
+
+Do not call APIs directly inside components.
+
+Bad:
+
+-------------------code----------------------
+client.get("/listings");
+-------------------code----------------------
+
+inside a screen component.
+
+Good:
+
+-------------------code----------------------
+listingsApi.getListings();
+-------------------code----------------------
+
+This keeps UI and networking separate.
+
+---
+
+## Always Handle Async Logic Properly
+
+Use a separate async function:
+
+-------------------code----------------------
+const loadListings = async () => {};
+-------------------code----------------------
+
+Then call it inside `useEffect`.
+
+---
+
+## Use Meaningful Prop Names
+
+Prefer:
+
+-------------------code----------------------
+imageUrl
+-------------------code----------------------
+
+instead of:
+
+-------------------code----------------------
+image
+-------------------code----------------------
+
+This makes the expected data type clear.
+
+---
+
+## Remote Images Require uri
+
+Always use:
+
+-------------------code----------------------
+source={{ uri: imageUrl }}
+-------------------code----------------------
+
+for images from servers.
+
+---
+
+## Keep Components Focused
+
+* UI components → rendering only
+* API layer → networking logic
+* Navigation layer → navigation logic
+
+This is clean architecture.
+
+---
+
+# 16. Summary
+
+In this lecture you learned:
+
+* How to fetch data from a backend API
+* How to use `useState`
+* How to use `useEffect`
+* How to load data when a screen renders
+* How to store API responses in state
+* How to render dynamic server data
+* How to display remote images
+* Why an API layer is important
+* How to improve code readability with better prop names
+
+The app now loads real listings dynamically from the backend instead of using hardcoded data.
