@@ -3494,3 +3494,372 @@ In this lecture you learned:
 * Why loading indicators are necessary
 
 Next step: improving UX by adding a loading state while fetching data.
+
+
+*** 9- Showing an Activity Indicator ***
+# React Native Navigation and API Integration Notes
+
+# 1. Adding a Loading Indicator
+
+When loading data from an API, users should see feedback instead of a blank screen.
+
+React Native provides a built-in component called `ActivityIndicator`.
+
+---
+
+# 2. Why We Need a Loading State
+
+Without a loading state:
+
+* Users may see a blank screen
+* The app feels frozen
+* Slow internet connections create a bad experience
+
+A loading animation improves the user experience by showing that data is being fetched.
+
+---
+
+# 3. Create a Loading State
+
+Inside `ListingsScreen`, create a new state variable.
+
+-------------------code----------------------
+const [loading, setLoading] = useState(false);
+-------------------code----------------------
+
+Explanation:
+
+* `loading = true` → show loading spinner
+* `loading = false` → hide loading spinner
+
+---
+
+# 4. Update the API Call Logic
+
+Before calling the server:
+
+-------------------code----------------------
+setLoading(true);
+-------------------code----------------------
+
+After the request finishes:
+
+-------------------code----------------------
+setLoading(false);
+-------------------code----------------------
+
+---
+
+## Updated `loadListings` Function
+
+-------------------code----------------------
+const loadListings = async () => {
+  setLoading(true);
+
+  const response = await listingsApi.getListings();
+
+  setLoading(false);
+
+  if (!response.ok) return setError(true);
+
+  setError(false);
+  setListings(response.data);
+};
+-------------------code----------------------
+
+---
+
+# 5. Add ActivityIndicator
+
+Import it from React Native.
+
+-------------------code----------------------
+import { ActivityIndicator } from "react-native";
+-------------------code----------------------
+
+Now render it above the `FlatList`.
+
+-------------------code----------------------
+<ActivityIndicator animating={loading} size="large" />
+-------------------code----------------------
+
+---
+
+# 6. Understanding ActivityIndicator Props
+
+## `animating`
+
+Controls whether the spinner appears.
+
+-------------------code----------------------
+animating={loading}
+-------------------code----------------------
+
+* `true` → spinner visible
+* `false` → spinner hidden
+
+---
+
+## `size`
+
+Controls spinner size.
+
+-------------------code----------------------
+size="large"
+-------------------code----------------------
+
+Available values:
+
+-------------------code----------------------
+size="small"
+size="large"
+-------------------code----------------------
+
+---
+
+# 7. Organizing Code Into Logical Sections
+
+The lecture recommends grouping related logic together.
+
+Example:
+
+-------------------code----------------------
+const loadListings = async () => {
+  // Loading logic
+  setLoading(true);
+
+  const response = await listingsApi.getListings();
+
+  setLoading(false);
+
+  // Error handling
+  if (!response.ok) return setError(true);
+
+  // Success logic
+  setError(false);
+  setListings(response.data);
+};
+-------------------code----------------------
+
+This improves readability and maintenance.
+
+---
+
+# 8. Full Updated ListingsScreen Code
+
+-------------------code----------------------
+import React, { useEffect, useState } from "react";
+import {
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
+
+import Card from "../components/Card";
+import Button from "../components/Button";
+import Screen from "../components/Screen";
+import AppText from "../components/Text";
+
+import colors from "../config/colors";
+import routes from "../navigation/routes";
+import listingsApi from "../api/listings";
+
+function ListingsScreen({ navigation }) {
+  const [listings, setListings] = useState([]);
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const loadListings = async () => {
+    // Loading logic
+    setLoading(true);
+
+    const response = await listingsApi.getListings();
+
+    setLoading(false);
+
+    // Error handling
+    if (!response.ok) return setError(true);
+
+    // Success logic
+    setError(false);
+    setListings(response.data);
+  };
+
+  useEffect(() => {
+    loadListings();
+  }, []);
+
+  return (
+    <Screen style={styles.screen}>
+      {error && (
+        <>
+          <AppText>Couldn't retrieve the listings.</AppText>
+          <Button title="Retry" onPress={loadListings} />
+        </>
+      )}
+
+      <ActivityIndicator animating={loading} size="large" />
+
+      <FlatList
+        data={listings}
+        keyExtractor={(listing) => listing.id.toString()}
+        renderItem={({ item }) => (
+          <Card
+            title={item.title}
+            subTitle={"$" + item.price}
+            imageUrl={item.images[0].url}
+            onPress={() =>
+              navigation.navigate(routes.LISTING_DETAILS, item)
+            }
+          />
+        )}
+      />
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: {
+    padding: 20,
+    backgroundColor: colors.light,
+  },
+});
+
+export default ListingsScreen;
+-------------------code----------------------
+
+---
+
+# 9. Important Notes
+
+## Always Handle Slow Networks
+
+Users may have:
+
+* Slow 3G
+* Weak Wi-Fi
+* Temporary disconnections
+
+Always provide:
+
+* Loading indicators
+* Retry options
+* Error messages
+
+---
+
+## Use Clear State Names
+
+Good:
+
+-------------------code----------------------
+loading
+error
+listings
+-------------------code----------------------
+
+Avoid unclear names like:
+
+-------------------code----------------------
+x
+data2
+temp
+-------------------code----------------------
+
+---
+
+## Keep API Logic Separate
+
+The component should:
+
+* Display UI
+* Handle user interaction
+
+The API layer should:
+
+* Call endpoints
+* Handle HTTP requests
+
+This keeps code clean and scalable.
+
+---
+
+# 10. Best Practices
+
+## Show Loading Before API Calls
+
+-------------------code----------------------
+setLoading(true);
+-------------------code----------------------
+
+---
+
+## Hide Loading After Completion
+
+-------------------code----------------------
+setLoading(false);
+-------------------code----------------------
+
+Always stop the spinner after the request finishes.
+
+---
+
+## Handle Errors Early
+
+-------------------code----------------------
+if (!response.ok) return setError(true);
+-------------------code----------------------
+
+This keeps code cleaner.
+
+---
+
+## Group Related Logic
+
+Separate:
+
+* Loading logic
+* Error logic
+* Success logic
+
+with spacing and comments.
+
+---
+
+# 11. Flow of Data
+
+## App Startup
+
+-------------------code----------------------text
+Component renders
+        ↓
+useEffect runs
+        ↓
+loadListings() executes
+        ↓
+loading = true
+        ↓
+API request sent
+        ↓
+Response received
+        ↓
+loading = false
+        ↓
+Update UI
+-------------------code----------------------
+
+---
+
+# 12. Summary
+
+In this lecture, you learned how to:
+
+1. Create a loading state using `useState`
+2. Use React Native's `ActivityIndicator`
+3. Show a loading spinner during API requests
+4. Improve UX for slow internet connections
+5. Organize API logic cleanly
+6. Structure async code into readable sections
+7. Combine loading, error handling, and data rendering in one screen
+
+The app now behaves much more professionally because users receive visual feedback while data is loading.
