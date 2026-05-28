@@ -4980,7 +4980,7 @@ When uploading images/files, we cannot send plain JSON.
 
 Instead, we use:
 
--------------------code----------------------txt
+-------------------code----------------------
 multipart/form-data
 -------------------code----------------------
 
@@ -4998,7 +4998,7 @@ inside the same request.
 
 Open:
 
--------------------code----------------------txt
+-------------------code----------------------
 app/api/listings.js
 -------------------code----------------------
 
@@ -5061,7 +5061,7 @@ data.append("price", listing.price);
 
 The server expects:
 
--------------------code----------------------txt
+-------------------code----------------------
 categoryId
 -------------------code----------------------
 
@@ -5367,7 +5367,7 @@ This avoids conflicts on the server.
 
 Good architecture:
 
--------------------code----------------------txt
+-------------------code----------------------
 UI Components
     ↓
 API Layer
@@ -6064,7 +6064,7 @@ Example:
 
 This means:
 
--------------------code----------------------txt
+-------------------code----------------------
 50% uploaded
 -------------------code----------------------
 
@@ -6074,7 +6074,7 @@ This means:
 
 Many progress bar components expect values like:
 
--------------------code----------------------txt
+-------------------code----------------------
 0 → empty
 1 → complete
 -------------------code----------------------
@@ -6124,7 +6124,7 @@ props.onSomethingHappened();
 
 This is called:
 
--------------------code----------------------txt
+-------------------code----------------------
 Raising an event
 -------------------code----------------------
 
@@ -6198,7 +6198,7 @@ onUploadProgress(progress.loaded / progress.total);
 
 # 11. Final Upload Flow
 
--------------------code----------------------txt
+-------------------code----------------------
 UI Layer
    ↓
 Pass callback function
@@ -6286,7 +6286,7 @@ Changes inside API files may NOT trigger Fast Refresh.
 
 You may need:
 
--------------------code----------------------txt
+-------------------code----------------------
 Manual Reload
 -------------------code----------------------
 
@@ -6391,8 +6391,756 @@ In this lecture:
 
 Main concept:
 
--------------------code----------------------txt
+-------------------code----------------------
 API Layer → sends progress updates → UI Layer
 -------------------code----------------------
 
 This creates a clean and scalable architecture for uploads in React Native.
+
+*** 16- Building the Upload Screen ***
+# Upload Screen and Progress Tracking
+
+## 1. Objective
+
+After implementing upload progress tracking, the next step is to display an upload screen while a listing is being uploaded.
+
+Current behavior:
+
+-------------------code----------------------
+User taps Post
+↓
+Listing uploads
+↓
+Progress is logged in console
+-------------------code----------------------
+
+Desired behavior:
+
+-------------------code----------------------
+User taps Post
+↓
+Upload screen appears
+↓
+Progress percentage updates
+↓
+Upload finishes
+↓
+Upload screen disappears
+-------------------code----------------------
+
+The lecture first displays a simple percentage and later replaces it with a progress bar.
+
+---
+
+# 2. Create an Upload Screen Component
+
+Create a new file:
+
+-------------------code----------------------
+app/screens/UploadScreen.js
+-------------------code----------------------
+
+Basic component:
+
+-------------------code----------------------
+import React from "react";
+
+function UploadScreen() {
+  return null;
+}
+
+export default UploadScreen;
+-------------------code----------------------
+
+---
+
+# 3. Display Upload Screen as a Modal
+
+Since this screen should appear above everything else, use a Modal.
+
+## Step 1: Import Modal
+
+-------------------code----------------------
+import { Modal, View } from "react-native";
+-------------------code----------------------
+
+## Step 2: Wrap Content Inside Modal
+
+-------------------code----------------------
+<Modal>
+  <View>
+    {/* Content */}
+  </View>
+</Modal>
+-------------------code----------------------
+
+---
+
+# 4. Center Content on the Screen
+
+The upload progress should appear in the center.
+
+Add styles:
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});
+-------------------code----------------------
+
+Apply:
+
+-------------------code----------------------
+<View style={styles.container}>
+  {/* Content */}
+</View>
+-------------------code----------------------
+
+---
+
+# 5. Add Temporary Progress Text
+
+Before creating a progress bar, show a percentage.
+
+Import custom Text component:
+
+-------------------code----------------------
+import AppText from "../components/Text";
+-------------------code----------------------
+
+Rename import:
+
+-------------------code----------------------
+import Text from "../components/Text";
+-------------------code----------------------
+
+Render text:
+
+-------------------code----------------------
+<Text>50%</Text>
+-------------------code----------------------
+
+---
+
+# 6. Add Component Props
+
+The UploadScreen should receive:
+
+### progress
+
+Current upload percentage.
+
+### visible
+
+Controls modal visibility.
+
+-------------------code----------------------
+function UploadScreen({
+  progress = 0,
+  visible = false,
+}) {
+-------------------code----------------------
+
+---
+
+# 7. Display Actual Progress
+
+Convert decimal progress into a percentage.
+
+Example:
+
+-------------------code----------------------js
+0.5
+-------------------code----------------------
+
+becomes:
+
+-------------------code----------------------
+50%
+-------------------code----------------------
+
+Render:
+
+-------------------code----------------------
+<Text>{progress * 100}%</Text>
+-------------------code----------------------
+
+---
+
+# 8. Connect Modal Visibility
+
+Show modal only when uploading.
+
+-------------------code----------------------
+<Modal visible={visible}>
+  <View style={styles.container}>
+    <Text>{progress * 100}%</Text>
+  </View>
+</Modal>
+-------------------code----------------------
+
+---
+
+# 9. Create Upload State in ListingEditScreen
+
+File:
+
+-------------------code----------------------
+ListingEditScreen.js
+-------------------code----------------------
+
+We need two state variables:
+
+### Upload Visibility
+
+-------------------code----------------------
+const [uploadVisible, setUploadVisible] =
+  useState(false);
+-------------------code----------------------
+
+### Upload Progress
+
+-------------------code----------------------
+const [progress, setProgress] =
+  useState(0);
+-------------------code----------------------
+
+---
+
+# 10. Show Upload Screen Before Upload Starts
+
+Inside `handleSubmit`:
+
+Before calling the API:
+
+-------------------code----------------------
+setUploadVisible(true);
+-------------------code----------------------
+
+---
+
+## Before
+
+-------------------code----------------------
+const result = await listingsApi.addListing(...);
+-------------------code----------------------
+
+## After
+
+-------------------code----------------------
+setUploadVisible(true);
+
+const result = await listingsApi.addListing(...);
+-------------------code----------------------
+
+---
+
+# 11. Hide Upload Screen After Upload Finishes
+
+After upload completes:
+
+-------------------code----------------------
+setUploadVisible(false);
+-------------------code----------------------
+
+Result:
+
+-------------------code----------------------
+setUploadVisible(true);
+
+const result = await listingsApi.addListing(...);
+
+setUploadVisible(false);
+-------------------code----------------------
+
+---
+
+# 12. Store Upload Progress
+
+Previously:
+
+-------------------code----------------------
+(progress) => {
+  console.log(progress);
+}
+-------------------code----------------------
+
+Now update state:
+
+-------------------code----------------------
+(progress) => {
+  setProgress(progress);
+}
+-------------------code----------------------
+
+---
+
+# 13. Render UploadScreen
+
+Inside ListingEditScreen:
+
+-------------------code----------------------
+<UploadScreen
+  progress={progress}
+  visible={uploadVisible}
+/>
+-------------------code----------------------
+
+It can be placed before or after the form.
+
+Example:
+
+-------------------code----------------------
+<>
+  <UploadScreen
+    progress={progress}
+    visible={uploadVisible}
+  />
+
+  <AppForm>
+    ...
+  </AppForm>
+</>
+-------------------code----------------------
+
+---
+
+# 14. Upload Flow
+
+-------------------code----------------------
+User presses Post
+        ↓
+uploadVisible = true
+        ↓
+UploadScreen appears
+        ↓
+Upload progress updates
+        ↓
+setProgress(progress)
+        ↓
+Percentage updates
+        ↓
+Upload completes
+        ↓
+uploadVisible = false
+        ↓
+UploadScreen disappears
+-------------------code----------------------
+
+---
+
+# 15. Complete UploadScreen Component
+
+-------------------code----------------------
+import React from "react";
+import {
+  Modal,
+  View,
+  StyleSheet,
+} from "react-native";
+
+import Text from "../components/Text";
+
+function UploadScreen({
+  progress = 0,
+  visible = false,
+}) {
+  return (
+    <Modal visible={visible}>
+      <View style={styles.container}>
+        <Text>{progress * 100}%</Text>
+      </View>
+    </Modal>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});
+
+export default UploadScreen;
+-------------------code----------------------
+
+---
+
+# 16. Updated ListingEditScreen
+
+## State Variables
+
+-------------------code----------------------
+const [uploadVisible, setUploadVisible] =
+  useState(false);
+
+const [progress, setProgress] =
+  useState(0);
+-------------------code----------------------
+
+---
+
+## Updated handleSubmit
+
+-------------------code----------------------
+const handleSubmit = async (listing) => {
+  setUploadVisible(true);
+
+  const result =
+    await listingsApi.addListing(
+      { ...listing, location },
+      (progress) => setProgress(progress)
+    );
+
+  setUploadVisible(false);
+
+  if (!result.ok)
+    return alert("Could not save the listing");
+
+  alert("Success");
+};
+-------------------code----------------------
+
+
+
+-------------------code----------------------
+import React from "react";
+import { StyleSheet } from "react-native";
+import * as Yup from "yup";
+
+import {
+  Form,
+  FormField,
+  FormPicker as Picker,
+  SubmitButton,
+} from "../components/forms";
+
+import CategoryPickerItem from "../components/CategoryPickerItem";
+import Screen from "../components/Screen";
+import FormImagePicker from "../components/forms/FormImagePicker";
+import useLocation from "../hooks/useLocation";
+import listingsApi from "../api/listings";
+
+const validationSchema = Yup.object().shape({
+  title: Yup.string().required().min(1).label("Title"),
+  price: Yup.number().required().min(1).max(10000).label("Price"),
+  description: Yup.string().label("Description"),
+  category: Yup.object().required().nullable().label("Category"),
+  images: Yup.array().min(1, "Please select at least one image."),
+});
+
+const categories = [
+  {
+    backgroundColor: "#fc5c65",
+    icon: "floor-lamp",
+    label: "Furniture",
+    value: 1,
+  },
+  {
+    backgroundColor: "#fd9644",
+    icon: "car",
+    label: "Cars",
+    value: 2,
+  },
+  {
+    backgroundColor: "#fed330",
+    icon: "camera",
+    label: "Cameras",
+    value: 3,
+  },
+  {
+    backgroundColor: "#26de81",
+    icon: "cards",
+    label: "Games",
+    value: 4,
+  },
+  {
+    backgroundColor: "#2bcbba",
+    icon: "shoe-heel",
+    label: "Clothing",
+    value: 5,
+  },
+  {
+    backgroundColor: "#45aaf2",
+    icon: "basketball",
+    label: "Sports",
+    value: 6,
+  },
+  {
+    backgroundColor: "#4b7bec",
+    icon: "headphones",
+    label: "Movies & Music",
+    value: 7,
+  },
+  {
+    backgroundColor: "#a55eea",
+    icon: "book-open-variant",
+    label: "Books",
+    value: 8,
+  },
+  {
+    backgroundColor: "#778ca3",
+    icon: "application",
+    label: "Other",
+    value: 9,
+  },
+];
+
+function ListingEditScreen() {
+  const location = useLocation();
+
+  const [uploadVisible, setUploadVisible] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  const handleSubmit = async (listing) => {
+    setProgress(0);
+    setUploadVisible(true);
+
+    const result = await listingsApi.addListing(
+      { ...listing, location },
+      (progress) => {
+        setProgress(progress);
+      }
+    );
+
+    setUploadVisible(false);
+
+    if (!result.ok)
+      return alert("Could not save the listing");
+
+    alert("Success");
+  };
+
+  return (
+    <Screen style={styles.container}>
+      <UploadScreen
+        progress={progress}
+        visible={uploadVisible}
+      />
+
+      <Form
+        initialValues={{
+          title: "",
+          price: "",
+          description: "",
+          category: null,
+          images: [],
+        }}
+        onSubmit={handleSubmit}
+        validationSchema={validationSchema}
+      >
+        <FormImagePicker name="images" />
+
+        <FormField
+          maxLength={255}
+          name="title"
+          placeholder="Title"
+        />
+
+        <FormField
+          keyboardType="numeric"
+          maxLength={8}
+          name="price"
+          placeholder="Price"
+          width={120}
+        />
+
+        <Picker
+          items={categories}
+          name="category"
+          numberOfColumns={3}
+          PickerItemComponent={CategoryPickerItem}
+          placeholder="Category"
+          width="50%"
+        />
+
+        <FormField
+          maxLength={255}
+          multiline
+          name="description"
+          numberOfLines={3}
+          placeholder="Description"
+        />
+
+        <SubmitButton title="Post" />
+      </Form>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 10,
+  },
+});
+
+export default ListingEditScreen;
+-------------------code----------------------
+
+---
+
+## Render UploadScreen
+
+-------------------code----------------------
+<UploadScreen
+  progress={progress}
+  visible={uploadVisible}
+/>
+-------------------code----------------------
+
+---
+
+# 17. Important Notes
+
+## Build Features in Small Steps
+
+Instead of immediately creating:
+
+* Progress bar
+* Success animation
+* Error animation
+
+The lecture first shows:
+
+-------------------code----------------------
+Simple percentage text
+-------------------code----------------------
+
+Then later upgrades it.
+
+This approach makes debugging much easier.
+
+---
+
+## Modal is Perfect for Upload Screens
+
+A modal:
+
+* Appears above everything
+* Blocks interaction
+* Focuses user attention
+
+Ideal for:
+
+* Uploads
+* Loading states
+* Confirmation dialogs
+
+---
+
+## State Drives UI
+
+The UI automatically updates when state changes.
+
+-------------------code----------------------
+setProgress(progress);
+-------------------code----------------------
+
+causes:
+
+-------------------code----------------------
+UI Re-render
+↓
+New percentage shown
+-------------------code----------------------
+
+No manual updates required.
+
+---
+
+# 18. Best Practices
+
+### Keep Upload State in the Screen
+
+The screen owns:
+
+-------------------code----------------------
+uploadVisible
+progress
+-------------------code----------------------
+
+because these values directly affect the UI.
+
+---
+
+### Separate Concerns
+
+UploadScreen:
+
+-------------------code----------------------
+Only displays upload progress
+-------------------code----------------------
+
+ListingEditScreen:
+
+-------------------code----------------------
+Handles upload logic
+-------------------code----------------------
+
+API Layer:
+
+-------------------code----------------------
+Performs network requests
+-------------------code----------------------
+
+Each layer has one responsibility.
+
+---
+
+### Use Descriptive Names
+
+Good:
+
+-------------------code----------------------
+uploadVisible
+progress
+setProgress
+-------------------code----------------------
+
+Avoid vague names like:
+
+-------------------code----------------------
+show
+value
+flag
+-------------------code----------------------
+
+---
+
+# 19. Summary
+
+In this lecture:
+
+* Created a new UploadScreen component
+* Displayed it using a Modal
+* Centered content with Flexbox
+* Added progress and visible props
+* Added upload state variables
+* Stored upload progress in component state
+* Showed the upload screen during uploads
+* Hid the upload screen when uploads completed
+* Displayed upload progress as a percentage
+
+Final workflow:
+
+-------------------code----------------------
+Post Listing
+     ↓
+Show Upload Screen
+     ↓
+Track Upload Progress
+     ↓
+Update Percentage
+     ↓
+Upload Complete
+     ↓
+Hide Upload Screen
+-------------------code----------------------
+
+The next step is replacing the percentage text with a real progress bar and eventually showing a success animation after the upload completes.
+
