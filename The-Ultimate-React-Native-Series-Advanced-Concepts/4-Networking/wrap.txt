@@ -7291,7 +7291,7 @@ Then:
 
 Result:
 
--------------------code----------------------text
+-------------------code----------------------
 [==========          ]
 -------------------code----------------------
 
@@ -7327,7 +7327,7 @@ Example:
 
 ### First Upload
 
--------------------code----------------------text
+-------------------code----------------------
 0% → 100%
 -------------------code----------------------
 
@@ -7335,13 +7335,13 @@ Example:
 
 Instead of:
 
--------------------code----------------------text
+-------------------code----------------------
 0% → 100%
 -------------------code----------------------
 
 It may start from:
 
--------------------code----------------------text
+-------------------code----------------------
 100% → 30% → 70% → 100%
 -------------------code----------------------
 
@@ -7388,7 +7388,7 @@ setUploadVisible(true);
 
 Now every upload starts from:
 
--------------------code----------------------text
+-------------------code----------------------
 0%
 -------------------code----------------------
 
@@ -7573,7 +7573,7 @@ In this lesson:
 
 The upload flow is now:
 
--------------------code----------------------text
+-------------------code----------------------
 User presses Post
         ↓
 UploadScreen appears
@@ -7584,3 +7584,580 @@ Upload completes
         ↓
 Ready for success animation
 -------------------code----------------------
+
+*** 18- Showing the Done Animation ***
+# React Native Backend Integration Notes
+
+## Lesson: Showing a Success Animation After Upload Completes
+
+---
+
+# 1. Goal of This Lesson
+
+Previously, we:
+
+* Uploaded a listing to the server.
+* Displayed an upload progress bar.
+* Showed upload progress from 0 → 100%.
+
+Current flow:
+
+-------------------code----------------------
+Upload starts
+      ↓
+Progress bar fills
+      ↓
+Upload screen closes immediately
+-------------------code----------------------
+
+Problem:
+
+The user never sees a success confirmation.
+
+Solution:
+
+-------------------code----------------------
+Upload starts
+      ↓
+Progress bar fills
+      ↓
+Success animation plays
+      ↓
+Upload screen closes
+-------------------code----------------------
+
+To achieve this, we use another Lottie animation.
+
+---
+
+# 2. Import LottieView
+
+Inside `UploadScreen.js`:
+
+-------------------code----------------------
+import LottieView from "lottie-react-native";
+-------------------code----------------------
+
+This allows us to render animations from JSON files.
+
+---
+
+# 3. Use Conditional Rendering
+
+Currently UploadScreen always shows:
+
+-------------------code----------------------
+<Progress.Bar />
+-------------------code----------------------
+
+We want:
+
+-------------------code----------------------
+Progress < 100%  → Show Progress Bar
+Progress = 100%  → Show Success Animation
+-------------------code----------------------
+
+---
+
+## Before
+
+-------------------code----------------------
+<Progress.Bar
+  progress={progress}
+  width={200}
+  color={colors.primary}
+/>
+-------------------code----------------------
+
+---
+
+## After
+
+-------------------code----------------------
+{
+  progress < 1 ? (
+    <Progress.Bar
+      progress={progress}
+      width={200}
+      color={colors.primary}
+    />
+  ) : (
+    <LottieView />
+  );
+}
+-------------------code----------------------
+
+---
+
+# 4. Load the Success Animation
+
+The instructor uses:
+
+-------------------code----------------------
+done.json
+-------------------code----------------------
+
+stored in:
+
+-------------------code----------------------
+assets/
+ └── animations/
+      └── done.json
+-------------------code----------------------
+
+Configure Lottie:
+
+-------------------code----------------------
+<LottieView
+  source={require("../assets/animations/done.json")}
+  autoPlay
+  loop={false}
+/>
+-------------------code----------------------
+
+---
+
+## Explanation
+
+### autoPlay
+
+Starts animation automatically.
+
+-------------------code----------------------
+autoPlay
+-------------------code----------------------
+
+Equivalent to:
+
+-------------------code----------------------
+autoPlay={true}
+-------------------code----------------------
+
+---
+
+### loop={false}
+
+Animation plays only once.
+
+-------------------code----------------------
+loop={false}
+-------------------code----------------------
+
+Without this:
+
+-------------------code----------------------
+✓
+✓
+✓
+✓
+✓
+-------------------code----------------------
+
+Animation repeats forever.
+
+---
+
+# 5. Resize the Animation
+
+The animation is too large by default.
+
+Apply a style:
+
+-------------------code----------------------
+<LottieView
+  source={require("../assets/animations/done.json")}
+  autoPlay
+  loop={false}
+  style={styles.animation}
+/>
+-------------------code----------------------
+
+---
+
+## Style
+
+-------------------code----------------------
+animation: {
+  width: 150,
+}
+-------------------code----------------------
+
+---
+
+# 6. Problem With Current Implementation
+
+When upload completes:
+
+-------------------code----------------------
+setUploadVisible(false);
+-------------------code----------------------
+
+is executed immediately.
+
+Example:
+
+-------------------code----------------------
+const result = await listingsApi.addListing(...);
+
+setUploadVisible(false);
+-------------------code----------------------
+
+Result:
+
+-------------------code----------------------
+Progress reaches 100%
+      ↓
+Success animation appears
+      ↓
+Immediately disappears
+-------------------code----------------------
+
+User cannot see it.
+
+---
+
+# 7. Fix Error Handling
+
+For failures:
+
+-------------------code----------------------
+if (!result.ok) {
+  setUploadVisible(false);
+  alert("Could not save the listing");
+  return;
+}
+-------------------code----------------------
+
+Why?
+
+If upload fails:
+
+* Hide upload screen.
+* Show error message.
+* Allow retry.
+
+---
+
+# 8. Do NOT Hide Upload Screen On Success
+
+Remove:
+
+-------------------code----------------------
+setUploadVisible(false);
+-------------------code----------------------
+
+from the success path.
+
+Old:
+
+-------------------code----------------------
+if (!result.ok) {
+  setUploadVisible(false);
+  alert("Could not save the listing");
+  return;
+}
+
+setUploadVisible(false);
+alert("Success");
+-------------------code----------------------
+
+New:
+
+-------------------code----------------------
+if (!result.ok) {
+  setUploadVisible(false);
+  alert("Could not save the listing");
+  return;
+}
+-------------------code----------------------
+
+No success alert needed.
+
+The animation itself becomes the success message.
+
+---
+
+# 9. Detect When Animation Finishes
+
+Lottie provides:
+
+-------------------code----------------------
+onAnimationFinish
+-------------------code----------------------
+
+This event fires when the animation completes.
+
+Example:
+
+-------------------code----------------------
+<LottieView
+  source={require("../assets/animations/done.json")}
+  autoPlay
+  loop={false}
+  onAnimationFinish={() => {
+    console.log("Finished");
+  }}
+/>
+-------------------code----------------------
+
+---
+
+# 10. Raise a Custom Event
+
+UploadScreen should notify its parent when animation ends.
+
+Add a prop:
+
+-------------------code----------------------
+function UploadScreen({
+  progress = 0,
+  visible = false,
+  onDone,
+})
+-------------------code----------------------
+
+---
+
+Then:
+
+-------------------code----------------------
+<LottieView
+  source={require("../assets/animations/done.json")}
+  autoPlay
+  loop={false}
+  onAnimationFinish={onDone}
+/>
+-------------------code----------------------
+
+This creates a reusable component.
+
+The UploadScreen doesn't decide what happens next.
+
+It simply says:
+
+-------------------code----------------------
+Animation finished.
+-------------------code----------------------
+
+The parent decides how to react.
+
+---
+
+# 11. Handle the Event in ListingEditScreen
+
+Render UploadScreen:
+
+-------------------code----------------------
+<UploadScreen
+  progress={progress}
+  visible={uploadVisible}
+  onDone={() => setUploadVisible(false)}
+/>
+-------------------code----------------------
+
+Now:
+
+-------------------code----------------------
+Animation completes
+      ↓
+onDone fires
+      ↓
+UploadScreen hides
+-------------------code----------------------
+
+---
+
+# 12. Updated UploadScreen.js
+
+-------------------code----------------------
+import React from "react";
+import { Modal, StyleSheet, View } from "react-native";
+import * as Progress from "react-native-progress";
+import LottieView from "lottie-react-native";
+
+import colors from "../config/colors";
+
+function UploadScreen({
+  progress = 0,
+  visible = false,
+  onDone,
+}) {
+  return (
+    <Modal visible={visible}>
+      <View style={styles.container}>
+        {progress < 1 ? (
+          <Progress.Bar
+            progress={progress}
+            width={200}
+            color={colors.primary}
+          />
+        ) : (
+          <LottieView
+            source={require("../assets/animations/done.json")}
+            autoPlay
+            loop={false}
+            onAnimationFinish={onDone}
+            style={styles.animation}
+          />
+        )}
+      </View>
+    </Modal>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  animation: {
+    width: 150,
+  },
+});
+
+export default UploadScreen;
+-------------------code----------------------
+
+---
+
+# 13. Updated handleSubmit()
+
+-------------------code----------------------
+const handleSubmit = async (listing) => {
+  setProgress(0);
+  setUploadVisible(true);
+
+  const result = await listingsApi.addListing(
+    { ...listing, location },
+    (progress) => setProgress(progress)
+  );
+
+  if (!result.ok) {
+    setUploadVisible(false);
+    alert("Could not save the listing");
+    return;
+  }
+};
+-------------------code----------------------
+
+Notice:
+
+-------------------code----------------------
+setUploadVisible(false);
+-------------------code----------------------
+
+is only used when an error occurs.
+
+---
+
+# 14. Updated UploadScreen Usage
+
+-------------------code----------------------
+<UploadScreen
+  visible={uploadVisible}
+  progress={progress}
+  onDone={() => setUploadVisible(false)}
+/>
+-------------------code----------------------
+
+---
+
+# Important Notes
+
+## 1. Keep Success and Error Paths Separate
+
+Error path:
+
+-------------------code----------------------
+Upload fails
+      ↓
+Hide screen
+      ↓
+Show alert
+-------------------code----------------------
+
+Success path:
+
+-------------------code----------------------
+Upload succeeds
+      ↓
+Show animation
+      ↓
+Animation ends
+      ↓
+Hide screen
+-------------------code----------------------
+
+---
+
+## 2. Use Events Instead of Direct Control
+
+Bad:
+
+-------------------code----------------------
+UploadScreen directly changes parent state
+-------------------code----------------------
+
+Good:
+
+-------------------code----------------------
+UploadScreen raises an event
+Parent handles it
+-------------------code----------------------
+
+This keeps components reusable.
+
+---
+
+## 3. Lottie Animations Should Usually Not Loop
+
+Success animations typically run once:
+
+-------------------code----------------------
+loop={false}
+-------------------code----------------------
+
+Loading animations usually loop:
+
+-------------------code----------------------
+loop={true}
+-------------------code----------------------
+
+---
+
+# Summary
+
+In this lesson we:
+
+1. Imported `LottieView`.
+2. Added a success animation (`done.json`).
+3. Used conditional rendering:
+
+   * Progress bar while uploading.
+   * Success animation when upload reaches 100%.
+4. Styled the animation size.
+5. Removed the success alert.
+6. Used `onAnimationFinish`.
+7. Created a custom `onDone` event.
+8. Hid the upload screen only after the animation finished.
+
+Final upload flow:
+
+-------------------code----------------------
+User presses Post
+        ↓
+Upload screen appears
+        ↓
+Progress bar fills
+        ↓
+Upload reaches 100%
+        ↓
+Success animation plays
+        ↓
+Animation finishes
+        ↓
+Upload screen closes
+-------------------code----------------------
+
+This provides a much more polished and professional user experience than immediately closing the upload screen after a successful upload.
