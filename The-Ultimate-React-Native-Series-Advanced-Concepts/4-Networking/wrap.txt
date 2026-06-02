@@ -8161,3 +8161,600 @@ Upload screen closes
 -------------------code----------------------
 
 This provides a much more polished and professional user experience than immediately closing the upload screen after a successful upload.
+
+*** 19- Resetting the Form ***
+# React Native Forms Notes
+
+## Lesson: Resetting a Formik Form After Successful Submission
+
+---
+
+# 1. Goal of This Lesson
+
+After successfully posting a listing:
+
+-------------------code----------------------
+Fill Form
+    ↓
+Submit
+    ↓
+Upload Successful
+    ↓
+Reset Form
+-------------------code----------------------
+
+Currently:
+
+* Category resets correctly.
+* Images reset correctly.
+* Title and Price still appear filled.
+
+This creates an inconsistent UI state.
+
+The goal is to completely reset the form after a successful submission.
+
+---
+
+# 2. Formik's onSubmit Function
+
+Most developers only use the first parameter:
+
+-------------------code----------------------
+onSubmit={(values) => {}}
+-------------------code----------------------
+
+However, Formik actually passes two parameters:
+
+-------------------code----------------------
+onSubmit={(values, formikBag) => {}}
+-------------------code----------------------
+
+### Parameter 1
+
+-------------------code----------------------
+values
+-------------------code----------------------
+
+Contains all form values.
+
+Example:
+
+-------------------code----------------------
+{
+  title: "Red Jacket",
+  price: "100",
+  category: {...}
+}
+-------------------code----------------------
+
+---
+
+### Parameter 2
+
+-------------------code----------------------
+formikBag
+-------------------code----------------------
+
+Contains helper methods provided by Formik.
+
+Examples:
+
+-------------------code----------------------
+setFieldValue()
+setFieldTouched()
+setValues()
+resetForm()
+-------------------code----------------------
+
+---
+
+# 3. Destructure resetForm
+
+Current implementation:
+
+-------------------code----------------------
+const handleSubmit = async (listing) => {
+-------------------code----------------------
+
+Update to:
+
+-------------------code----------------------
+const handleSubmit = async (
+  listing,
+  { resetForm }
+) => {
+-------------------code----------------------
+
+Now we have direct access to:
+
+-------------------code----------------------
+resetForm()
+-------------------code----------------------
+
+---
+
+# 4. Reset Form After Successful Upload
+
+After a successful upload:
+
+-------------------code----------------------
+resetForm();
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+if (!result.ok) {
+  setUploadVisible(false);
+  alert("Could not save the listing");
+  return;
+}
+
+resetForm();
+-------------------code----------------------
+
+---
+
+# 5. Unexpected Problem
+
+After adding:
+
+-------------------code----------------------
+resetForm();
+-------------------code----------------------
+
+the form only partially resets.
+
+### Works
+
+-------------------code----------------------
+Category clears
+Images clear
+-------------------code----------------------
+
+### Doesn't Work
+
+-------------------code----------------------
+Title still visible
+Price still visible
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+Title: Red Jacket
+Price: 100
+-------------------code----------------------
+
+still displayed.
+
+---
+
+# 6. Why Does This Happen?
+
+When debugging UI issues, compare components.
+
+### Category Field
+
+Uses:
+
+-------------------code----------------------
+<FormPicker />
+-------------------code----------------------
+
+### Text Fields
+
+Use:
+
+-------------------code----------------------
+<FormField />
+-------------------code----------------------
+
+---
+
+# 7. Compare FormPicker vs FormField
+
+Inside `FormPicker`:
+
+-------------------code----------------------
+selectedItem={value}
+-------------------code----------------------
+
+The component is controlled by Formik state.
+
+Also:
+
+-------------------code----------------------
+setFieldValue(...)
+-------------------code----------------------
+
+updates Formik directly.
+
+---
+
+Inside `FormField`:
+
+-------------------code----------------------
+handleChange(name)
+-------------------code----------------------
+
+was being used.
+
+But there was no:
+
+-------------------code----------------------
+value={values[name]}
+-------------------code----------------------
+
+binding.
+
+As a result:
+
+-------------------code----------------------
+Formik state resets
+UI doesn't update
+-------------------code----------------------
+
+---
+
+# 8. Convert FormField to a Controlled Component
+
+Instead of:
+
+-------------------code----------------------
+const {
+  handleChange,
+} = useFormikContext();
+-------------------code----------------------
+
+Use:
+
+-------------------code----------------------
+const {
+  setFieldValue,
+  values,
+} = useFormikContext();
+-------------------code----------------------
+
+---
+
+# 9. Replace handleChange
+
+Before:
+
+-------------------code----------------------
+onChangeText={handleChange(name)}
+-------------------code----------------------
+
+---
+
+After:
+
+-------------------code----------------------
+onChangeText={(text) =>
+  setFieldValue(name, text)
+}
+-------------------code----------------------
+
+Now Formik explicitly controls updates.
+
+---
+
+# 10. Bind the Input Value
+
+This is the most important fix.
+
+Add:
+
+-------------------code----------------------
+value={values[name]}
+-------------------code----------------------
+
+to the text input.
+
+---
+
+# 11. Why This Fix Works
+
+Previously:
+
+-------------------code----------------------
+Formik State
+     ↓
+TextInput
+-------------------code----------------------
+
+was missing.
+
+The TextInput displayed old text even after Formik reset its state.
+
+After adding:
+
+-------------------code----------------------
+value={values[name]}
+-------------------code----------------------
+
+React Native always renders the latest Formik value.
+
+Flow becomes:
+
+-------------------code----------------------
+Formik State Changes
+        ↓
+value prop updates
+        ↓
+TextInput updates
+        ↓
+UI stays synchronized
+-------------------code----------------------
+
+---
+
+# 12. Updated FormField Logic
+
+## Before
+
+-------------------code----------------------
+const {
+  handleChange,
+} = useFormikContext();
+
+<AppTextInput
+  onChangeText={handleChange(name)}
+/>
+-------------------code----------------------
+
+---
+
+## After
+
+-------------------code----------------------
+const {
+  setFieldValue,
+  values,
+} = useFormikContext();
+
+<AppTextInput
+  value={values[name]}
+  onChangeText={(text) =>
+    setFieldValue(name, text)
+  }
+/>
+-------------------code----------------------
+
+---
+
+# 13. Complete Updated FormField Example
+
+-------------------code----------------------
+import React from "react";
+import { useFormikContext } from "formik";
+
+import AppTextInput from "../AppTextInput";
+import ErrorMessage from "./ErrorMessage";
+
+function FormField({ name, ...otherProps }) {
+  const {
+    setFieldValue,
+    values,
+    errors,
+    touched,
+    setFieldTouched,
+  } = useFormikContext();
+
+  return (
+    <>
+      <AppTextInput
+        value={values[name]}
+        onBlur={() => setFieldTouched(name)}
+        onChangeText={(text) =>
+          setFieldValue(name, text)
+        }
+        {...otherProps}
+      />
+
+      <ErrorMessage
+        error={errors[name]}
+        visible={touched[name]}
+      />
+    </>
+  );
+}
+
+export default FormField;
+-------------------code----------------------
+
+---
+
+# 14. Updated handleSubmit Example
+
+-------------------code----------------------
+const handleSubmit = async (
+  listing,
+  { resetForm }
+) => {
+  setProgress(0);
+  setUploadVisible(true);
+
+  const result = await listingsApi.addListing(
+    { ...listing, location },
+    (progress) => setProgress(progress)
+  );
+
+  if (!result.ok) {
+    setUploadVisible(false);
+    alert("Could not save the listing");
+    return;
+  }
+
+  resetForm();
+};
+-------------------code----------------------
+
+---
+
+# Important Notes
+
+## Controlled Components Are Safer
+
+Always prefer:
+
+-------------------code----------------------
+value={values[name]}
+-------------------code----------------------
+
+over relying on internal component state.
+
+Benefits:
+
+* Easier debugging
+* Consistent UI
+* Reliable form resets
+* Predictable behavior
+
+---
+
+## Debugging Strategy
+
+When something behaves differently:
+
+Compare components that work and components that don't.
+
+Example:
+
+-------------------code----------------------
+FormPicker → Works
+FormField → Doesn't work
+-------------------code----------------------
+
+Comparing them quickly revealed the missing `value` prop.
+
+---
+
+## Formik State vs UI State
+
+A form can appear filled even when Formik has already reset its internal state.
+
+Always verify:
+
+-------------------code----------------------
+value={values[name]}
+-------------------code----------------------
+
+is connected correctly.
+
+---
+
+# Full Final Code
+
+## ListingEditScreen
+
+-------------------code----------------------
+const handleSubmit = async (
+  listing,
+  { resetForm }
+) => {
+  setProgress(0);
+  setUploadVisible(true);
+
+  const result = await listingsApi.addListing(
+    { ...listing, location },
+    (progress) => setProgress(progress)
+  );
+
+  if (!result.ok) {
+    setUploadVisible(false);
+    alert("Could not save the listing");
+    return;
+  }
+
+  resetForm();
+};
+-------------------code----------------------
+
+---
+
+## FormField
+
+-------------------code----------------------
+import React from "react";
+import { useFormikContext } from "formik";
+
+import TextInput from "../TextInput";
+import ErrorMessage from "./ErrorMessage";
+
+function AppFormField({ name, width, ...otherProps }) {
+  const { setFieldTouched, setFieldValue, values, errors, touched } = useFormikContext();
+
+  return (
+    <>
+      <TextInput
+        onBlur={() => setFieldTouched(name)}
+        onChangeText={(text) =>
+          setFieldValue(name, text)
+        }
+        value={values[name]}
+        width={width}
+        {...otherProps}
+      />
+      <ErrorMessage error={errors[name]} visible={touched[name]} />
+    </>
+  );
+}
+
+export default AppFormField;
+-------------------code----------------------
+
+---
+
+# Summary
+
+In this lesson you learned:
+
+1. Formik's `onSubmit` receives:
+
+   * `values`
+   * `formikBag`
+
+2. `formikBag` provides:
+
+   * `resetForm()`
+   * `setFieldValue()`
+   * Other helper methods
+
+3. Calling:
+
+-------------------code----------------------
+resetForm();
+-------------------code----------------------
+
+successfully resets Formik state.
+
+4. The form only partially reset because `FormField` was not fully controlled.
+
+5. The fix was:
+
+   * Replace `handleChange()` with `setFieldValue()`
+   * Add:
+
+-------------------code----------------------
+value={values[name]}
+-------------------code----------------------
+
+6. After making FormField controlled, the entire form resets correctly.
+
+Final flow:
+
+-------------------code----------------------
+User fills form
+        ↓
+User submits
+        ↓
+Upload succeeds
+        ↓
+Success animation plays
+        ↓
+Form resets completely
+        ↓
+Ready for next listing
+-------------------code----------------------
