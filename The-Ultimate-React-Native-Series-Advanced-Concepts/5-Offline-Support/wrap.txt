@@ -299,3 +299,378 @@ In this lecture:
 * This approach provides a significantly better user experience and is a key feature of production-quality mobile applications.
 
 The next steps are implementing network detection, showing an offline notice, and caching API responses so the app can work seamlessly both online and offline.
+
+*** 2- Strategies for Building Offline Capable Apps ***
+# Offline-Capable Apps: Common Strategies
+
+## 1. Overview
+
+Building an offline-capable app means designing your application to continue providing a good user experience even when internet connectivity is unavailable or unreliable.
+
+In this lecture, four common offline strategies are introduced.
+
+As the functionality becomes more advanced, the implementation complexity and development cost increase.
+
+---
+
+# 2. The Four Offline Strategies
+
+## Strategy 1: Notify the User
+
+The simplest approach is to inform users that they are offline.
+
+### Example
+
+-------------------code----------------------
+No Internet Connection
+Please check your network settings.
+-------------------code----------------------
+
+### Benefits
+
+* Easy to implement
+* Improves user experience
+* Prevents confusion
+
+### Typical Usage
+
+-------------------code----------------------
+<OfflineNotice />
+-------------------code----------------------
+
+### Flow
+
+-------------------code----------------------
+Internet Lost
+      ↓
+Show Offline Message
+      ↓
+User Understands Problem
+-------------------code----------------------
+
+---
+
+## Strategy 2: Disable Certain Features
+
+When internet access is unavailable, some features can be temporarily disabled.
+
+### Examples
+
+Features that may require internet:
+
+* Posting listings
+* Uploading images
+* Sending messages
+* Making purchases
+
+### Example
+
+-------------------code----------------------
+<Button disabled={!isConnected} title="Post Listing" />
+-------------------code----------------------
+
+### Flow
+
+-------------------code----------------------
+Device Offline
+      ↓
+Disable Online Features
+      ↓
+Prevent Failed Requests
+-------------------code----------------------
+
+### Benefits
+
+* Prevents unnecessary errors
+* Creates predictable behavior
+* Improves usability
+
+---
+
+## Strategy 3: Cache Data Locally
+
+A more advanced approach is to store data locally so users can still access it offline.
+
+### Example
+
+Store:
+
+-------------------code----------------------
+Listings
+User Profiles
+Settings
+Product Catalogs
+-------------------code----------------------
+
+### Flow
+
+-------------------code----------------------
+Online
+   ↓
+Download Data
+   ↓
+Save To Cache
+   ↓
+Offline
+   ↓
+Load Cached Data
+-------------------code----------------------
+
+### Benefits
+
+* Faster loading
+* Better user experience
+* App remains usable offline
+
+### Example
+
+-------------------code----------------------
+const listings = await getCachedListings();
+-------------------code----------------------
+
+---
+
+## Strategy 4: Queue User Actions
+
+This is the most advanced strategy.
+
+If users perform actions while offline, the app stores those actions locally and executes them later when internet connectivity returns.
+
+### Example
+
+User submits a listing while offline:
+
+-------------------code----------------------
+Post Listing
+-------------------code----------------------
+
+Instead of failing:
+
+-------------------code----------------------
+Store Request Locally
+-------------------code----------------------
+
+When internet returns:
+
+-------------------code----------------------
+Upload Request Automatically
+-------------------code----------------------
+
+### Flow
+
+-------------------code----------------------
+User Creates Listing
+         ↓
+Internet Unavailable
+         ↓
+Store Action Locally
+         ↓
+Connection Restored
+         ↓
+Send Action To Server
+-------------------code----------------------
+
+### Examples
+
+Common applications that use this strategy:
+
+* Email clients
+* Messaging apps
+* Note-taking apps
+* Task management apps
+
+---
+
+# 3. Comparing the Strategies
+
+| Strategy         | Complexity | User Experience | Implementation Cost |
+| ---------------- | ---------- | --------------- | ------------------- |
+| Notify User      | Low        | Basic           | Low                 |
+| Disable Features | Low        | Better          | Low                 |
+| Cache Data       | Medium     | Good            | Medium              |
+| Queue Actions    | High       | Excellent       | High                |
+
+---
+
+# 4. Increasing Complexity
+
+The instructor emphasizes an important point:
+
+-------------------code----------------------
+As functionality increases,
+implementation cost increases.
+-------------------code----------------------
+
+Visual representation:
+
+-------------------code----------------------
+Notify User
+     ↓
+Disable Features
+     ↓
+Cache Data
+     ↓
+Queue Actions
+-------------------code----------------------
+
+Each step requires:
+
+* More code
+* More testing
+* More maintenance
+* More development time
+
+---
+
+# 5. Choosing the Right Strategy
+
+Do not automatically implement all offline features.
+
+Instead, evaluate:
+
+### App Requirements
+
+Ask:
+
+-------------------code----------------------
+What problem am I solving?
+-------------------code----------------------
+
+### User Needs
+
+Ask:
+
+-------------------code----------------------
+What do users expect?
+-------------------code----------------------
+
+### Budget
+
+Ask:
+
+-------------------code----------------------
+How much development time is available?
+-------------------code----------------------
+
+### Project Timeline
+
+Ask:
+
+-------------------code----------------------
+Is the added complexity worth it?
+-------------------code----------------------
+
+---
+
+# 6. Practical Examples
+
+## Small App
+
+You might only need:
+
+-------------------code----------------------
+Offline Notice
++
+Disable Features
+-------------------code----------------------
+
+---
+
+## Marketplace App
+
+You might need:
+
+-------------------code----------------------
+Offline Notice
++
+Caching Listings
+-------------------code----------------------
+
+---
+
+## Messaging App
+
+You may need:
+
+-------------------code----------------------
+Offline Notice
++
+Caching Messages
++
+Queued Message Sending
+-------------------code----------------------
+
+---
+
+## Enterprise App
+
+You may need all strategies:
+
+-------------------code----------------------
+Notify User
+Disable Features
+Cache Data
+Queue Offline Actions
+-------------------code----------------------
+
+---
+
+# Important Notes
+
+### Start Simple
+
+Always begin with the simplest solution that satisfies requirements.
+
+---
+
+### Don't Over-Engineer
+
+Avoid implementing advanced offline features unless they provide clear value.
+
+---
+
+### Consider Maintenance Costs
+
+Offline synchronization can become complex and difficult to maintain.
+
+---
+
+### User Experience Comes First
+
+The best solution is not necessarily the most advanced one.
+
+Choose the solution that provides the most value to users while staying within project constraints.
+
+---
+
+# Architecture Overview
+
+-------------------code----------------------
+                    Offline Support
+                           │
+       ┌───────────────────┼───────────────────┐
+       │                   │                   │
+       ▼                   ▼                   ▼
+ Notify User      Disable Features      Cache Data
+                                               │
+                                               ▼
+                                      Queue Actions
+-------------------code----------------------
+
+---
+
+# Summary
+
+In this lecture, four common strategies for building offline-capable applications were introduced:
+
+1. Notify users when internet is unavailable.
+2. Disable features that require network access.
+3. Cache data locally for offline viewing.
+4. Queue user actions and synchronize them when connectivity returns.
+
+Key takeaway:
+
+* Each strategy increases implementation complexity and development cost.
+* Choose solutions based on user needs, budget, timeline, and project requirements.
+* Not every application needs full offline synchronization.
+* Always balance user experience against development effort.
