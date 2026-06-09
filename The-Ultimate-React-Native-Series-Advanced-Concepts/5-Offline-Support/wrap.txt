@@ -674,3 +674,573 @@ Key takeaway:
 * Choose solutions based on user needs, budget, timeline, and project requirements.
 * Not every application needs full offline synchronization.
 * Always balance user experience against development effort.
+
+
+*** 3- Detecting Network Status ***
+# Detecting Network Connectivity with NetInfo
+
+## 1. Overview
+
+Before implementing offline support, we need a way to determine whether the device has internet access.
+
+React Native and Expo provide a popular library called **NetInfo**, built by the React Native community, for monitoring network status.
+
+With NetInfo, we can:
+
+* Detect network connectivity
+* Determine if internet access is actually available
+* Show offline notifications
+* Disable online-only features
+* React to network status changes in real time
+
+---
+
+# 2. Installing NetInfo
+
+Install the NetInfo package in your Expo project.
+
+-------------------code----------------------
+expo install @react-native-community/netinfo
+-------------------code----------------------
+
+After installation, import it into your application.
+
+-------------------code----------------------
+import NetInfo from "@react-native-community/netinfo";
+-------------------code----------------------
+
+---
+
+# 3. Getting Network Status Once with fetch()
+
+## Purpose
+
+Retrieve network information a single time.
+
+### Example
+
+-------------------code----------------------
+NetInfo.fetch().then((netInfo) => {
+  console.log(netInfo);
+});
+-------------------code----------------------
+
+---
+
+## Returned Object
+
+NetInfo returns an object containing information about the current network state.
+
+Example structure:
+
+-------------------code----------------------
+{
+  isConnected: true,
+  isInternetReachable: true,
+  details: {
+    ipAddress: "...",
+    subnet: "...",
+    ssid: "...",
+  }
+}
+-------------------code----------------------
+
+---
+
+# 4. Understanding Important Properties
+
+## isConnected
+
+Indicates whether a network connection exists.
+
+-------------------code----------------------
+netInfo.isConnected
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+true
+-------------------code----------------------
+
+This means:
+
+-------------------code----------------------text
+Device connected to Wi-Fi or Mobile Network
+-------------------code----------------------
+
+---
+
+## isInternetReachable
+
+Indicates whether the internet is actually accessible.
+
+-------------------code----------------------
+netInfo.isInternetReachable
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+true
+-------------------code----------------------
+
+This means:
+
+-------------------code----------------------text
+Internet access confirmed
+-------------------code----------------------
+
+---
+
+# 5. Why isInternetReachable Is Better
+
+Many developers only check:
+
+-------------------code----------------------
+netInfo.isConnected
+-------------------code----------------------
+
+This is not enough.
+
+### Example Problem
+
+-------------------code----------------------text
+Connected to Wi-Fi
+       ↓
+Router has no internet
+       ↓
+isConnected = true
+       ↓
+Internet unavailable
+-------------------code----------------------
+
+Your app incorrectly assumes internet exists.
+
+---
+
+### Better Approach
+
+Always check:
+
+-------------------code----------------------
+netInfo.isInternetReachable
+-------------------code----------------------
+
+This verifies actual internet availability.
+
+---
+
+# 6. Why isInternetReachable Starts as null
+
+When NetInfo starts:
+
+-------------------code----------------------
+isInternetReachable = null
+-------------------code----------------------
+
+Reason:
+
+-------------------code----------------------text
+NetInfo is testing connectivity
+-------------------code----------------------
+
+Internally it:
+
+1. Contacts a remote server
+2. Waits for a response
+3. Determines internet availability
+
+Example flow:
+
+-------------------code----------------------text
+App Starts
+     ↓
+isInternetReachable = null
+     ↓
+Connectivity Test
+     ↓
+true / false
+-------------------code----------------------
+
+---
+
+# 7. Monitoring Network Changes
+
+Using `fetch()` only checks once.
+
+For real applications, we usually monitor changes continuously.
+
+---
+
+## Using addEventListener()
+
+-------------------code----------------------
+const unsubscribe = NetInfo.addEventListener((netInfo) => {
+  console.log(netInfo);
+});
+-------------------code----------------------
+
+This callback runs every time the network status changes.
+
+---
+
+### Example
+
+-------------------code----------------------text
+Wi-Fi Connected
+      ↓
+Callback Executes
+
+Wi-Fi Disconnected
+      ↓
+Callback Executes
+
+Mobile Data Enabled
+      ↓
+Callback Executes
+-------------------code----------------------
+
+---
+
+# 8. Unsubscribing Is Important
+
+`addEventListener()` returns a function.
+
+-------------------code----------------------
+const unsubscribe = NetInfo.addEventListener(...);
+-------------------code----------------------
+
+Use it when the component is removed.
+
+-------------------code----------------------
+unsubscribe();
+-------------------code----------------------
+
+---
+
+## Why?
+
+Without cleanup:
+
+-------------------code----------------------text
+Component Removed
+       ↓
+Listener Still Running
+       ↓
+Memory Leak
+-------------------code----------------------
+
+This wastes resources and may cause bugs.
+
+---
+
+# 9. Traditional Class Component Approach
+
+### Subscribe
+
+-------------------code----------------------
+componentDidMount() {
+  this.unsubscribe = NetInfo.addEventListener(
+    (netInfo) => {
+      console.log(netInfo);
+    }
+  );
+}
+-------------------code----------------------
+
+---
+
+### Unsubscribe
+
+-------------------code----------------------
+componentWillUnmount() {
+  this.unsubscribe();
+}
+-------------------code----------------------
+
+---
+
+# 10. Using the useNetInfo Hook
+
+In React Native function components, we typically use a hook instead.
+
+Import:
+
+-------------------code----------------------
+import { useNetInfo } from "@react-native-community/netinfo";
+-------------------code----------------------
+
+---
+
+## Usage
+
+-------------------code----------------------
+const netInfo = useNetInfo();
+-------------------code----------------------
+
+---
+
+## Benefits
+
+The hook automatically handles:
+
+* Subscription
+* Updates
+* Cleanup
+* Unsubscription
+
+No manual listener management required.
+
+---
+
+# 11. Example: Display Different UI
+
+Render content conditionally.
+
+-------------------code----------------------
+const netInfo = useNetInfo();
+
+return netInfo.isInternetReachable ? (
+  <OnlineView />
+) : (
+  <OfflineView />
+);
+-------------------code----------------------
+
+---
+
+## Flow
+
+-------------------code----------------------text
+Internet Available
+        ↓
+Render Online View
+
+Internet Unavailable
+        ↓
+Render Offline View
+-------------------code----------------------
+
+---
+
+# 12. Example: Disable a Button
+
+Disable actions requiring internet.
+
+-------------------code----------------------
+<Button
+  disabled={!netInfo.isInternetReachable}
+  title="Submit"
+/>
+-------------------code----------------------
+
+---
+
+## Logic
+
+-------------------code----------------------text
+Internet Available
+        ↓
+Button Enabled
+
+Internet Unavailable
+        ↓
+Button Disabled
+-------------------code----------------------
+
+---
+
+# 13. Common Use Cases
+
+### Offline Banner
+
+-------------------code----------------------
+<OfflineNotice />
+-------------------code----------------------
+
+Show only when:
+
+-------------------code----------------------
+!netInfo.isInternetReachable
+-------------------code----------------------
+
+---
+
+### Disable Uploads
+
+-------------------code----------------------
+disabled={!netInfo.isInternetReachable}
+-------------------code----------------------
+
+---
+
+### Disable Purchases
+
+-------------------code----------------------
+disabled={!netInfo.isInternetReachable}
+-------------------code----------------------
+
+---
+
+### Disable API Actions
+
+-------------------code----------------------
+disabled={!netInfo.isInternetReachable}
+-------------------code----------------------
+
+---
+
+# Step-by-Step Example
+
+## Step 1: Install NetInfo
+
+-------------------code----------------------
+expo install @react-native-community/netinfo
+-------------------code----------------------
+
+---
+
+## Step 2: Import Hook
+
+-------------------code----------------------
+import { useNetInfo } from "@react-native-community/netinfo";
+-------------------code----------------------
+
+---
+
+## Step 3: Get Network State
+
+-------------------code----------------------
+const netInfo = useNetInfo();
+-------------------code----------------------
+
+---
+
+## Step 4: Show Offline Notice
+
+-------------------code----------------------
+{
+  !netInfo.isInternetReachable && (
+    <Text>No Internet Connection</Text>
+  );
+}
+-------------------code----------------------
+
+---
+
+## Step 5: Disable Online Features
+
+-------------------code----------------------
+<Button
+  title="Upload"
+  disabled={!netInfo.isInternetReachable}
+/>
+-------------------code----------------------
+
+---
+
+# Full Final Code
+
+-------------------code----------------------
+import React from "react";
+import { View, Text, Button } from "react-native";
+import { useNetInfo } from "@react-native-community/netinfo";
+
+function App() {
+  const netInfo = useNetInfo();
+
+  return (
+    <View>
+      {!netInfo.isInternetReachable && (
+        <Text>No Internet Connection</Text>
+      )}
+
+      <Button
+        title="Upload"
+        disabled={!netInfo.isInternetReachable}
+      />
+    </View>
+  );
+}
+
+export default App;
+-------------------code----------------------
+
+---
+
+# Important Notes
+
+## Always Check isInternetReachable
+
+Prefer:
+
+-------------------code----------------------
+netInfo.isInternetReachable
+-------------------code----------------------
+
+Instead of:
+
+-------------------code----------------------
+netInfo.isConnected
+-------------------code----------------------
+
+because a device may be connected to a network without having internet access.
+
+---
+
+## Handle null Values
+
+Initially:
+
+-------------------code----------------------
+isInternetReachable === null
+-------------------code----------------------
+
+Wait until NetInfo finishes checking connectivity.
+
+---
+
+## Clean Up Listeners
+
+If using:
+
+-------------------code----------------------
+NetInfo.addEventListener()
+-------------------code----------------------
+
+Always unsubscribe when the component unmounts.
+
+---
+
+## Prefer useNetInfo in Function Components
+
+It automatically handles:
+
+* Subscribing
+* Updating
+* Cleanup
+
+making your code cleaner and safer.
+
+---
+
+# Summary
+
+In this lecture:
+
+* NetInfo was introduced for network detection.
+* `fetch()` retrieves network status once.
+* `addEventListener()` listens for real-time connectivity changes.
+* `isConnected` only indicates network connection.
+* `isInternetReachable` confirms actual internet availability and should be preferred.
+* Event listeners must be unsubscribed to avoid memory leaks.
+* The `useNetInfo()` hook simplifies network monitoring in function components.
+* Network status can be used to:
+
+  * Show offline notices
+  * Disable buttons
+  * Disable online-only features
+  * Improve overall user experience
+
+The next step is implementing data caching so the application can continue working even when internet access is unavailable.
