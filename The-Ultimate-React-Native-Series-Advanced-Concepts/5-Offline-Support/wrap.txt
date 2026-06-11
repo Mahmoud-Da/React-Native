@@ -2044,3 +2044,486 @@ clear()
 ## Best Practice
 
 For API caching and app settings, Async Storage is usually the simplest and most effective local storage solution. Always serialize objects properly and never store sensitive information in Async Storage.
+
+*** 6- Inspecting AsyncStorage ***
+# Debugging Async Storage in React Native
+
+## 1. Why Inspect Async Storage?
+
+When building offline-capable apps, Async Storage becomes an important part of your application.
+
+During development, you may need to:
+
+* Verify data is being saved correctly
+* Check cached API responses
+* Inspect stored objects
+* Remove corrupted data
+* Manually add or update values
+* Clear storage during testing
+
+React Native Debugger provides tools for doing all of this.
+
+---
+
+# 2. Enable Remote Debugging
+
+Before inspecting Async Storage, enable Remote Debugging.
+
+In your React Native application:
+
+-------------------code----------------------
+Debug Remote JS
+-------------------code----------------------
+
+This allows your JavaScript code to run inside React Native Debugger.
+
+---
+
+# 3. Open React Native Debugger
+
+Launch React Native Debugger and connect to the correct port.
+
+For Expo projects used in the course:
+
+-------------------code----------------------
+Port: 19001
+-------------------code----------------------
+
+Once connected, React Native Debugger will be able to inspect your application.
+
+---
+
+# 4. Viewing Async Storage Contents
+
+## Step 1: Open the Console Tab
+
+Inside React Native Debugger:
+
+-------------------code----------------------
+Console
+-------------------code----------------------
+
+---
+
+## Step 2: Run the Built-in Command
+
+Type:
+
+-------------------code----------------------
+showAsyncStorageContentInDev()
+-------------------code----------------------
+
+This special debugging function displays all data currently stored in Async Storage.
+
+Example output:
+
+-------------------code----------------------
+{
+  person: {
+    id: 1
+  }
+}
+-------------------code----------------------
+
+This is the fastest way to inspect stored values.
+
+---
+
+# 5. Accessing Async Storage Directly
+
+React Native Debugger exposes React Native APIs through a special object.
+
+Use:
+
+-------------------code----------------------
+$reactNative
+-------------------code----------------------
+
+This provides access to various React Native APIs.
+
+---
+
+## Access Async Storage
+
+-------------------code----------------------
+$reactNative.AsyncStorage
+-------------------code----------------------
+
+Now you can call Async Storage methods directly from the debugger.
+
+---
+
+# 6. Clearing Async Storage
+
+Sometimes cached data becomes invalid or corrupted.
+
+You can clear all stored data directly from the debugger.
+
+Example:
+
+-------------------code----------------------
+$reactNative.AsyncStorage.clear()
+-------------------code----------------------
+
+After executing:
+
+-------------------code----------------------
+showAsyncStorageContentInDev()
+-------------------code----------------------
+
+Result:
+
+-------------------code----------------------
+{}
+-------------------code----------------------
+
+The storage is now empty.
+
+---
+
+# 7. Typical Debugging Workflow
+
+### Save Data
+
+-------------------code----------------------
+await AsyncStorage.setItem(
+  "person",
+  JSON.stringify({
+    id: 1,
+  })
+);
+-------------------code----------------------
+
+---
+
+### Inspect Data
+
+-------------------code----------------------
+showAsyncStorageContentInDev()
+-------------------code----------------------
+
+Output:
+
+-------------------code----------------------
+{
+  person: {
+    id: 1
+  }
+}
+-------------------code----------------------
+
+---
+
+### Clear Storage
+
+-------------------code----------------------
+$reactNative.AsyncStorage.clear()
+-------------------code----------------------
+
+---
+
+### Verify Again
+
+-------------------code----------------------
+showAsyncStorageContentInDev()
+-------------------code----------------------
+
+Output:
+
+-------------------code----------------------
+{}
+-------------------code----------------------
+
+---
+
+# 8. Common Debugging Scenarios
+
+## Scenario 1: Verify Cached API Data
+
+Suppose listings are cached locally.
+
+Inspect storage:
+
+-------------------code----------------------
+showAsyncStorageContentInDev()
+-------------------code----------------------
+
+Verify:
+
+-------------------code----------------------
+{
+  listings: [...]
+}
+-------------------code----------------------
+
+---
+
+## Scenario 2: Remove Corrupted Cache
+
+Clear storage:
+
+-------------------code----------------------
+$reactNative.AsyncStorage.clear()
+-------------------code----------------------
+
+Restart the app and reload data.
+
+---
+
+## Scenario 3: Check Whether Data Was Saved
+
+If your application appears broken:
+
+1. Save data.
+2. Open debugger.
+3. Inspect Async Storage.
+4. Verify expected keys exist.
+
+---
+
+## Scenario 4: Test First-Time User Experience
+
+Clear storage:
+
+-------------------code----------------------
+$reactNative.AsyncStorage.clear()
+-------------------code----------------------
+
+Restart the app.
+
+This simulates a fresh installation.
+
+---
+
+# 9. Useful Async Storage Methods
+
+## Read a Value
+
+-------------------code----------------------
+$reactNative.AsyncStorage.getItem("person")
+-------------------code----------------------
+
+---
+
+## Save a Value
+
+-------------------code----------------------
+$reactNative.AsyncStorage.setItem(
+  "person",
+  JSON.stringify({
+    id: 1,
+  })
+)
+-------------------code----------------------
+
+---
+
+## Remove a Value
+
+-------------------code----------------------
+$reactNative.AsyncStorage.removeItem("person")
+-------------------code----------------------
+
+---
+
+## Clear Everything
+
+-------------------code----------------------
+$reactNative.AsyncStorage.clear()
+-------------------code----------------------
+
+---
+
+# 10. Debugging Flow Diagram
+
+-------------------code----------------------
+App
+ ↓
+Stores Data
+ ↓
+Async Storage
+ ↓
+React Native Debugger
+ ↓
+Console
+
+Commands:
+- showAsyncStorageContentInDev()
+- $reactNative.AsyncStorage.getItem()
+- $reactNative.AsyncStorage.setItem()
+- $reactNative.AsyncStorage.removeItem()
+- $reactNative.AsyncStorage.clear()
+-------------------code----------------------
+
+---
+
+# Important Notes & Best Practices
+
+## Always Inspect Cached Data During Development
+
+When implementing offline functionality:
+
+-------------------code----------------------
+Save Data
+↓
+Inspect Storage
+↓
+Verify Structure
+↓
+Test Offline Behavior
+-------------------code----------------------
+
+This catches many bugs early.
+
+---
+
+## Clear Storage When Testing
+
+Old cached data can produce misleading results.
+
+Before testing:
+
+-------------------code----------------------
+$reactNative.AsyncStorage.clear()
+-------------------code----------------------
+
+---
+
+## Verify Data Structure
+
+Don't just verify that data exists.
+
+Check:
+
+-------------------code----------------------
+{
+  listings: [...]
+}
+-------------------code----------------------
+
+instead of:
+
+-------------------code----------------------
+{
+  listings: null
+}
+-------------------code----------------------
+
+or
+
+-------------------code----------------------
+{
+  listings: ""
+}
+-------------------code----------------------
+
+---
+
+## Use Debugger Instead of Guessing
+
+If something appears wrong:
+
+-------------------code----------------------
+Don't guess.
+Inspect Async Storage.
+-------------------code----------------------
+
+Many caching issues become obvious once you look at the stored data.
+
+---
+
+## Remember to Disable Remote Debugging
+
+Remote debugging slows down your application.
+
+After debugging:
+
+-------------------code----------------------
+Disable Debug Remote JS
+-------------------code----------------------
+
+to return to normal performance.
+
+---
+
+# Full Example
+
+### Save Data
+
+-------------------code----------------------
+await AsyncStorage.setItem(
+  "person",
+  JSON.stringify({
+    id: 1,
+  })
+);
+-------------------code----------------------
+
+### Inspect Storage
+
+-------------------code----------------------
+showAsyncStorageContentInDev()
+-------------------code----------------------
+
+### Access Async Storage API
+
+-------------------code----------------------
+$reactNative.AsyncStorage
+-------------------code----------------------
+
+### Read Item
+
+-------------------code----------------------
+$reactNative.AsyncStorage.getItem("person")
+-------------------code----------------------
+
+### Remove Item
+
+-------------------code----------------------
+$reactNative.AsyncStorage.removeItem("person")
+-------------------code----------------------
+
+### Clear All Storage
+
+-------------------code----------------------
+$reactNative.AsyncStorage.clear()
+-------------------code----------------------
+
+---
+
+# Summary
+
+## Purpose
+
+React Native Debugger allows developers to inspect and manipulate Async Storage during development.
+
+## Main Steps
+
+1. Enable Remote Debugging.
+2. Open React Native Debugger.
+3. Connect to the correct port.
+4. Use the Console tab.
+
+## Useful Commands
+
+-------------------code----------------------
+showAsyncStorageContentInDev()
+-------------------code----------------------
+
+Displays all Async Storage content.
+
+-------------------code----------------------
+$reactNative.AsyncStorage
+-------------------code----------------------
+
+Provides direct access to Async Storage methods.
+
+-------------------code----------------------
+$reactNative.AsyncStorage.clear()
+-------------------code----------------------
+
+Removes all stored data.
+
+## Key Takeaway
+
+Whenever you work with caching or offline functionality, inspecting Async Storage should be part of your debugging workflow. It allows you to verify stored data, remove corrupted cache entries, and quickly diagnose problems without modifying application code.
