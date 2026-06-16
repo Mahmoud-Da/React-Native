@@ -2,22 +2,38 @@ import React from "react";
 import {
   View,
   StyleSheet,
-  Image,
   TouchableWithoutFeedback,
 } from "react-native";
+
+import { Image } from "react-native-expo-image-cache";
 
 import Text from "./Text";
 import colors from "../config/colors";
 
-function Card({ title, subTitle, imageUrl, onPress }) {
+const Card = ({
+  title,
+  subTitle,
+  imageUrl,
+  thumbnailUrl,
+  onPress,
+}) => {
   return (
     <TouchableWithoutFeedback onPress={onPress}>
       <View style={styles.card}>
-        <Image style={styles.image} source={{ uri: imageUrl }} />
+        <Image
+          style={styles.image}
+          uri={imageUrl}
+          preview={{
+            uri: thumbnailUrl,
+          }}
+          tint="light"
+        />
+
         <View style={styles.detailsContainer}>
           <Text style={styles.title} numberOfLines={1}>
             {title}
           </Text>
+
           <Text style={styles.subTitle} numberOfLines={2}>
             {subTitle}
           </Text>
@@ -25,7 +41,7 @@ function Card({ title, subTitle, imageUrl, onPress }) {
       </View>
     </TouchableWithoutFeedback>
   );
-}
+};
 
 const styles = StyleSheet.create({
   card: {
