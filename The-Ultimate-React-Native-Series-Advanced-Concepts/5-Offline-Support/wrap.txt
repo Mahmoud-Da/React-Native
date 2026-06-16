@@ -3710,3 +3710,678 @@ Application
 -------------------code----------------------
 
 This cache layer will now be used by the API layer so the application can continue working when network connectivity is unavailable.
+
+
+*** 9- Caching Successful Request Data ***
+# Adding Offline Caching to the API Client
+
+## 1. Goal of This Lecture
+
+Previously, we created a reusable cache layer.
+
+Now we want to integrate it into the API layer so that:
+
+1. Data is fetched from the server when online.
+2. Successful responses are stored in cache.
+3. If the server request fails, cached data is returned.
+4. Components continue using the API exactly the same way.
+
+This gives us basic offline support.
+
+---
+
+# 2. Why Not Put Caching in `listings.js`?
+
+A tempting approach would be:
+
+-------------------code----------------------
+const getListings = async () => {
+  const response = await client.get("/listings");
+
+  if (response.ok)
+    cache.store("/listings", response.data);
+
+  return response;
+};
+-------------------code----------------------
+
+Problem:
+
+If later you add:
+
+-------------------code----------------------
+Messages API
+Users API
+Notifications API
+Categories API
+-------------------code----------------------
+
+you would have to duplicate caching logic everywhere.
+
+---
+
+## Better Approach
+
+Implement caching inside:
+
+-------------------code----------------------
+client.js
+-------------------code----------------------
+
+because:
+
+-------------------code----------------------
+client.js
+-------------------code----------------------
+
+is already responsible for talking to the server.
+
+This follows the:
+
+-------------------code----------------------
+Single Responsibility Principle
+-------------------code----------------------
+
+and avoids duplicated code.
+
+---
+
+# 3. Current Client
+
+Your current implementation:
+
+-------------------code----------------------
+import { create } from "apisauce";
+
+const apiClient = create({
+  baseURL: "http://192.168.0.14:9000/api",
+});
+
+export default apiClient;
+-------------------code----------------------
+
+We will extend this file.
+
+---
+
+# 4. Import the Cache Layer
+
+At the top:
+
+-------------------code----------------------
+import cache from "../utility/cache";
+-------------------code----------------------
+
+---
+
+# 5. Save the Original GET Method
+
+Before replacing it:
+
+-------------------code----------------------
+const apiClient = create({
+  baseURL: "http://192.168.0.14:9000/api",
+});
+
+const get = apiClient.get;
+-------------------code----------------------
+
+Now:
+
+-------------------code----------------------
+get(...)
+-------------------code----------------------
+
+contains the original Apisauce implementation.
+
+---
+
+# 6. Override the GET Method
+
+Replace it with a custom implementation.
+
+-------------------code----------------------
+apiClient.get = async (
+  url,
+  params,
+  axiosConfig
+) => {
+
+};
+-------------------code----------------------
+
+---
+
+## Why?
+
+This allows us to:
+
+1. Execute code before the request
+2. Execute code after the request
+3. Keep the same API
+
+Components still call:
+
+-------------------code----------------------
+client.get(...)
+-------------------code----------------------
+
+without knowing anything about caching.
+
+---
+
+# 7. Call the Original GET Method
+
+Inside the new function:
+
+-------------------code----------------------
+const response = await get(
+  url,
+  params,
+  axiosConfig
+);
+-------------------code----------------------
+
+Now we have the normal response from Apisauce.
+
+---
+
+# 8. Cache Successful Responses
+
+If the request succeeds:
+
+-------------------code----------------------
+if (response.ok) {
+}
+-------------------code----------------------
+
+Store the data:
+
+-------------------code----------------------
+await cache.store(
+  url,
+  response.data
+);
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+URL:
+/listings
+
+Cached Data:
+[listings array]
+-------------------code----------------------
+
+---
+
+# 9. Return the Original Response
+
+After caching:
+
+-------------------code----------------------
+return response;
+-------------------code----------------------
+
+Important:
+
+Do NOT return:
+
+-------------------code----------------------
+response.data
+-------------------code----------------------
+
+because the original API contract returns:
+
+-------------------code----------------------
+response
+-------------------code----------------------
+
+not:
+
+-------------------code----------------------
+response.data
+-------------------code----------------------
+
+---
+
+# 10. Handle Failed Requests
+
+If execution reaches this point:
+
+-------------------code----------------------
+response.ok === false
+-------------------code----------------------
+
+Possible reasons:
+
+* No internet
+* Server offline
+* Request timeout
+* Network failure
+
+Now try loading cached data.
+
+---
+
+## Read From Cache
+
+-------------------code----------------------
+const data = await cache.get(url);
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+const data = await cache.get(
+  "/listings"
+);
+-------------------code----------------------
+
+---
+
+# 11. Simulate a Successful Response
+
+If cached data exists:
+
+-------------------code----------------------
+if (data)
+-------------------code----------------------
+
+return:
+
+-------------------code----------------------
+return {
+  ok: true,
+  data,
+};
+-------------------code----------------------
+
+Why?
+
+Because the UI expects:
+
+-------------------code----------------------
+response.ok
+response.data
+-------------------code----------------------
+
+Just like a normal server response.
+
+---
+
+## Example
+
+Server response:
+
+-------------------code----------------------
+{
+  ok: true,
+  data: [...]
+}
+-------------------code----------------------
+
+Cached response:
+
+-------------------code----------------------
+{
+  ok: true,
+  data: [...]
+}
+-------------------code----------------------
+
+The UI cannot tell the difference.
+
+---
+
+# 12. Return the Original Error Response
+
+If no cache exists:
+
+-------------------code----------------------
+return response;
+-------------------code----------------------
+
+This preserves information such as:
+
+-------------------code----------------------
+response.problem
+-------------------code----------------------
+
+Examples:
+
+-------------------code----------------------
+NETWORK_ERROR
+TIMEOUT_ERROR
+SERVER_ERROR
+-------------------code----------------------
+
+Your error handling continues to work normally.
+
+---
+
+# 13. Request Flow
+
+## Online
+
+-------------------code----------------------
+UI
+ |
+ v
+client.get()
+ |
+ v
+Server
+ |
+ v
+Success
+ |
+ v
+Store Cache
+ |
+ v
+Return Response
+-------------------code----------------------
+
+---
+
+## Offline
+
+-------------------code----------------------
+UI
+ |
+ v
+client.get()
+ |
+ v
+Server Request Fails
+ |
+ v
+Read Cache
+ |
+ v
+Return Cached Response
+-------------------code----------------------
+
+---
+
+# 14. Full Final Code (client.js)
+
+Based on your current implementation:
+
+-------------------code----------------------
+import { create } from "apisauce";
+import cache from "../utility/cache";
+
+const apiClient = create({
+  baseURL: "http://192.168.0.14:9000/api",
+});
+
+const get = apiClient.get;
+
+apiClient.get = async (
+  url,
+  params,
+  axiosConfig
+) => {
+  const response = await get(
+    url,
+    params,
+    axiosConfig
+  );
+
+  if (response.ok) {
+    await cache.store(
+      url,
+      response.data
+    );
+
+    return response;
+  }
+
+  const data = await cache.get(url);
+
+  if (data)
+    return {
+      ok: true,
+      data,
+    };
+
+  return response;
+};
+
+export default apiClient;
+-------------------code----------------------
+
+---
+
+# Step-by-Step Execution Example
+
+Suppose:
+
+-------------------code----------------------
+client.get("/listings");
+-------------------code----------------------
+
+### First Request (Online)
+
+-------------------code----------------------
+Server responds successfully
+-------------------code----------------------
+
+Result:
+
+-------------------code----------------------
+response.ok === true
+-------------------code----------------------
+
+Cache stores:
+
+-------------------code----------------------
+/listings
+-------------------code----------------------
+
+↓
+
+-------------------code----------------------
+listings array
+-------------------code----------------------
+
+Response returned normally.
+
+---
+
+### Second Request (Offline)
+
+-------------------code----------------------
+No internet
+-------------------code----------------------
+
+Result:
+
+-------------------code----------------------
+response.ok === false
+-------------------code----------------------
+
+Cache lookup:
+
+-------------------code----------------------
+cache.get("/listings");
+-------------------code----------------------
+
+Returns:
+
+-------------------code----------------------
+[listings array]
+-------------------code----------------------
+
+Simulated response:
+
+-------------------code----------------------
+{
+  ok: true,
+  data: [...]
+}
+-------------------code----------------------
+
+UI still works.
+
+---
+
+# Important Notes & Best Practices
+
+## 1. Cache Only GET Requests
+
+Caching:
+
+-------------------code----------------------
+GET /listings
+GET /messages
+GET /categories
+-------------------code----------------------
+
+usually makes sense.
+
+Avoid caching:
+
+-------------------code----------------------
+POST
+PUT
+PATCH
+DELETE
+-------------------code----------------------
+
+responses by default.
+
+---
+
+## 2. Components Should Not Know About Caching
+
+Bad:
+
+-------------------code----------------------
+const data = await cache.get(...);
+-------------------code----------------------
+
+inside screens.
+
+Good:
+
+-------------------code----------------------
+const response =
+  await client.get(...);
+-------------------code----------------------
+
+Keep caching inside the API layer.
+
+---
+
+## 3. Consider Whitelists/Blacklists
+
+This implementation caches every GET request:
+
+-------------------code----------------------
+await cache.store(url, response.data);
+-------------------code----------------------
+
+In larger apps you may want:
+
+-------------------code----------------------
+Cache:
+- listings
+- categories
+
+Do not cache:
+- notifications
+- live data
+-------------------code----------------------
+
+---
+
+## 4. Images Are Not Cached Yet
+
+Only JSON responses are cached:
+
+-------------------code----------------------
+response.data
+-------------------code----------------------
+
+Images still come from:
+
+-------------------code----------------------
+thumbnail URLs
+image URLs
+-------------------code----------------------
+
+So when offline:
+
+-------------------code----------------------
+Listings appear
+Images do not
+-------------------code----------------------
+
+Image caching will be implemented later.
+
+---
+
+# Summary
+
+## Problem
+
+Without internet:
+
+-------------------code----------------------
+Server request fails
+=
+No listings
+-------------------code----------------------
+
+---
+
+## Solution
+
+Override:
+
+-------------------code----------------------
+apiClient.get()
+-------------------code----------------------
+
+and add caching logic.
+
+---
+
+## Workflow
+
+### Success
+
+-------------------code----------------------
+Server
+  ↓
+Cache Data
+  ↓
+Return Response
+-------------------code----------------------
+
+### Failure
+
+-------------------code----------------------
+Server Fails
+  ↓
+Read Cache
+  ↓
+Return Cached Data
+-------------------code----------------------
+
+---
+
+## Final Benefit
+
+Your screens continue to use:
+
+-------------------code----------------------
+const response =
+  await listingsApi.getListings();
+-------------------code----------------------
+
+without any modifications, while gaining automatic offline support through the API client.
