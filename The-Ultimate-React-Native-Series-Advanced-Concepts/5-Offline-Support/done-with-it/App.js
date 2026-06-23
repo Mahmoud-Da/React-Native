@@ -1,22 +1,17 @@
 import React from "react";
-import { View, Text, Button } from "react-native";
-import { useNetInfo } from "@react-native-community/netinfo";
+import { NavigationContainer } from "@react-navigation/native";
 
-function App() {
-  const netInfo = useNetInfo();
+import OfflineNotice from "./app/components/OfflineNotice";
+import AppNavigator from "./app/navigation/AppNavigator";
 
+export default function App() {
   return (
-    <View>
-      {!netInfo.isInternetReachable && (
-        <Text>No Internet Connection</Text>
-      )}
+    <>
+      <OfflineNotice />
 
-      <Button
-        title="Upload"
-        disabled={!netInfo.isInternetReachable}
-      />
-    </View>
+      <NavigationContainer>
+        <AppNavigator />
+      </NavigationContainer>
+    </>
   );
 }
-
-export default App;

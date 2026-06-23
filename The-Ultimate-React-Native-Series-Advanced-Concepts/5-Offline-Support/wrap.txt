@@ -6081,3 +6081,631 @@ that your users actually need.
 -------------------code----------------------
 
 In many cases, showing an offline notice, disabling certain features, and caching data is more than enough.
+
+*** 14- Showing an Offline Notice ***
+# Showing an Offline Notice with NetInfo
+
+## 1. Overview
+
+In this lecture, an **Offline Notice** component is created to notify users when their device loses internet connectivity.
+
+The implementation is divided into two phases:
+
+1. Build the UI (look and feel).
+2. Connect it to NetInfo so it only appears when the device is offline.
+
+Final behavior:
+
+-------------------code----------------------
+Internet Available
+    ↓
+Notice Hidden
+
+Internet Unavailable
+    ↓
+Show Red Banner:
+"No Internet Connection"
+-------------------code----------------------
+
+---
+
+# 2. Create the OfflineNotice Component
+
+Create a new file:
+
+-------------------code----------------------
+components/
+└── OfflineNotice.js
+-------------------code----------------------
+
+Initial component:
+
+-------------------code----------------------
+import React from "react";
+import { View } from "react-native";
+
+import Text from "./Text";
+
+function OfflineNotice() {
+  return (
+    <View>
+      <Text>No Internet Connection</Text>
+    </View>
+  );
+}
+
+export default OfflineNotice;
+-------------------code----------------------
+
+---
+
+# 3. Add Container Styling
+
+The notice should:
+
+* Have a red background
+* Be displayed at the top of the screen
+* Have a fixed height
+
+### Styles
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: colors.primary,
+    height: 50,
+    position: "absolute",
+  },
+});
+-------------------code----------------------
+
+Apply the style:
+
+-------------------code----------------------
+<View style={styles.container}>
+  <Text>No Internet Connection</Text>
+</View>
+-------------------code----------------------
+
+---
+
+# 4. Use the Component Globally
+
+Instead of adding the component to every screen:
+
+-------------------code----------------------
+Screen A
+Screen B
+Screen C
+Screen D
+-------------------code----------------------
+
+Place it once in `App.js`.
+
+---
+
+## App.js
+
+### Before
+
+-------------------code----------------------
+function App() {
+  return (
+    <NavigationContainer>
+      <AppNavigator />
+    </NavigationContainer>
+  );
+}
+-------------------code----------------------
+
+### After
+
+-------------------code----------------------
+function App() {
+  return (
+    <>
+      <OfflineNotice />
+
+      <NavigationContainer>
+        <AppNavigator />
+      </NavigationContainer>
+    </>
+  );
+}
+-------------------code----------------------
+
+A React Fragment is required because multiple elements are returned.
+
+-------------------code----------------------
+<>
+  ...
+</>
+-------------------code----------------------
+
+---
+
+# 5. Bring the Notice Above Other Screens
+
+Initially the notice may be hidden behind other content.
+
+Use:
+
+-------------------code----------------------
+container: {
+  zIndex: 1,
+}
+-------------------code----------------------
+
+### Updated Style
+
+-------------------code----------------------
+container: {
+  backgroundColor: colors.primary,
+  height: 50,
+  position: "absolute",
+  zIndex: 1,
+}
+-------------------code----------------------
+
+---
+
+# 6. Make It Full Width
+
+### Before
+
+The banner only occupies part of the screen.
+
+### Fix
+
+-------------------code----------------------
+width: "100%",
+-------------------code----------------------
+
+### Updated Style
+
+-------------------code----------------------
+container: {
+  backgroundColor: colors.primary,
+  height: 50,
+  width: "100%",
+  position: "absolute",
+  zIndex: 1,
+}
+-------------------code----------------------
+
+---
+
+# 7. Position Below the Status Bar
+
+Different devices have:
+
+* iPhone notch
+* Android status bar
+
+To avoid overlap:
+
+Install and use Expo Constants.
+
+-------------------code----------------------
+import Constants from "expo-constants";
+-------------------code----------------------
+
+Set the top position:
+
+-------------------code----------------------
+top: Constants.statusBarHeight,
+-------------------code----------------------
+
+### Updated Style
+
+-------------------code----------------------
+container: {
+  backgroundColor: colors.primary,
+  height: 50,
+  width: "100%",
+  position: "absolute",
+  top: Constants.statusBarHeight,
+  zIndex: 1,
+}
+-------------------code----------------------
+
+---
+
+# 8. Center the Text
+
+Use Flexbox.
+
+### Style
+
+-------------------code----------------------
+container: {
+  alignItems: "center",
+  justifyContent: "center",
+}
+-------------------code----------------------
+
+### Result
+
+-------------------code----------------------
++-----------------------------+
+|     No Internet Connection  |
++-----------------------------+
+-------------------code----------------------
+
+Centered horizontally and vertically.
+
+---
+
+# 9. Make the Text White
+
+Create a text style.
+
+-------------------code----------------------
+text: {
+  color: colors.white,
+}
+-------------------code----------------------
+
+Apply it:
+
+-------------------code----------------------
+<Text style={styles.text}>
+  No Internet Connection
+</Text>
+-------------------code----------------------
+
+---
+
+# 10. Add NetInfo Support
+
+Import the hook.
+
+-------------------code----------------------
+import { useNetInfo } from "@react-native-community/netinfo";
+-------------------code----------------------
+
+Call it inside the component.
+
+-------------------code----------------------
+const netInfo = useNetInfo();
+-------------------code----------------------
+
+This provides:
+
+-------------------code----------------------
+{
+  type,
+  isConnected,
+  isInternetReachable,
+  details
+}
+-------------------code----------------------
+
+---
+
+# 11. Understanding NetInfo States
+
+When the app starts:
+
+### State 1
+
+-------------------code----------------------
+{
+  type: "unknown",
+  isInternetReachable: false
+}
+-------------------code----------------------
+
+Meaning:
+
+-------------------code----------------------
+Connection type not determined yet
+-------------------code----------------------
+
+Do NOT show the banner.
+
+---
+
+### State 2
+
+-------------------code----------------------
+{
+  type: "wifi",
+  isInternetReachable: null
+}
+-------------------code----------------------
+
+Meaning:
+
+-------------------code----------------------
+Connection found
+Checking internet access...
+-------------------code----------------------
+
+Do NOT show the banner.
+
+---
+
+### State 3
+
+-------------------code----------------------
+{
+  type: "wifi",
+  isInternetReachable: true
+}
+-------------------code----------------------
+
+Meaning:
+
+-------------------code----------------------
+Internet is available
+-------------------code----------------------
+
+Hide the banner.
+
+---
+
+### State 4
+
+-------------------code----------------------
+{
+  type: "wifi",
+  isInternetReachable: false
+}
+-------------------code----------------------
+
+Meaning:
+
+-------------------code----------------------
+No internet access
+-------------------code----------------------
+
+Show the banner.
+
+---
+
+# 12. Why Not Use isConnected?
+
+Many developers use:
+
+-------------------code----------------------
+netInfo.isConnected
+-------------------code----------------------
+
+This is not enough.
+
+Example:
+
+-------------------code----------------------
+Connected to WiFi
+       +
+WiFi has no internet
+-------------------code----------------------
+
+Result:
+
+-------------------code----------------------
+isConnected === true
+-------------------code----------------------
+
+But internet still does not work.
+
+Always prefer:
+
+-------------------code----------------------
+isInternetReachable
+-------------------code----------------------
+
+---
+
+# 13. Render Conditionally
+
+Show the banner only when:
+
+1. Connection type is known.
+2. Internet is not reachable.
+
+### Important
+
+Explicitly compare against `false`.
+
+Do NOT write:
+
+-------------------code----------------------
+!netInfo.isInternetReachable
+-------------------code----------------------
+
+because:
+
+-------------------code----------------------
+!null === true
+-------------------code----------------------
+
+which would incorrectly show the banner.
+
+---
+
+### Correct Logic
+
+-------------------code----------------------
+if (
+  netInfo.type !== "unknown" &&
+  netInfo.isInternetReachable === false
+)
+  return (
+    <View style={styles.container}>
+      <Text style={styles.text}>
+        No Internet Connection
+      </Text>
+    </View>
+  );
+
+return null;
+-------------------code----------------------
+
+---
+
+# 14. Final OfflineNotice Component
+
+-------------------code----------------------
+import React from "react";
+import { View, StyleSheet } from "react-native";
+import Constants from "expo-constants";
+import { useNetInfo } from "@react-native-community/netinfo";
+
+import colors from "../config/colors";
+import Text from "./Text";
+
+function OfflineNotice() {
+  const netInfo = useNetInfo();
+
+  if (
+    netInfo.type !== "unknown" &&
+    netInfo.isInternetReachable === false
+  )
+    return (
+      <View style={styles.container}>
+        <Text style={styles.text}>
+          No Internet Connection
+        </Text>
+      </View>
+    );
+
+  return null;
+}
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: "center",
+    backgroundColor: colors.primary,
+    height: 50,
+    justifyContent: "center",
+    position: "absolute",
+    top: Constants.statusBarHeight,
+    width: "100%",
+    zIndex: 1,
+  },
+  text: {
+    color: colors.white,
+  },
+});
+
+export default OfflineNotice;
+-------------------code----------------------
+
+---
+
+# 15. App.js Integration
+
+-------------------code----------------------
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+
+import OfflineNotice from "./app/components/OfflineNotice";
+import AppNavigator from "./app/navigation/AppNavigator";
+
+export default function App() {
+  return (
+    <>
+      <OfflineNotice />
+
+      <NavigationContainer>
+        <AppNavigator />
+      </NavigationContainer>
+    </>
+  );
+}
+-------------------code----------------------
+
+---
+
+# Important Notes and Best Practices
+
+### Use NetInfo Hook
+
+Instead of manually subscribing:
+
+-------------------code----------------------
+NetInfo.addEventListener(...)
+-------------------code----------------------
+
+use:
+
+-------------------code----------------------
+const netInfo = useNetInfo();
+-------------------code----------------------
+
+The hook automatically handles:
+
+* Subscribing
+* Unsubscribing
+* Cleanup
+
+---
+
+### Check isInternetReachable
+
+Prefer:
+
+-------------------code----------------------
+netInfo.isInternetReachable
+-------------------code----------------------
+
+over:
+
+-------------------code----------------------
+netInfo.isConnected
+-------------------code----------------------
+
+because a network connection does not guarantee internet access.
+
+---
+
+### Handle Null Properly
+
+Avoid:
+
+-------------------code----------------------
+!netInfo.isInternetReachable
+-------------------code----------------------
+
+Use:
+
+-------------------code----------------------
+netInfo.isInternetReachable === false
+-------------------code----------------------
+
+to prevent false positives during initialization.
+
+---
+
+### Place Global Components at App Level
+
+Components like:
+
+* Offline notices
+* Global loaders
+* Toast notifications
+
+should typically be rendered once in `App.js`.
+
+---
+
+# Summary
+
+This lecture implements a reusable **Offline Notice** component that:
+
+1. Displays a red banner at the top of the screen.
+2. Uses `useNetInfo()` to monitor connectivity.
+3. Appears only when:
+
+   * Network type is known.
+   * Internet is not reachable.
+4. Uses:
+
+   * `position: "absolute"`
+   * `zIndex`
+   * `Constants.statusBarHeight`
+   * Flexbox centering
+
+The component is added once in `App.js`, making it available throughout the entire application without duplicating code across screens.
