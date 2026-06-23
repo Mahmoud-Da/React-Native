@@ -5512,3 +5512,572 @@ The marketplace app achieved offline functionality using only:
 This approach is simple, easy to understand, and requires very little code.
 
 Redux should be introduced only when your application has complex shared state and complicated data flows. For simple caching and offline support, a lightweight cache layer is often the cleaner and more maintainable solution.
+
+*** 12- Storing User Actions When Offline ***
+# Offline Support Strategy #4: Storing User Actions Offline
+
+## 1. Overview
+
+In previous lectures, four strategies for offline support were introduced:
+
+1. Notify the user that they are offline.
+2. Disable features that require internet access.
+3. Cache data locally.
+4. Store user actions locally and execute them later.
+
+This lecture focuses on the fourth strategy, which is the most advanced and most complex.
+
+---
+
+# 2. What Does "Store User Actions" Mean?
+
+Imagine a user performs an action while offline.
+
+Examples:
+
+* Creating a listing
+* Sending a message
+* Updating a profile
+* Posting a comment
+* Deleting an item
+
+Normally:
+
+-------------------code----------------------
+User Action
+      ↓
+API Request
+      ↓
+Server
+-------------------code----------------------
+
+When offline:
+
+-------------------code----------------------
+User Action
+      ↓
+Store Request Locally
+      ↓
+Wait For Internet
+      ↓
+Execute Request Later
+      ↓
+Server
+-------------------code----------------------
+
+The app temporarily saves the action and sends it once connectivity returns.
+
+---
+
+# 3. Example Scenario
+
+### User Creates a Listing While Offline
+
+Normally:
+
+-------------------code----------------------
+await apiClient.post("/listings", listing);
+-------------------code----------------------
+
+But there is no internet connection.
+
+Instead:
+
+-------------------code----------------------
+saveRequestLocally({
+  method: "POST",
+  url: "/listings",
+  data: listing,
+});
+-------------------code----------------------
+
+Later:
+
+-------------------code----------------------
+if (internetAvailable) {
+  executeSavedRequests();
+}
+-------------------code----------------------
+
+The request is replayed automatically.
+
+---
+
+# 4. Where Should This Logic Live?
+
+The instructor recommends placing this logic inside the API layer.
+
+Why?
+
+Because the API layer already handles:
+
+-------------------code----------------------
+Server Communication
+-------------------code----------------------
+
+It is the perfect place to intercept:
+
+-------------------code----------------------
+post()
+put()
+delete()
+-------------------code----------------------
+
+requests.
+
+---
+
+## Example
+
+Current implementation:
+
+-------------------code----------------------
+apiClient.post("/listings", data);
+-------------------code----------------------
+
+Enhanced implementation:
+
+-------------------code----------------------
+apiClient.post = async (url, data) => {
+  const response = await originalPost(url, data);
+
+  if (!response.ok)
+    saveRequestLocally(url, data);
+
+  return response;
+};
+-------------------code----------------------
+
+The UI remains unchanged.
+
+---
+
+# 5. Why This Gets Complicated
+
+For a simple app, the above approach may work.
+
+However, for larger applications, offline synchronization becomes difficult.
+
+---
+
+## Problem 1: Optimistic Updates
+
+### What Are Optimistic Updates?
+
+The UI immediately assumes success before the server confirms it.
+
+Example:
+
+-------------------code----------------------
+setListings([...listings, newListing]);
+-------------------code----------------------
+
+before:
+
+-------------------code----------------------
+await apiClient.post("/listings", newListing);
+-------------------code----------------------
+
+If the request later fails:
+
+-------------------code----------------------
+UI says success
+Server says failure
+-------------------code----------------------
+
+Now the application state is inconsistent.
+
+---
+
+## Problem 2: Retry Logic
+
+Failed requests need retries.
+
+Example:
+
+-------------------code----------------------
+POST /listings
+-------------------code----------------------
+
+fails.
+
+Should the app retry:
+
+-------------------code----------------------
+1 time?
+3 times?
+10 times?
+Forever?
+-------------------code----------------------
+
+Complexity increases quickly.
+
+---
+
+## Problem 3: Conflict Resolution
+
+Imagine:
+
+### Device A
+
+Changes:
+
+-------------------code----------------------
+Price = $100
+-------------------code----------------------
+
+while offline.
+
+---
+
+### Device B
+
+Changes:
+
+-------------------code----------------------
+Price = $150
+-------------------code----------------------
+
+while online.
+
+---
+
+Later Device A reconnects.
+
+Now the server receives:
+
+-------------------code----------------------
+Price = $100
+-------------------code----------------------
+
+Which version wins?
+
+-------------------code----------------------
+$100 ?
+$150 ?
+-------------------code----------------------
+
+This is called a conflict.
+
+Conflict resolution can become very complicated.
+
+---
+
+# 6. Why Building This Yourself Is Difficult
+
+A complete offline synchronization system must handle:
+
+-------------------code----------------------
+Offline Queue
+Retries
+Synchronization
+Conflict Resolution
+Optimistic Updates
+Error Recovery
+-------------------code----------------------
+
+Building all of this from scratch is often not worth the effort.
+
+---
+
+# 7. Recommended Solution: Firebase
+
+Instead of implementing everything manually, the instructor recommends looking at:
+
+Firebase
+
+---
+
+## What Firebase Provides
+
+### Real-Time Database
+
+-------------------code----------------------
+Client
+   ↕
+Firebase
+   ↕
+Cloud Database
+-------------------code----------------------
+
+Changes synchronize automatically.
+
+---
+
+### Offline Storage
+
+When offline:
+
+-------------------code----------------------
+User Changes Data
+        ↓
+Firebase Saves Locally
+-------------------code----------------------
+
+When online:
+
+-------------------code----------------------
+Firebase Synchronizes
+-------------------code----------------------
+
+No extra work required.
+
+---
+
+## Example
+
+-------------------code----------------------
+database.ref("listings").push(listing);
+-------------------code----------------------
+
+Firebase handles:
+
+* Local storage
+* Synchronization
+* Retry logic
+* Offline support
+
+behind the scenes.
+
+---
+
+# 8. Firebase Changes Your Architecture
+
+Current course architecture:
+
+-------------------code----------------------
+React Native App
+        ↓
+Node.js API
+        ↓
+Database
+-------------------code----------------------
+
+With Firebase:
+
+-------------------code----------------------
+React Native App
+        ↓
+Firebase
+        ↓
+Cloud Database
+-------------------code----------------------
+
+Firebase becomes your backend.
+
+Because this significantly changes the application's architecture, it was not included in the course.
+
+---
+
+# 9. Another Option: Realm
+
+Another platform mentioned is:
+
+Realm
+
+---
+
+## What Realm Provides
+
+Realm includes:
+
+* Client-side database
+* Offline-first architecture
+* Automatic synchronization
+* Cloud integration
+
+Architecture:
+
+-------------------code----------------------
+Local Database
+      ↕
+Realm Sync
+      ↕
+Cloud
+-------------------code----------------------
+
+Apps can continue functioning even without internet access.
+
+---
+
+# 10. Do You Really Need This?
+
+The most important lesson of this lecture:
+
+Before implementing advanced offline support, ask:
+
+-------------------code----------------------
+Do users actually need it?
+-------------------code----------------------
+
+Many applications work perfectly without it.
+
+---
+
+## Example: Twitter/X
+
+At the time of recording:
+
+X
+
+did not allow users to post while offline.
+
+If a major platform can operate without full offline posting support, your app may not need it either.
+
+---
+
+# 11. Practical Recommendation
+
+For many applications:
+
+### Good Enough
+
+-------------------code----------------------
+Show Offline Notice
++
+Disable Certain Features
++
+Cache Data
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+Offline Banner
+Cached Listings
+Disabled Post Button
+-------------------code----------------------
+
+Simple and effective.
+
+---
+
+### Avoid Overengineering
+
+Do NOT implement:
+
+-------------------code----------------------
+Offline Queue
+Conflict Resolution
+Synchronization Engine
+Retry System
+-------------------code----------------------
+
+unless the application genuinely requires it.
+
+---
+
+# 12. Example Offline Strategy
+
+### Step 1
+
+Detect network status.
+
+-------------------code----------------------
+const netInfo = useNetInfo();
+-------------------code----------------------
+
+---
+
+### Step 2
+
+Show offline banner.
+
+-------------------code----------------------
+if (!netInfo.isInternetReachable)
+  return <OfflineNotice />;
+-------------------code----------------------
+
+---
+
+### Step 3
+
+Load cached data.
+
+-------------------code----------------------
+const listings = await cache.get("/listings");
+-------------------code----------------------
+
+---
+
+### Step 4
+
+Disable actions requiring internet.
+
+-------------------code----------------------
+<Button
+  disabled={!netInfo.isInternetReachable}
+  title="Post"
+/>
+-------------------code----------------------
+
+This solution covers many real-world apps without introducing unnecessary complexity.
+
+---
+
+# Important Notes
+
+### Do Not Assume Redux Is Required
+
+Offline actions do not automatically require Redux.
+
+You can intercept requests directly in:
+
+-------------------code----------------------
+apiClient.post()
+apiClient.put()
+apiClient.delete()
+-------------------code----------------------
+
+---
+
+### Be Careful With Offline Synchronization
+
+Advanced synchronization introduces:
+
+* Race conditions
+* Data conflicts
+* Duplicate submissions
+* Retry issues
+
+---
+
+### Prefer Existing Solutions
+
+For complex offline requirements:
+
+* Firebase
+* Realm
+
+are generally better than building everything from scratch.
+
+---
+
+# Summary
+
+This lecture introduces the fourth offline-support strategy:
+
+-------------------code----------------------
+Store User Actions Offline
+→ Execute Them Later
+-------------------code----------------------
+
+While this can be implemented by modifying the API layer and storing failed requests locally, it quickly becomes complicated due to:
+
+* Optimistic updates
+* Retry logic
+* Conflict resolution
+* Synchronization challenges
+
+For simple apps, a custom implementation may be sufficient.
+
+For complex apps, platforms like Firebase or Realm provide built-in offline storage and synchronization.
+
+The key takeaway is:
+
+-------------------code----------------------
+Only implement the level of offline support
+that your users actually need.
+-------------------code----------------------
+
+In many cases, showing an offline notice, disabling certain features, and caching data is more than enough.
