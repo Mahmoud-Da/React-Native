@@ -1,0 +1,353 @@
+*** 1- Introduction ***
+# React Native Authentication Section - Introduction
+
+## 1. Overview
+
+This section introduces **Authentication** in React Native applications.
+
+Authentication allows users to:
+
+1. Register for a new account
+2. Log into an existing account
+3. Access protected features
+4. Maintain user identity across app sessions
+
+By the end of this section, the application will support:
+
+* User Registration
+* User Login
+* User Authentication Flow
+
+---
+
+# 2. Why Authentication Matters
+
+Most real-world mobile applications require users to identify themselves before accessing certain features.
+
+Examples:
+
+| App Type         | Authentication Needed |
+| ---------------- | --------------------- |
+| E-commerce       | Yes                   |
+| Social Media     | Yes                   |
+| Banking          | Yes                   |
+| Marketplace Apps | Yes                   |
+| Messaging Apps   | Yes                   |
+
+Authentication helps:
+
+* Protect user data
+* Associate content with users
+* Restrict access to authorized users
+* Provide personalized experiences
+
+---
+
+# 3. New Features to be Added
+
+The current application already supports:
+
+* Viewing listings
+* Creating listings
+* Uploading images
+* Offline support
+* Data caching
+
+Next, authentication features will be added:
+
+### Registration Screen
+
+Allows users to create a new account.
+
+Example fields:
+
+-------------------code----------------------
+Email
+Password
+Name
+-------------------code----------------------
+
+---
+
+### Login Screen
+
+Allows users to sign in using existing credentials.
+
+Example fields:
+
+-------------------code----------------------
+Email
+Password
+-------------------code----------------------
+
+---
+
+### Authenticated User Experience
+
+After login:
+
+-------------------code----------------------
+User → Authenticated
+      → Access App Features
+      → Create Listings
+      → Manage Account
+-------------------code----------------------
+
+---
+
+# 4. Typical Authentication Flow
+
+### Step 1: Register
+
+User submits:
+
+-------------------code----------------------
+{
+  "name": "John",
+  "email": "john@test.com",
+  "password": "123456"
+}
+-------------------code----------------------
+
+Server creates account.
+
+---
+
+### Step 2: Login
+
+User submits:
+
+-------------------code----------------------
+{
+  "email": "john@test.com",
+  "password": "123456"
+}
+-------------------code----------------------
+
+Server verifies credentials.
+
+---
+
+### Step 3: Receive Token
+
+Server returns:
+
+-------------------code----------------------
+{
+  "token": "JWT_TOKEN_HERE"
+}
+-------------------code----------------------
+
+---
+
+### Step 4: Store Authentication Token
+
+The token is stored locally on the device.
+
+Common storage options:
+
+-------------------code----------------------
+SecureStore (recommended)
+AsyncStorage
+-------------------code----------------------
+
+---
+
+### Step 5: Access Protected APIs
+
+Future API requests include the token:
+
+-------------------code----------------------http
+Authorization: Bearer JWT_TOKEN
+-------------------code----------------------
+
+Server verifies the token before returning protected data.
+
+---
+
+# 5. Authentication Architecture
+
+Typical structure:
+
+-------------------code----------------------
+App
+│
+├── Login Screen
+├── Register Screen
+│
+├── Auth API
+│   ├── Login
+│   └── Register
+│
+├── Secure Token Storage
+│
+└── Navigation
+    ├── Auth Navigator
+    └── App Navigator
+-------------------code----------------------
+
+---
+
+# 6. Expected Topics in Upcoming Lessons
+
+The next lessons will likely cover:
+
+### User Registration
+
+Creating accounts through an API.
+
+Example:
+
+-------------------code----------------------
+authApi.register(userInfo);
+-------------------code----------------------
+
+---
+
+### User Login
+
+Sending credentials to the backend.
+
+Example:
+
+-------------------code----------------------
+authApi.login(email, password);
+-------------------code----------------------
+
+---
+
+### JWT Tokens
+
+Understanding and storing authentication tokens.
+
+Example:
+
+-------------------code----------------------
+{
+  "token": "eyJhbGciOi..."
+}
+-------------------code----------------------
+
+---
+
+### Secure Storage
+
+Using Expo Secure Store:
+
+-------------------code----------------------
+import * as SecureStore from "expo-secure-store";
+-------------------code----------------------
+
+To safely store authentication tokens.
+
+---
+
+### Protected Routes
+
+Showing different navigation flows depending on authentication state.
+
+Example:
+
+-------------------code----------------------
+if (user)
+  return <AppNavigator />;
+
+return <AuthNavigator />;
+-------------------code----------------------
+
+---
+
+### Persisting Login State
+
+Keeping users logged in after restarting the app.
+
+Example:
+
+-------------------code----------------------
+SecureStore.getItemAsync("authToken");
+-------------------code----------------------
+
+---
+
+# 7. Important Notes
+
+### Do Not Store Tokens in AsyncStorage
+
+Authentication tokens are sensitive data.
+
+Prefer:
+
+-------------------code----------------------
+expo-secure-store
+-------------------code----------------------
+
+instead of:
+
+-------------------code----------------------
+AsyncStorage
+-------------------code----------------------
+
+---
+
+### Authentication State Should Be Global
+
+Many screens need access to the authenticated user.
+
+Common solutions:
+
+-------------------code----------------------
+React Context
+-------------------code----------------------
+
+or
+
+-------------------code----------------------
+Redux
+-------------------code----------------------
+
+Context is usually sufficient for most apps.
+
+---
+
+### Handle Login Failures Gracefully
+
+Always provide feedback when authentication fails.
+
+Example:
+
+-------------------code----------------------
+alert("Invalid email or password");
+-------------------code----------------------
+
+---
+
+### Separate Authentication Logic
+
+Keep authentication-related code inside dedicated API modules.
+
+Example:
+
+-------------------code----------------------
+api/
+ ├── auth.js
+ ├── users.js
+ └── client.js
+-------------------code----------------------
+
+---
+
+# Summary
+
+In this section, authentication is added to the React Native application.
+
+Main goals:
+
+1. Allow users to register.
+2. Allow users to log in.
+3. Store authentication tokens securely.
+4. Access protected APIs using tokens.
+5. Maintain login state across app launches.
+6. Separate authenticated and unauthenticated navigation flows.
+
+The application will evolve from a simple marketplace app into a fully authenticated mobile application with user accounts and secure access control.
+
