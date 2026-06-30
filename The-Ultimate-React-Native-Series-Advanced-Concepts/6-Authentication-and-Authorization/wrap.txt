@@ -2451,3 +2451,608 @@ authApi.login(email, password);
 * Logged the authentication token on successful login.
 * Temporarily switched to `AuthNavigator` for testing.
 * Prepared the application for the next step: extracting the user object from the authentication token.
+
+*** 6- Extracting the User from the AuthToken ***
+# Understanding JWT (JSON Web Tokens) and Decoding User Information
+
+## 1. Goal
+
+After a successful login, the server returns an authentication token.
+
+Instead of simply logging the token, we want to:
+
+1. Understand what the token contains.
+2. Learn how JWT works.
+3. Decode the token.
+4. Extract the user information.
+5. Prepare for storing the user in the application state.
+
+---
+
+# 2. What Is a JWT?
+
+JWT stands for:
+
+-------------------code----------------------
+JSON Web Token
+-------------------code----------------------
+
+A JWT is a string that contains information about a user and is digitally signed by the server.
+
+Example:
+
+-------------------code----------------------
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+-------------------code----------------------
+
+When a user logs in successfully:
+
+-------------------code----------------------
+Email + Password
+        ↓
+Server Validation
+        ↓
+JWT Returned
+-------------------code----------------------
+
+---
+
+# 3. Inspecting JWT Tokens
+
+Website:
+
+-------------------code----------------------
+https://jwt.io
+-------------------code----------------------
+
+JWT.io provides a debugger where you can:
+
+* Paste a JWT token.
+* Decode it.
+* View its contents.
+
+---
+
+# 4. JWT Structure
+
+A JWT contains three sections:
+
+-------------------code----------------------
+Header.Payload.Signature
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+xxxxx.yyyyy.zzzzz
+-------------------code----------------------
+
+---
+
+## Section 1: Header
+
+Example:
+
+-------------------code----------------------
+{
+  "alg": "HS256",
+  "typ": "JWT"
+}
+-------------------code----------------------
+
+Properties:
+
+| Property | Meaning                      |
+| -------- | ---------------------------- |
+| alg      | Encryption/signing algorithm |
+| typ      | Token type (JWT)             |
+
+Normally, frontend applications don't need to use this section.
+
+---
+
+## Section 2: Payload
+
+This is the important part.
+
+Example:
+
+-------------------code----------------------
+{
+  "_id": "123",
+  "name": "Mosh Hamedani",
+  "email": "mosh@domain.com",
+  "iat": 1590000000
+}
+-------------------code----------------------
+
+Common properties:
+
+| Property | Meaning             |
+| -------- | ------------------- |
+| _id      | User ID             |
+| name     | User name           |
+| email    | User email          |
+| iat      | Issued At timestamp |
+
+This payload is what we want to access in our React Native app.
+
+---
+
+## Section 3: Signature
+
+The signature is used to verify that:
+
+-------------------code----------------------
+The token has not been modified.
+-------------------code----------------------
+
+The server signs the token using:
+
+-------------------code----------------------
+HS256 (HMAC SHA256)
+-------------------code----------------------
+
+and a secret key.
+
+---
+
+# 5. How JWT Signing Works
+
+Conceptually:
+
+-------------------code----------------------
+Header
+   +
+Payload
+   ↓
+Base64 Encoding
+   ↓
+Sign Using Secret Key
+   ↓
+Signature
+-------------------code----------------------
+
+Result:
+
+-------------------code----------------------
+Header.Payload.Signature
+-------------------code----------------------
+
+---
+
+# 6. Secret Key Security
+
+Backend example:
+
+-------------------code----------------------
+jwt.sign(payload, "my-secret-key");
+-------------------code----------------------
+
+This works for learning purposes but is bad practice.
+
+Avoid:
+
+-------------------code----------------------
+const secret = "my-secret-key";
+-------------------code----------------------
+
+inside source code.
+
+### Why?
+
+Anyone with access to:
+
+-------------------code----------------------
+Git Repository
+-------------------code----------------------
+
+can see the secret.
+
+---
+
+## Correct Approach
+
+Store secrets using environment variables.
+
+Example:
+
+-------------------code----------------------
+const secret = process.env.JWT_PRIVATE_KEY;
+-------------------code----------------------
+
+Benefits:
+
+* Safer
+* Not committed to source control
+* Easy to change
+
+---
+
+# 7. Important Security Rule
+
+The payload can be decoded by anyone.
+
+Because of this:
+
+Never store sensitive information inside a JWT.
+
+Bad:
+
+-------------------code----------------------
+{
+  "password": "12345"
+}
+-------------------code----------------------
+
+-------------------code----------------------
+{
+  "creditCard": "1234-5678-9012-3456"
+}
+-------------------code----------------------
+
+---
+
+Good:
+
+-------------------code----------------------
+{
+  "_id": "123",
+  "name": "Mosh",
+  "email": "mosh@domain.com"
+}
+-------------------code----------------------
+
+Public user information is acceptable.
+
+---
+
+# 8. Decoding JWT on the Frontend
+
+To read the payload, install:
+
+-------------------code----------------------
+npm install jwt-decode
+-------------------code----------------------
+
+Version used in the course:
+
+-------------------code----------------------
+2.2.0
+-------------------code----------------------
+
+---
+
+# 9. Import JWT Decode
+
+At the top of LoginScreen:
+
+-------------------code----------------------
+import jwtDecode from "jwt-decode";
+-------------------code----------------------
+
+---
+
+# 10. Current Login Flow
+
+Before:
+
+-------------------code----------------------
+console.log(result.data);
+-------------------code----------------------
+
+This logs:
+
+-------------------code----------------------
+JWT Token
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+eyJhbGciOiJIUzI1NiIs...
+-------------------code----------------------
+
+Not very useful.
+
+---
+
+# 11. Decode the Token
+
+After successful login:
+
+-------------------code----------------------
+const user = jwtDecode(result.data);
+-------------------code----------------------
+
+Explanation:
+
+-------------------code----------------------
+result.data
+-------------------code----------------------
+
+contains:
+
+-------------------code----------------------
+JWT Token
+-------------------code----------------------
+
+The decoder extracts:
+
+-------------------code----------------------
+{
+  _id,
+  name,
+  email,
+  iat
+}
+-------------------code----------------------
+
+---
+
+# 12. Log the User Object
+
+Replace:
+
+-------------------code----------------------
+console.log(result.data);
+-------------------code----------------------
+
+with:
+
+-------------------code----------------------
+const user = jwtDecode(result.data);
+
+console.log(user);
+-------------------code----------------------
+
+---
+
+# 13. Updated Login Flow
+
+### Step 1
+
+User enters credentials.
+
+-------------------code----------------------
+Email
+Password
+-------------------code----------------------
+
+---
+
+### Step 2
+
+Submit form.
+
+-------------------code----------------------
+authApi.login(email, password);
+-------------------code----------------------
+
+---
+
+### Step 3
+
+Server returns JWT.
+
+-------------------code----------------------
+result.data
+-------------------code----------------------
+
+---
+
+### Step 4
+
+Decode JWT.
+
+-------------------code----------------------
+const user = jwtDecode(result.data);
+-------------------code----------------------
+
+---
+
+### Step 5
+
+User object becomes available.
+
+-------------------code----------------------
+console.log(user);
+-------------------code----------------------
+
+Output:
+
+-------------------code----------------------
+{
+  _id: "...",
+  name: "Mosh Hamedani",
+  email: "mosh@domain.com",
+  iat: 123456789
+}
+-------------------code----------------------
+
+---
+
+# 14. Updated LoginScreen Changes
+
+### Import
+
+-------------------code----------------------
+import jwtDecode from "jwt-decode";
+-------------------code----------------------
+
+---
+
+### Success Handling
+
+-------------------code----------------------
+if (!result.ok) {
+  setLoginFailed(true);
+  return;
+}
+
+setLoginFailed(false);
+
+const user = jwtDecode(result.data);
+
+console.log(user);
+-------------------code----------------------
+
+---
+
+# Important Notes
+
+## Decoding Does Not Require Secret Key
+
+You can decode any JWT without knowing the private key.
+
+-------------------code----------------------
+jwtDecode(token);
+-------------------code----------------------
+
+works because decoding is not verification.
+
+---
+
+## Validation Requires Secret Key
+
+Only the server can verify whether a token is valid.
+
+-------------------code----------------------
+Decode → Anyone
+Verify → Server Only
+-------------------code----------------------
+
+---
+
+## Never Trust Frontend-Decoded Data Alone
+
+Always verify JWTs on the server before allowing access to protected resources.
+
+---
+
+## Store Only Public Information
+
+Good:
+
+-------------------code----------------------
+{
+  _id,
+  name,
+  email
+}
+-------------------code----------------------
+
+Bad:
+
+-------------------code----------------------
+{
+  password,
+  creditCard
+}
+-------------------code----------------------
+
+---
+
+# Full Final Code
+
+## LoginScreen.js
+
+-------------------code----------------------
+import React, { useState } from "react";
+import jwtDecode from "jwt-decode";
+
+import authApi from "../api/auth";
+
+import {
+  Form,
+  FormField,
+  SubmitButton,
+  ErrorMessage,
+} from "../components/forms";
+
+function LoginScreen() {
+  const [loginFailed, setLoginFailed] =
+    useState(false);
+
+  const handleSubmit = async ({
+    email,
+    password,
+  }) => {
+    const result = await authApi.login(
+      email,
+      password
+    );
+
+    if (!result.ok) {
+      setLoginFailed(true);
+      return;
+    }
+
+    setLoginFailed(false);
+
+    const user = jwtDecode(result.data);
+
+    console.log(user);
+  };
+
+  return (
+    <Form
+      initialValues={{
+        email: "",
+        password: "",
+      }}
+      onSubmit={handleSubmit}
+    >
+      <ErrorMessage
+        error="Invalid email and/or password."
+        visible={loginFailed}
+      />
+
+      <FormField
+        name="email"
+        placeholder="Email"
+      />
+
+      <FormField
+        name="password"
+        placeholder="Password"
+        secureTextEntry
+      />
+
+      <SubmitButton title="Login" />
+    </Form>
+  );
+}
+
+export default LoginScreen;
+-------------------code----------------------
+
+---
+
+# Summary
+
+* Authentication tokens are JWTs (JSON Web Tokens).
+* JWTs contain:
+
+  * Header
+  * Payload
+  * Signature
+* The payload stores public user information.
+* JWTs are signed using a secret key on the server.
+* Secret keys should never be hardcoded in production.
+* JWT payloads can be decoded without a secret key.
+* Installed and used the `jwt-decode` library.
+* Replaced:
+
+-------------------code----------------------
+console.log(result.data);
+-------------------code----------------------
+
+with:
+
+-------------------code----------------------
+const user = jwtDecode(result.data);
+console.log(user);
+-------------------code----------------------
+
+* The decoded user object is now available and ready to be stored globally in the application during the next authentication step.
