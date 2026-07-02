@@ -3056,3 +3056,689 @@ console.log(user);
 -------------------code----------------------
 
 * The decoded user object is now available and ready to be stored globally in the application during the next authentication step.
+
+*** 7- Storing the Current User ***
+# Authentication with React Context (Storing the Current User Globally)
+
+## 1. Goal
+
+After successfully logging in and decoding the JWT token, we now need to:
+
+1. Store the authenticated user in the root App component.
+2. Make the user available throughout the entire application.
+3. Avoid prop drilling.
+4. Switch between authenticated and unauthenticated navigation automatically.
+
+---
+
+# 2. The Problem: Prop Drilling
+
+After login, we have a user object:
+
+-------------------code----------------------
+{
+  userId: 1,
+  name: "Mosh",
+  email: "mosh@domain.com"
+}
+-------------------code----------------------
+
+Many screens may need access to this object:
+
+* Account Screen
+* Listings Screen
+* Messages Screen
+* Settings Screen
+
+Passing the user through every component manually is called:
+
+**Prop Drilling**
+
+Example:
+
+-------------------code----------------------
+<App user={user}>
+  <Navigator user={user}>
+    <Screen user={user}>
+      <Component user={user} />
+    </Screen>
+  </Navigator>
+</App>
+-------------------code----------------------
+
+This becomes difficult to maintain.
+
+---
+
+# 3. Solution: React Context
+
+React Context allows us to:
+
+* Store shared data in one place.
+* Access it from any component.
+* Avoid prop drilling.
+
+For authentication, Context is a perfect choice because:
+
+* User data is small.
+* User data rarely changes.
+
+---
+
+# 4. Create an Authentication Folder
+
+Create a new folder:
+
+-------------------code----------------------text
+app
+│
+├── auth
+│   └── context.js
+-------------------code----------------------
+
+---
+
+# 5. Create the Context Object
+
+## auth/context.js
+
+-------------------code----------------------
+import React from "react";
+
+const AuthContext = React.createContext();
+
+export default AuthContext;
+-------------------code----------------------
+
+### What does createContext() return?
+
+It creates an object containing:
+
+-------------------code----------------------
+AuthContext.Provider
+AuthContext.Consumer
+-------------------code----------------------
+
+The Provider is what we use to share data with the app.
+
+---
+
+# 6. Add User State to App.js
+
+## Before
+
+-------------------code----------------------
+function App() {
+  return <AuthNavigator />;
+}
+-------------------code----------------------
+
+---
+
+## After
+
+-------------------code----------------------
+const [user, setUser] = useState();
+-------------------code----------------------
+
+Now App.js becomes:
+
+-------------------code----------------------
+function App() {
+  const [user, setUser] = useState();
+
+  return (
+    <>
+      {/* App Content */}
+    </>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 7. Wrap the Application with AuthContext.Provider
+
+Import the context:
+
+-------------------code----------------------
+import AuthContext from "./app/auth/context";
+-------------------code----------------------
+
+Wrap the application:
+
+-------------------code----------------------
+<AuthContext.Provider
+  value={{
+    user,
+    setUser,
+  }}
+>
+  {/* App */}
+</AuthContext.Provider>
+-------------------code----------------------
+
+Now every component below this provider can access:
+
+-------------------code----------------------
+user
+setUser
+-------------------code----------------------
+
+---
+
+# 8. App.js Navigation Logic
+
+Previously:
+
+-------------------code----------------------
+<AuthNavigator />
+-------------------code----------------------
+
+Now we conditionally render navigators.
+
+### If User Exists
+
+Show:
+
+-------------------code----------------------
+<AppNavigator />
+-------------------code----------------------
+
+### If User Does Not Exist
+
+Show:
+
+-------------------code----------------------
+<AuthNavigator />
+-------------------code----------------------
+
+Code:
+
+-------------------code----------------------
+{
+  user ? <AppNavigator /> : <AuthNavigator />;
+}
+-------------------code----------------------
+
+---
+
+# 9. Access Context in LoginScreen
+
+Import:
+
+-------------------code----------------------
+import React, {
+  useState,
+  useContext,
+} from "react";
+-------------------code----------------------
+
+Import AuthContext:
+
+-------------------code----------------------
+import AuthContext from "../auth/context";
+-------------------code----------------------
+
+Inside the component:
+
+-------------------code----------------------
+const authContext =
+  useContext(AuthContext);
+-------------------code----------------------
+
+Now we have access to:
+
+-------------------code----------------------
+authContext.user
+authContext.setUser
+-------------------code----------------------
+
+---
+
+# 10. Update User After Login
+
+Previously:
+
+-------------------code----------------------
+const user = jwtDecode(result.data);
+
+console.log(user);
+-------------------code----------------------
+
+Now:
+
+-------------------code----------------------
+const user = jwtDecode(result.data);
+
+authContext.setUser(user);
+-------------------code----------------------
+
+This updates the user state inside App.js.
+
+---
+
+# 11. Authentication Flow
+
+### User submits login form
+
+-------------------code----------------------
+authApi.login()
+-------------------code----------------------
+
+↓
+
+### Backend validates credentials
+
+-------------------code----------------------
+POST /auth
+-------------------code----------------------
+
+↓
+
+### JWT token returned
+
+-------------------code----------------------
+eyJhbGc...
+-------------------code----------------------
+
+↓
+
+### Decode JWT
+
+-------------------code----------------------
+jwtDecode(token)
+-------------------code----------------------
+
+↓
+
+### Extract user object
+
+-------------------code----------------------
+{
+  userId: 1,
+  name: "Mosh",
+  email: "mosh@domain.com"
+}
+-------------------code----------------------
+
+↓
+
+### Save user in Context
+
+-------------------code----------------------
+authContext.setUser(user);
+-------------------code----------------------
+
+↓
+
+### App.js re-renders
+
+↓
+
+### User exists
+
+-------------------code----------------------
+<AppNavigator />
+-------------------code----------------------
+
+↓
+
+### User enters the application
+
+---
+
+# 12. Update LoginScreen
+
+## Modified LoginScreen.js
+
+-------------------code----------------------
+import React, {
+  useState,
+  useContext,
+} from "react";
+
+import jwtDecode from "jwt-decode";
+
+import authApi from "../api/auth";
+import AuthContext from "../auth/context";
+
+import {
+  Form,
+  FormField,
+  SubmitButton,
+  ErrorMessage,
+} from "../components/forms";
+
+function LoginScreen() {
+  const [loginFailed, setLoginFailed] =
+    useState(false);
+
+  const authContext =
+    useContext(AuthContext);
+
+  const handleSubmit = async ({
+    email,
+    password,
+  }) => {
+    const result = await authApi.login(
+      email,
+      password
+    );
+
+    if (!result.ok) {
+      setLoginFailed(true);
+      return;
+    }
+
+    setLoginFailed(false);
+
+    const user = jwtDecode(
+      result.data
+    );
+
+    authContext.setUser(user);
+  };
+
+  return (
+    <Form
+      initialValues={{
+        email: "",
+        password: "",
+      }}
+      onSubmit={handleSubmit}
+    >
+      <ErrorMessage
+        error="Invalid email and/or password."
+        visible={loginFailed}
+      />
+
+      <FormField
+        name="email"
+        placeholder="Email"
+      />
+
+      <FormField
+        name="password"
+        placeholder="Password"
+        secureTextEntry
+      />
+
+      <SubmitButton title="Login" />
+    </Form>
+  );
+}
+
+export default LoginScreen;
+-------------------code----------------------
+
+---
+
+# 13. Update App.js
+
+## Full App.js
+
+-------------------code----------------------
+import React, { useState } from "react";
+
+import AuthContext from "./app/auth/context";
+
+import AppNavigator from "./app/navigation/AppNavigator";
+import AuthNavigator from "./app/navigation/AuthNavigator";
+
+function App() {
+  const [user, setUser] = useState();
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        setUser,
+      }}
+    >
+      {user ? (
+        <AppNavigator />
+      ) : (
+        <AuthNavigator />
+      )}
+    </AuthContext.Provider>
+  );
+}
+
+export default App;
+-------------------code----------------------
+
+---
+
+# 14. Full Final Code
+
+## auth/context.js
+
+-------------------code----------------------
+import React from "react";
+
+const AuthContext = React.createContext();
+
+export default AuthContext;
+-------------------code----------------------
+
+---
+
+## LoginScreen.js
+
+-------------------code----------------------
+import React, {
+  useState,
+  useContext,
+} from "react";
+
+import jwtDecode from "jwt-decode";
+
+import authApi from "../api/auth";
+import AuthContext from "../auth/context";
+
+import {
+  Form,
+  FormField,
+  SubmitButton,
+  ErrorMessage,
+} from "../components/forms";
+
+function LoginScreen() {
+  const [loginFailed, setLoginFailed] =
+    useState(false);
+
+  const authContext =
+    useContext(AuthContext);
+
+  const handleSubmit = async ({
+    email,
+    password,
+  }) => {
+    const result = await authApi.login(
+      email,
+      password
+    );
+
+    if (!result.ok) {
+      setLoginFailed(true);
+      return;
+    }
+
+    setLoginFailed(false);
+
+    const user = jwtDecode(
+      result.data
+    );
+
+    authContext.setUser(user);
+  };
+
+  return (
+    <Form
+      initialValues={{
+        email: "",
+        password: "",
+      }}
+      onSubmit={handleSubmit}
+    >
+      <ErrorMessage
+        error="Invalid email and/or password."
+        visible={loginFailed}
+      />
+
+      <FormField
+        name="email"
+        placeholder="Email"
+      />
+
+      <FormField
+        name="password"
+        placeholder="Password"
+        secureTextEntry
+      />
+
+      <SubmitButton title="Login" />
+    </Form>
+  );
+}
+
+export default LoginScreen;
+-------------------code----------------------
+
+---
+
+## App.js
+
+-------------------code----------------------
+import React, { useState } from "react";
+
+import AuthContext from "./app/auth/context";
+
+import AppNavigator from "./app/navigation/AppNavigator";
+import AuthNavigator from "./app/navigation/AuthNavigator";
+
+function App() {
+  const [user, setUser] = useState();
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        setUser,
+      }}
+    >
+      {user ? (
+        <AppNavigator />
+      ) : (
+        <AuthNavigator />
+      )}
+    </AuthContext.Provider>
+  );
+}
+
+export default App;
+-------------------code----------------------
+
+---
+
+# Important Notes & Best Practices
+
+### Use React Context for Authentication
+
+Good for:
+
+* Current user
+* Theme settings
+* Language settings
+* Small shared objects
+
+### Avoid Redux for Simple Authentication
+
+React Context is usually enough for:
+
+-------------------code----------------------
+currentUser
+theme
+locale
+-------------------code----------------------
+
+### Context Is Not a Redux Replacement
+
+Use Redux when:
+
+* Data is large
+* Data changes frequently
+* Many screens update the same data
+
+### Authentication State Should Live Near the Root
+
+The App component is usually the best place to store:
+
+-------------------code----------------------
+user
+setUser
+-------------------code----------------------
+
+---
+
+# Summary
+
+In this lecture:
+
+1. Created an authentication context.
+
+-------------------code----------------------
+React.createContext()
+-------------------code----------------------
+
+2. Added user state in App.js.
+
+-------------------code----------------------
+const [user, setUser] = useState();
+-------------------code----------------------
+
+3. Wrapped the application with:
+
+-------------------code----------------------
+<AuthContext.Provider>
+-------------------code----------------------
+
+4. Shared:
+
+-------------------code----------------------
+user
+setUser
+-------------------code----------------------
+
+with the entire app.
+
+5. Used:
+
+-------------------code----------------------
+useContext(AuthContext)
+-------------------code----------------------
+
+inside LoginScreen.
+
+6. Decoded the JWT token.
+
+-------------------code----------------------
+jwtDecode(token)
+-------------------code----------------------
+
+7. Stored the decoded user.
+
+-------------------code----------------------
+authContext.setUser(user);
+-------------------code----------------------
+
+8. Switched navigation automatically:
+
+-------------------code----------------------
+user
+  ? <AppNavigator />
+  : <AuthNavigator />
+-------------------code----------------------
+
+The result is a clean authentication flow where logging in updates the global user state and automatically takes the user into the authenticated part of the application.

@@ -1,7 +1,12 @@
-import React, { useState } from "react";
+import React, {
+  useState,
+  useContext,
+} from "react";
+
 import jwtDecode from "jwt-decode";
 
 import authApi from "../api/auth";
+import AuthContext from "../auth/context";
 
 import {
   Form,
@@ -13,6 +18,9 @@ import {
 function LoginScreen() {
   const [loginFailed, setLoginFailed] =
     useState(false);
+
+  const authContext =
+    useContext(AuthContext);
 
   const handleSubmit = async ({
     email,
@@ -30,9 +38,11 @@ function LoginScreen() {
 
     setLoginFailed(false);
 
-    const user = jwtDecode(result.data);
+    const user = jwtDecode(
+      result.data
+    );
 
-    console.log(user);
+    authContext.setUser(user);
   };
 
   return (
