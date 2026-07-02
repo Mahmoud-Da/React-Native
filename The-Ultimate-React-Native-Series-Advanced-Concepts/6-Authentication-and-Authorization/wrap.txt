@@ -4278,3 +4278,563 @@ subTitle={user.email}
 4. Display the currently logged-in user's information anywhere in the app.
 
 The Account Screen is now connected to the authentication system and automatically displays the correct user information after login.
+
+*** 9- Logging Out the User ***
+# Implementing Logout with React Context
+
+## 1. Goal
+
+Now that authentication is working and the current user is stored in React Context, we need to implement a logout feature.
+
+The good news is that logout is extremely simple because the application's navigation already depends on the user state.
+
+Current logic in `App.js`:
+
+-------------------code----------------------
+{
+  user ? <AppNavigator /> : <AuthNavigator />;
+}
+-------------------code----------------------
+
+If:
+
+-------------------code----------------------
+user !== null
+-------------------code----------------------
+
+the user sees the main application.
+
+If:
+
+-------------------code----------------------
+user === null
+-------------------code----------------------
+
+the user sees the authentication screens.
+
+Therefore, logging out simply means:
+
+-------------------code----------------------
+setUser(null);
+-------------------code----------------------
+
+---
+
+# 2. Understanding the Authentication Flow
+
+## Logged In
+
+User state contains:
+
+-------------------code----------------------
+{
+  userId: 1,
+  name: "Mosh",
+  email: "mosh@domain.com"
+}
+-------------------code----------------------
+
+App.js renders:
+
+-------------------code----------------------
+<AppNavigator />
+-------------------code----------------------
+
+---
+
+## Logged Out
+
+User state becomes:
+
+-------------------code----------------------
+null
+-------------------code----------------------
+
+App.js automatically renders:
+
+-------------------code----------------------
+<AuthNavigator />
+-------------------code----------------------
+
+No manual navigation is required.
+
+React automatically re-renders the application when the user state changes.
+
+---
+
+# 3. Update AccountScreen
+
+Previously:
+
+-------------------code----------------------
+const { user } =
+  useContext(AuthContext);
+-------------------code----------------------
+
+We now also need access to:
+
+-------------------code----------------------
+setUser
+-------------------code----------------------
+
+Update to:
+
+-------------------code----------------------
+const { user, setUser } =
+  useContext(AuthContext);
+-------------------code----------------------
+
+Now AccountScreen can:
+
+* Read the current user
+* Update the current user
+
+---
+
+# 4. Add Logout Handler
+
+Locate the Logout menu item:
+
+-------------------code----------------------
+<ListItem
+  title="Log Out"
+  IconComponent={
+    <Icon
+      name="logout"
+      backgroundColor="#ffe66d"
+    />
+  }
+/>
+-------------------code----------------------
+
+Add an `onPress` handler:
+
+-------------------code----------------------
+<ListItem
+  title="Log Out"
+  IconComponent={
+    <Icon
+      name="logout"
+      backgroundColor="#ffe66d"
+    />
+  }
+  onPress={() => setUser(null)}
+/>
+-------------------code----------------------
+
+---
+
+# 5. What Happens When Logout Is Pressed?
+
+### Step 1
+
+User taps:
+
+-------------------code----------------------text
+Log Out
+-------------------code----------------------
+
+↓
+
+### Step 2
+
+Execute:
+
+-------------------code----------------------
+setUser(null);
+-------------------code----------------------
+
+↓
+
+### Step 3
+
+Context updates
+
+-------------------code----------------------
+user = null;
+-------------------code----------------------
+
+↓
+
+### Step 4
+
+App.js re-renders
+
+-------------------code----------------------
+{
+  user ? (
+    <AppNavigator />
+  ) : (
+    <AuthNavigator />
+  );
+}
+-------------------code----------------------
+
+↓
+
+### Step 5
+
+Since user is null:
+
+-------------------code----------------------
+<AuthNavigator />
+-------------------code----------------------
+
+is rendered.
+
+↓
+
+### Step 6
+
+User returns to:
+
+-------------------code----------------------text
+Welcome Screen
+Login Screen
+Register Screen
+-------------------code----------------------
+
+---
+
+# 6. Code Changes
+
+## Before
+
+-------------------code----------------------
+const { user } =
+  useContext(AuthContext);
+-------------------code----------------------
+
+-------------------code----------------------
+<ListItem
+  title="Log Out"
+  IconComponent={
+    <Icon
+      name="logout"
+      backgroundColor="#ffe66d"
+    />
+  }
+/>
+-------------------code----------------------
+
+---
+
+## After
+
+-------------------code----------------------
+const { user, setUser } =
+  useContext(AuthContext);
+-------------------code----------------------
+
+-------------------code----------------------
+<ListItem
+  title="Log Out"
+  IconComponent={
+    <Icon
+      name="logout"
+      backgroundColor="#ffe66d"
+    />
+  }
+  onPress={() => setUser(null)}
+/>
+-------------------code----------------------
+
+---
+
+# 7. Updated AccountScreen
+
+-------------------code----------------------
+import React, { useContext } from "react";
+import { StyleSheet, View, FlatList } from "react-native";
+
+import { ListItem, ListItemSeparator } from "../components/lists";
+import colors from "../config/colors";
+import Icon from "../components/Icon";
+import routes from "../navigation/routes";
+import Screen from "../components/Screen";
+import AuthContext from "../auth/context";
+
+const menuItems = [
+  {
+    title: "My Listings",
+    icon: {
+      name: "format-list-bulleted",
+      backgroundColor: colors.primary,
+    },
+  },
+  {
+    title: "My Messages",
+    icon: {
+      name: "email",
+      backgroundColor: colors.secondary,
+    },
+    targetScreen: routes.MESSAGES,
+  },
+];
+
+function AccountScreen({ navigation }) {
+  const { user, setUser } =
+    useContext(AuthContext);
+
+  return (
+    <Screen style={styles.screen}>
+      <View style={styles.container}>
+        <ListItem
+          title={user.name}
+          subTitle={user.email}
+          image={require("../assets/mosh.jpg")}
+        />
+      </View>
+
+      <View style={styles.container}>
+        <FlatList
+          data={menuItems}
+          keyExtractor={(menuItem) => menuItem.title}
+          ItemSeparatorComponent={ListItemSeparator}
+          renderItem={({ item }) => (
+            <ListItem
+              title={item.title}
+              IconComponent={
+                <Icon
+                  name={item.icon.name}
+                  backgroundColor={
+                    item.icon.backgroundColor
+                  }
+                />
+              }
+              onPress={() =>
+                navigation.navigate(
+                  item.targetScreen
+                )
+              }
+            />
+          )}
+        />
+      </View>
+
+      <ListItem
+        title="Log Out"
+        IconComponent={
+          <Icon
+            name="logout"
+            backgroundColor="#ffe66d"
+          />
+        }
+        onPress={() => setUser(null)}
+      />
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: {
+    backgroundColor: colors.light,
+  },
+  container: {
+    marginVertical: 20,
+  },
+});
+
+export default AccountScreen;
+-------------------code----------------------
+
+---
+
+# 8. Problem Discovered
+
+The logout feature works correctly.
+
+However, there is a new issue:
+
+### Scenario
+
+1. Login successfully.
+2. Close or reload the app.
+3. App opens again.
+
+Result:
+
+-------------------code----------------------text
+User is logged out.
+-------------------code----------------------
+
+The app returns to:
+
+-------------------code----------------------text
+Welcome Screen
+-------------------code----------------------
+
+instead of keeping the user logged in.
+
+---
+
+# Why Does This Happen?
+
+The user is currently stored only in memory:
+
+-------------------code----------------------
+const [user, setUser] =
+  useState();
+-------------------code----------------------
+
+When the app restarts:
+
+-------------------code----------------------text
+Memory is cleared.
+-------------------code----------------------
+
+So:
+
+-------------------code----------------------
+user = undefined
+-------------------code----------------------
+
+and App.js renders:
+
+-------------------code----------------------
+<AuthNavigator />
+-------------------code----------------------
+
+---
+
+# What Needs to Happen Next?
+
+We need to persist authentication data.
+
+Typically:
+
+1. Save the authentication token locally.
+2. Restore it when the app starts.
+3. Automatically recreate the user object.
+4. Keep users logged in between app launches.
+
+This will be implemented in the next lesson.
+
+---
+
+# Important Notes & Best Practices
+
+## Logout Should Clear Authentication State
+
+Always remove:
+
+-------------------code----------------------
+user
+token
+session
+-------------------code----------------------
+
+when logging out.
+
+In this lecture:
+
+-------------------code----------------------
+setUser(null);
+-------------------code----------------------
+
+is enough because authentication depends entirely on the user state.
+
+---
+
+## Let Navigation Follow State
+
+Good approach:
+
+-------------------code----------------------
+user
+  ? <AppNavigator />
+  : <AuthNavigator />
+-------------------code----------------------
+
+Avoid manually navigating:
+
+-------------------code----------------------
+navigation.navigate(...)
+-------------------code----------------------
+
+during login/logout when authentication state already controls navigation.
+
+---
+
+## Context Makes Logout Easy
+
+Without Context:
+
+-------------------code----------------------
+AccountScreen
+→ Navigator
+→ App
+-------------------code----------------------
+
+would need multiple callbacks and props.
+
+With Context:
+
+-------------------code----------------------
+setUser(null);
+-------------------code----------------------
+
+can be called directly from any screen.
+
+---
+
+# Full Final Code
+
+-------------------code----------------------
+const { user, setUser } =
+  useContext(AuthContext);
+
+<ListItem
+  title="Log Out"
+  IconComponent={
+    <Icon
+      name="logout"
+      backgroundColor="#ffe66d"
+    />
+  }
+  onPress={() => setUser(null)}
+/>;
+-------------------code----------------------
+
+---
+
+# Summary
+
+In this lecture you learned how to implement logout using React Context.
+
+### Steps
+
+1. Access authentication context:
+
+-------------------code----------------------
+const { user, setUser } =
+  useContext(AuthContext);
+-------------------code----------------------
+
+2. Handle logout:
+
+-------------------code----------------------
+setUser(null);
+-------------------code----------------------
+
+3. React re-renders the application.
+
+4. App.js evaluates:
+
+-------------------code----------------------
+user
+  ? <AppNavigator />
+  : <AuthNavigator />
+-------------------code----------------------
+
+5. Since the user is now `null`, the app automatically displays the authentication screens.
+
+### Key Takeaway
+
+Because navigation is driven by authentication state, logout becomes extremely simple:
+
+-------------------code----------------------
+setUser(null);
+-------------------code----------------------
+
+No manual navigation logic is required. The next step is to persist authentication data so users remain logged in after restarting the app.
