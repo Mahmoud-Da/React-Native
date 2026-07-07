@@ -4838,3 +4838,593 @@ setUser(null);
 -------------------code----------------------
 
 No manual navigation logic is required. The next step is to persist authentication data so users remain logged in after restarting the app.
+
+*** 10- Persisting the Authentication State Across Restarts ***
+# Authentication - Persisting Login with Secure Store
+
+## 1. Goal
+
+Previously, authentication only existed in memory.
+
+That meant:
+
+* User logs in successfully.
+* User reloads or restarts the app.
+* User is logged out automatically.
+
+The solution is to:
+
+1. Store the authentication token securely.
+2. Restore it when the app starts.
+3. Remove it when the user logs out.
+
+This creates a persistent login experience.
+
+---
+
+# 2. Why Use Secure Store Instead of AsyncStorage?
+
+Authentication tokens are sensitive.
+
+Never store authentication tokens inside AsyncStorage because:
+
+* Data is not encrypted.
+* Anyone with device access may read it.
+
+Instead, Expo provides **Secure Store**.
+
+Advantages:
+
+* Encrypted storage
+* Designed for passwords and authentication tokens
+* Persistent across app restarts
+* Easy API
+
+Install it:
+
+-------------------code----------------------
+expo install expo-secure-store
+-------------------code----------------------
+
+---
+
+# 3. Create an Authentication Storage Layer
+
+Instead of using SecureStore everywhere, create an abstraction.
+
+-------------------code----------------------
+app/
+    auth/
+        storage.js
+-------------------code----------------------
+
+Benefits:
+
+* One place to manage tokens
+* Easy to modify later
+* Cleaner code
+* Reusable
+
+---
+
+# 4. Import Secure Store
+
+-------------------code----------------------
+import * as SecureStore from "expo-secure-store";
+-------------------code----------------------
+
+---
+
+# 5. Create a Storage Key
+
+Avoid hardcoding strings repeatedly.
+
+-------------------code----------------------
+const key = "authToken";
+-------------------code----------------------
+
+---
+
+# 6. Store the Authentication Token
+
+Create a function:
+
+-------------------code----------------------
+const storeToken = async (authToken) => {
+  try {
+    await SecureStore.setItemAsync(key, authToken);
+  } catch (error) {
+    console.log("Error storing auth token", error);
+  }
+};
+-------------------code----------------------
+
+Steps:
+
+1. Receive token.
+2. Save it securely.
+3. Handle errors.
+
+---
+
+# 7. Retrieve the Authentication Token
+
+-------------------code----------------------
+const getToken = async () => {
+  try {
+    return await SecureStore.getItemAsync(key);
+  } catch (error) {
+    console.log("Error getting auth token", error);
+  }
+};
+-------------------code----------------------
+
+Steps:
+
+1. Read token.
+2. Return it.
+3. Handle failures.
+
+---
+
+# 8. Remove the Authentication Token
+
+When the user logs out:
+
+-------------------code----------------------
+const removeToken = async () => {
+  try {
+    await SecureStore.deleteItemAsync(key);
+  } catch (error) {
+    console.log("Error removing auth token", error);
+  }
+};
+-------------------code----------------------
+
+---
+
+# 9. Export the Storage Service
+
+-------------------code----------------------
+export default {
+  getToken,
+  removeToken,
+  storeToken,
+};
+-------------------code----------------------
+
+---
+
+# 10. Store the Token After Login
+
+## Before
+
+-------------------code----------------------
+const user = jwtDecode(result.data);
+
+authContext.setUser(user);
+-------------------code----------------------
+
+---
+
+## After
+
+Import storage.
+
+-------------------code----------------------
+import authStorage from "../auth/storage";
+-------------------code----------------------
+
+Store the token immediately after login.
+
+-------------------code----------------------
+await authStorage.storeToken(result.data);
+
+const user = jwtDecode(result.data);
+
+authContext.setUser(user);
+-------------------code----------------------
+
+Flow:
+
+-------------------code----------------------
+Login
+
+↓
+
+Receive JWT
+
+↓
+
+Store JWT securely
+
+↓
+
+Decode JWT
+
+↓
+
+Update React Context
+-------------------code----------------------
+
+---
+
+# 11. Restore the User When the App Starts
+
+Go to:
+
+-------------------code----------------------
+App.js
+-------------------code----------------------
+
+Import:
+
+-------------------code----------------------
+import jwtDecode from "jwt-decode";
+import authStorage from "./app/auth/storage";
+-------------------code----------------------
+
+Create a restore function.
+
+-------------------code----------------------
+const restoreToken = async () => {
+  const token = await authStorage.getToken();
+
+  if (!token) return;
+
+  setUser(jwtDecode(token));
+};
+-------------------code----------------------
+
+---
+
+# 12. Run It Once When the App Starts
+
+Use `useEffect`.
+
+-------------------code----------------------
+useEffect(() => {
+  restoreToken();
+}, []);
+-------------------code----------------------
+
+Flow:
+
+-------------------code----------------------
+App Starts
+
+↓
+
+Read Secure Store
+
+↓
+
+Token exists?
+
+↓
+
+YES
+
+↓
+
+Decode Token
+
+↓
+
+Restore User
+
+↓
+
+Navigate directly to App
+-------------------code----------------------
+
+---
+
+# 13. Remove Token on Logout
+
+In `AccountScreen`.
+
+Import:
+
+-------------------code----------------------
+import authStorage from "../auth/storage";
+-------------------code----------------------
+
+Create:
+
+-------------------code----------------------
+const handleLogout = () => {
+  setUser(null);
+  authStorage.removeToken();
+};
+-------------------code----------------------
+
+Use it.
+
+-------------------code----------------------
+<ListItem
+  title="Log Out"
+  IconComponent={
+    <Icon
+      name="logout"
+      backgroundColor="#ffe66d"
+    />
+  }
+  onPress={handleLogout}
+/>
+-------------------code----------------------
+
+Flow:
+
+-------------------code----------------------
+Logout
+
+↓
+
+Clear React Context
+
+↓
+
+Delete Secure Store Token
+
+↓
+
+Navigate to Login Screen
+-------------------code----------------------
+
+---
+
+# 14. Authentication Lifecycle
+
+-------------------code----------------------
+User Logs In
+      │
+      ▼
+Receive JWT Token
+      │
+      ▼
+Store Token Securely
+      │
+      ▼
+Decode JWT
+      │
+      ▼
+Save User in Context
+      │
+      ▼
+User Uses App
+      │
+      ▼
+App Restarts
+      │
+      ▼
+Read Secure Store
+      │
+      ▼
+Decode Token
+      │
+      ▼
+Restore User
+      │
+      ▼
+User Stays Logged In
+-------------------code----------------------
+
+---
+
+# 15. Current Limitation
+
+After restoring the token, a small issue remains.
+
+When the app launches:
+
+-------------------code----------------------
+Welcome Screen
+
+↓
+
+Very brief flicker
+
+↓
+
+Home Screen
+-------------------code----------------------
+
+Reason:
+
+* React renders before the token is restored.
+* Navigation briefly shows the authentication flow.
+
+The next lecture introduces a loading screen to eliminate this flicker.
+
+---
+
+# 16. Important Notes
+
+### Never store JWT tokens in AsyncStorage.
+
+Use Secure Store for sensitive data.
+
+---
+
+### Always abstract storage.
+
+Instead of:
+
+-------------------code----------------------
+SecureStore.setItemAsync(...)
+-------------------code----------------------
+
+everywhere, use:
+
+-------------------code----------------------
+authStorage.storeToken(...)
+-------------------code----------------------
+
+---
+
+### Decode the JWT.
+
+The token contains the user information.
+
+-------------------code----------------------
+const user = jwtDecode(token);
+-------------------code----------------------
+
+No additional API request is needed.
+
+---
+
+### Restore authentication only once.
+
+-------------------code----------------------
+useEffect(() => {
+    restoreToken();
+}, []);
+-------------------code----------------------
+
+---
+
+### Remove tokens on logout.
+
+Otherwise the app will automatically log the user back in.
+
+---
+
+### Handle Secure Store errors.
+
+Wrap all storage operations in `try...catch`.
+
+---
+
+# 17. Best Practices
+
+* Store authentication tokens only in Secure Store.
+* Keep all authentication storage logic in one module.
+* Decode JWT instead of making another request to fetch user info.
+* Restore the user automatically when the app starts.
+* Remove tokens during logout.
+* Handle storage errors gracefully.
+* Use React Context for authentication state.
+
+---
+
+# 18. Full Final Code
+
+## `auth/storage.js`
+
+-------------------code----------------------
+import * as SecureStore from "expo-secure-store";
+
+const key = "authToken";
+
+const storeToken = async (authToken) => {
+  try {
+    await SecureStore.setItemAsync(key, authToken);
+  } catch (error) {
+    console.log("Error storing auth token", error);
+  }
+};
+
+const getToken = async () => {
+  try {
+    return await SecureStore.getItemAsync(key);
+  } catch (error) {
+    console.log("Error getting auth token", error);
+  }
+};
+
+const removeToken = async () => {
+  try {
+    await SecureStore.deleteItemAsync(key);
+  } catch (error) {
+    console.log("Error removing auth token", error);
+  }
+};
+
+export default {
+  storeToken,
+  getToken,
+  removeToken,
+};
+-------------------code----------------------
+
+---
+
+## LoginScreen (relevant changes)
+
+-------------------code----------------------
+import authStorage from "../auth/storage";
+import jwtDecode from "jwt-decode";
+
+const handleSubmit = async ({ email, password }) => {
+  const result = await authApi.login(email, password);
+
+  if (!result.ok) {
+    setLoginFailed(true);
+    return;
+  }
+
+  setLoginFailed(false);
+
+  await authStorage.storeToken(result.data);
+
+  const user = jwtDecode(result.data);
+
+  authContext.setUser(user);
+};
+-------------------code----------------------
+
+---
+
+## App.js (relevant changes)
+
+-------------------code----------------------
+import React, { useEffect, useState } from "react";
+import jwtDecode from "jwt-decode";
+import authStorage from "./app/auth/storage";
+
+const [user, setUser] = useState();
+
+useEffect(() => {
+  restoreToken();
+}, []);
+
+const restoreToken = async () => {
+  const token = await authStorage.getToken();
+
+  if (!token) return;
+
+  setUser(jwtDecode(token));
+};
+-------------------code----------------------
+
+---
+
+## AccountScreen (relevant changes)
+
+-------------------code----------------------
+import authStorage from "../auth/storage";
+
+const handleLogout = () => {
+  setUser(null);
+  authStorage.removeToken();
+};
+
+<ListItem
+  title="Log Out"
+  IconComponent={
+    <Icon
+      name="logout"
+      backgroundColor="#ffe66d"
+    />
+  }
+  onPress={handleLogout}
+/>;
+-------------------code----------------------
+
+---
+
+# 19. Summary
+
+In this lecture, authentication was made persistent by securely storing the JWT in Expo Secure Store. A dedicated `auth/storage.js` module was created to encapsulate storing, retrieving, and removing the token. After a successful login, the token is saved, decoded with `jwt-decode`, and the user is stored in React Context. When the app starts, the token is restored from Secure Store, decoded again, and the user remains logged in without re-entering credentials. Logging out clears both the React Context and the stored token. The only remaining issue is a brief navigation flicker on app startup, which will be resolved in the next lecture using a loading screen.
