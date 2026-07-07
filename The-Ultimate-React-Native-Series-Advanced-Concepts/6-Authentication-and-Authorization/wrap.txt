@@ -5879,3 +5879,535 @@ export default App;
 # 17. Summary
 
 This lecture improves the application's startup experience by eliminating the brief authentication screen flicker. Instead of rendering the app immediately, Expo's `AppLoading` component keeps the splash screen visible while asynchronous initialization tasks—such as restoring the JWT token from Secure Store—are completed. Once initialization finishes, the app renders normally, creating a smooth transition directly to the correct screen. The lecture also demonstrates how to customize the splash screen by providing a branded image, setting `resizeMode` to `"cover"` so it fills the entire display, and matching the splash `backgroundColor` to the image to avoid white flashes during startup.
+
+*** 12- Refactoring ***
+# Authentication - Refactoring Authentication Logic
+
+## 1. Goal
+
+The authentication flow works correctly, but the `App` component has become responsible for too many authentication details.
+
+Previously, `App.js`:
+
+* Read the token from storage.
+* Decoded the JWT.
+* Set the current user.
+
+This violates the principle of **separation of concerns**.
+
+The goal is to move authentication-related logic into the authentication module so the `App` component only coordinates the process.
+
+---
+
+# 2. The Problem
+
+Previously, `App.js` looked similar to this:
+
+-------------------code----------------------
+const restoreToken = async () => {
+  const token = await authStorage.getToken();
+
+  if (!token) return;
+
+  setUser(jwtDecode(token));
+};
+-------------------code----------------------
+
+Notice that `App.js` knows:
+
+* where the token is stored,
+* how to retrieve it,
+* how to decode it,
+* how to create a user object.
+
+These implementation details belong to the authentication layer, not the application entry point.
+
+---
+
+# 3. Apply Separation of Concerns
+
+Think of `App.js` as a manager.
+
+A good manager:
+
+* delegates work,
+* doesn't perform every task personally.
+
+Instead of:
+
+-------------------code----------------------
+App
+ ├── Read SecureStore
+ ├── Decode JWT
+ ├── Create User
+ └── Set User
+-------------------code----------------------
+
+It should simply do:
+
+-------------------code----------------------
+App
+
+↓
+
+Ask Auth Module
+
+↓
+
+"Give me the current user."
+
+↓
+
+Receive User
+
+↓
+
+Set User
+-------------------code----------------------
+
+The authentication module hides all internal implementation details.
+
+---
+
+# 4. Update auth/storage.js
+
+Previously, this module exported:
+
+-------------------code----------------------
+export default {
+  storeToken,
+  getToken,
+  removeToken,
+};
+-------------------code----------------------
+
+The `getToken()` function exposes too much detail.
+
+Instead, create a higher-level function.
+
+---
+
+# 5. Import jwt-decode
+
+-------------------code----------------------
+import jwtDecode from "jwt-decode";
+-------------------code----------------------
+
+The authentication module is now responsible for decoding JWTs.
+
+---
+
+# 6. Create getUser()
+
+-------------------code----------------------
+const getUser = async () => {
+  const token = await getToken();
+
+  if (token)
+    return jwtDecode(token);
+
+  return null;
+};
+-------------------code----------------------
+
+This function:
+
+1. Retrieves the token.
+2. Decodes it.
+3. Returns the user.
+4. Returns `null` if no token exists.
+
+The caller never needs to know how this happens.
+
+---
+
+# 7. Cleaner Version
+
+The lecture simplifies it further.
+
+-------------------code----------------------
+const getUser = async () => {
+  const token = await getToken();
+
+  return token ? jwtDecode(token) : null;
+};
+-------------------code----------------------
+
+This is equivalent but shorter and easier to read.
+
+---
+
+# 8. Export getUser()
+
+Instead of exporting `getToken()`:
+
+-------------------code----------------------
+export default {
+  storeToken,
+  removeToken,
+  getUser,
+};
+-------------------code----------------------
+
+Now other modules only interact with users, not raw tokens.
+
+---
+
+# 9. Simplify App.js
+
+Previously:
+
+-------------------code----------------------
+const token = await authStorage.getToken();
+
+if (token)
+    setUser(jwtDecode(token));
+-------------------code----------------------
+
+Now:
+
+-------------------code----------------------
+const user = await authStorage.getUser();
+
+if (user)
+    setUser(user);
+-------------------code----------------------
+
+The application no longer knows anything about JWT decoding.
+
+---
+
+# 10. Rename restoreToken()
+
+The function no longer restores a token.
+
+It restores a user.
+
+Rename:
+
+-------------------code----------------------
+restoreToken
+-------------------code----------------------
+
+to
+
+-------------------code----------------------
+restoreUser
+-------------------code----------------------
+
+Good naming makes code much easier to understand.
+
+---
+
+# 11. Remove Unnecessary Imports
+
+Because decoding now happens inside the authentication module:
+
+Remove:
+
+-------------------code----------------------
+import jwtDecode from "jwt-decode";
+-------------------code----------------------
+
+Also, since `AppLoading` already replaced the earlier implementation:
+
+Remove:
+
+-------------------code----------------------
+useEffect
+-------------------code----------------------
+
+if it is no longer used.
+
+The `App` component becomes much cleaner.
+
+---
+
+# 12. New Application Flow
+
+Before:
+
+-------------------code----------------------
+App Starts
+
+↓
+
+Read Token
+
+↓
+
+Decode JWT
+
+↓
+
+Create User
+
+↓
+
+Set User
+-------------------code----------------------
+
+After:
+
+-------------------code----------------------
+App Starts
+
+↓
+
+authStorage.getUser()
+
+↓
+
+Authentication Module
+
+↓
+
+Read Token
+
+↓
+
+Decode JWT
+
+↓
+
+Return User
+
+↓
+
+Set User
+-------------------code----------------------
+
+The authentication details are fully encapsulated.
+
+---
+
+# 13. Why This Is Better
+
+This refactoring follows several software engineering principles.
+
+### Separation of Concerns
+
+Each module has one responsibility.
+
+`App.js`
+
+* Starts the application.
+* Displays navigation.
+
+`auth/storage.js`
+
+* Handles authentication persistence.
+* Decodes JWTs.
+* Retrieves users.
+
+---
+
+### Encapsulation
+
+The rest of the application does not know:
+
+* where tokens are stored,
+* how JWTs work,
+* how decoding is performed.
+
+If authentication changes later, only one module needs updating.
+
+---
+
+### Better Abstraction
+
+Instead of asking:
+
+-------------------code----------------------
+Give me the authentication token.
+-------------------code----------------------
+
+The application asks:
+
+-------------------code----------------------
+Give me the current user.
+-------------------code----------------------
+
+This is a higher-level abstraction and results in cleaner code.
+
+---
+
+# 14. Before vs After
+
+## Before
+
+-------------------code----------------------
+App
+
+↓
+
+Get Token
+
+↓
+
+Decode Token
+
+↓
+
+Create User
+
+↓
+
+Set User
+-------------------code----------------------
+
+---
+
+## After
+
+-------------------code----------------------
+App
+
+↓
+
+Get User
+
+↓
+
+Set User
+-------------------code----------------------
+
+The authentication module performs all intermediate work.
+
+---
+
+# 15. Important Notes
+
+### Hide implementation details.
+
+Other modules should not know how authentication works internally.
+
+---
+
+### Export meaningful functions.
+
+Instead of:
+
+-------------------code----------------------
+getToken()
+-------------------code----------------------
+
+prefer:
+
+-------------------code----------------------
+getUser()
+-------------------code----------------------
+
+The function describes what callers actually need.
+
+---
+
+### Keep components simple.
+
+The `App` component should coordinate the application, not implement authentication logic.
+
+---
+
+### Choose meaningful names.
+
+Renaming:
+
+-------------------code----------------------
+restoreToken
+-------------------code----------------------
+
+to
+
+-------------------code----------------------
+restoreUser
+-------------------code----------------------
+
+makes the function's purpose immediately obvious.
+
+---
+
+# 16. Best Practices
+
+* Keep authentication logic inside the authentication module.
+* Do not expose raw JWT tokens unless necessary.
+* Use descriptive function names.
+* Hide implementation details behind abstractions.
+* Keep `App.js` focused on application startup and navigation.
+* Follow the Single Responsibility Principle (SRP).
+* Prefer returning business objects (`User`) instead of implementation details (`Token`).
+
+---
+
+# 17. Full Final Code
+
+## auth/storage.js
+
+-------------------code----------------------
+import * as SecureStore from "expo-secure-store";
+import jwtDecode from "jwt-decode";
+
+const key = "authToken";
+
+const storeToken = async (authToken) => {
+  try {
+    await SecureStore.setItemAsync(key, authToken);
+  } catch (error) {
+    console.log("Error storing auth token", error);
+  }
+};
+
+const getToken = async () => {
+  try {
+    return await SecureStore.getItemAsync(key);
+  } catch (error) {
+    console.log("Error getting auth token", error);
+  }
+};
+
+const getUser = async () => {
+  const token = await getToken();
+
+  return token ? jwtDecode(token) : null;
+};
+
+const removeToken = async () => {
+  try {
+    await SecureStore.deleteItemAsync(key);
+  } catch (error) {
+    console.log("Error removing auth token", error);
+  }
+};
+
+export default {
+  storeToken,
+  removeToken,
+  getUser,
+};
+-------------------code----------------------
+
+---
+
+## App.js (relevant changes)
+
+-------------------code----------------------
+const restoreUser = async () => {
+  const user = await authStorage.getUser();
+
+  if (user)
+    setUser(user);
+};
+
+if (!isReady)
+  return (
+    <AppLoading
+      startAsync={restoreUser}
+      onFinish={() => setIsReady(true)}
+    />
+  );
+-------------------code----------------------
+
+---
+
+# 18. Summary
+
+This lecture refactors the authentication system by moving token retrieval and JWT decoding out of `App.js` and into the authentication storage module. A new `getUser()` function encapsulates the process of reading the stored token, decoding it, and returning the authenticated user, while returning `null` if no token exists. As a result, `App.js` becomes simpler and more focused, requesting only the current user instead of dealing with authentication implementation details. This refactoring follows key software engineering principles such as Separation of Concerns, Single Responsibility Principle, and Encapsulation, making the codebase cleaner, easier to maintain, and easier to extend in the future.
