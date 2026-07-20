@@ -3410,3 +3410,324 @@ export default WelcomeScreen;
 * Enhanced background to make content stand out
 
 The Welcome Screen is now clean, flexible, and visually polished, ready for reuse and extension.
+
+
+*** 13- Building the Card Component ***
+## 1. Goal of This Lecture
+
+Build a **reusable Card component** that:
+
+* Displays an image, a title, and a subtitle
+* Sits on a light gray background
+* Has rounded corners and proper spacing
+* Is generic and reusable (not tied to listings only)
+
+This card will later be used in a listings screen.
+
+---
+
+## 2. Temporary Test Container in App.js
+
+### Purpose
+
+Create a temporary container to **preview and test** the Card component.
+
+### Step 1: Add a container View
+
+-------------------code----------------------
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import Card from './app/components/Card';
+
+export default function App() {
+  return (
+    <View style={styles.container}>
+      <Card
+        title="Red jacket for sale"
+        subtitle="$100"
+        image={require('./app/assets/jacket.jpg')}
+      />
+    </View>
+  );
+}
+-------------------code----------------------
+
+### Step 2: Style the container
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#f8f4f4',
+    padding: 20,
+    paddingTop: 100,
+  },
+});
+-------------------code----------------------
+
+**Notes**
+
+* This background color is temporary, so it is not added to the color palette.
+* Extra top padding avoids issues with the iPhone notch.
+
+---
+
+## 3. Designing the Card Component API
+
+### Props used by Card
+
+* `title` → main text
+* `subtitle` → secondary text (price or other info)
+* `image` → image source
+
+**Why not call it `price`?**
+
+* The card should be reusable in other contexts, not only listings.
+
+---
+
+## 4. Creating the Card Component
+
+### Step 3: Create `Card.js`
+
+-------------------code----------------------
+import React from 'react';
+import { View, Image, StyleSheet } from 'react-native';
+import AppText from './AppText';
+import colors from '../config/colors';
+
+function Card({ title, subtitle, image }) {
+  return (
+    <View style={styles.card}>
+      <Image source={image} style={styles.image} />
+      <View style={styles.detailsContainer}>
+        <AppText style={styles.title}>{title}</AppText>
+        <AppText style={styles.subtitle}>{subtitle}</AppText>
+      </View>
+    </View>
+  );
+}
+
+export default Card;
+-------------------code----------------------
+
+---
+
+## 5. Styling the Card Container
+
+### Step 4: Define card styles
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  card: {
+    borderRadius: 15,
+    backgroundColor: colors.white,
+    marginBottom: 20,
+    overflow: 'hidden',
+  },
+});
+-------------------code----------------------
+
+**Key points**
+
+* `borderRadius` creates rounded corners
+* `backgroundColor: white` makes the card stand out
+* `overflow: 'hidden'` ensures the image respects rounded corners
+
+---
+
+## 6. Handling Images Correctly
+
+### Problem
+
+React Native cannot load images dynamically using `require()` inside the component.
+
+### Solution
+
+Use `require()` **where the component is used**, then pass it as a prop.
+
+-------------------code----------------------
+<Card image={require('./app/assets/jacket.jpg')} />
+-------------------code----------------------
+
+This avoids packager errors and works correctly.
+
+---
+
+## 7. Styling the Image
+
+### Step 5: Add image styles
+
+-------------------code----------------------
+image: {
+  width: '100%',
+  height: 200,
+},
+-------------------code----------------------
+
+This ensures the image:
+
+* Fills the card width
+* Has a consistent height
+
+---
+
+## 8. Adding Padding Around Text
+
+### Step 6: Wrap text in a container
+
+-------------------code----------------------
+<View style={styles.detailsContainer}>
+  <AppText style={styles.title}>{title}</AppText>
+  <AppText style={styles.subtitle}>{subtitle}</AppText>
+</View>
+-------------------code----------------------
+
+### Step 7: Style the container
+
+-------------------code----------------------
+detailsContainer: {
+  padding: 20,
+},
+-------------------code----------------------
+
+---
+
+## 9. Styling Title and Subtitle
+
+### Step 8: Add spacing below title
+
+-------------------code----------------------
+title: {
+  marginBottom: 7,
+},
+-------------------code----------------------
+
+### Step 9: Style subtitle
+
+-------------------code----------------------
+subtitle: {
+  color: colors.secondary,
+  fontWeight: 'bold',
+},
+-------------------code----------------------
+
+---
+
+## 10. Updating AppText to Support Custom Styles
+
+### Problem
+
+`AppText` does not accept external styles.
+
+### Step 10: Fix AppText
+
+-------------------code----------------------
+function AppText({ children, style }) {
+  return <Text style={[styles.text, style]}>{children}</Text>;
+}
+-------------------code----------------------
+
+This allows components like `Card` to pass custom styles.
+
+---
+
+## 11. Final Code
+
+### Card.js
+
+-------------------code----------------------
+import React from 'react';
+import { View, Image, StyleSheet } from 'react-native';
+import AppText from './AppText';
+import colors from '../config/colors';
+
+function Card({ title, subtitle, image }) {
+  return (
+    <View style={styles.card}>
+      <Image source={image} style={styles.image} />
+      <View style={styles.detailsContainer}>
+        <AppText style={styles.title}>{title}</AppText>
+        <AppText style={styles.subtitle}>{subtitle}</AppText>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  card: {
+    borderRadius: 15,
+    backgroundColor: colors.white,
+    marginBottom: 20,
+    overflow: 'hidden',
+  },
+  image: {
+    width: '100%',
+    height: 200,
+  },
+  detailsContainer: {
+    padding: 20,
+  },
+  title: {
+    marginBottom: 7,
+  },
+  subtitle: {
+    color: colors.secondary,
+    fontWeight: 'bold',
+  },
+});
+
+export default Card;
+-------------------code----------------------
+
+---
+
+### App.js (Temporary Test Setup)
+
+-------------------code----------------------
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import Card from './app/components/Card';
+
+export default function App() {
+  return (
+    <View style={styles.container}>
+      <Card
+        title="Red jacket for sale"
+        subtitle="$100"
+        image={require('./app/assets/jacket.jpg')}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#f8f4f4',
+    padding: 20,
+    paddingTop: 100,
+  },
+});
+-------------------code----------------------
+
+---
+
+## 12. Important Notes & Best Practices
+
+* Keep components **generic** by using neutral prop names (`title`, `subtitle`)
+* Avoid dynamic `require()` calls inside components
+* Use `overflow: 'hidden'` when combining images with rounded corners
+* Support external styles in reusable components like `AppText`
+* Temporary layout code should stay simple and disposable
+
+---
+
+## 13. Summary
+
+* Built a reusable Card component
+* Designed a flexible API using generic props
+* Styled cards with rounded corners and spacing
+* Properly handled images in React Native
+* Improved `AppText` to support custom styles
+* Tested the card inside a temporary container
+
+The Card component is now ready to be reused in a listings screen.
