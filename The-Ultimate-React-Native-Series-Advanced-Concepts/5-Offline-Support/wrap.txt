@@ -3015,3 +3015,698 @@ React Components
 -------------------code----------------------
 
 This approach keeps the application clean, maintainable, and ready for offline support.
+
+*** 8- Implementing a Cache Layer ***
+# Building a Reusable Cache Layer
+
+## 1. Goal of This Lecture
+
+Previously, we discussed why a cache layer is useful.
+
+Now we implement a reusable cache module that:
+
+* Stores data in AsyncStorage
+* Automatically serializes/deserializes objects
+* Adds timestamps
+* Detects expired items
+* Removes expired cache entries
+* Hides AsyncStorage implementation details
+
+---
+
+# 2. Create the Cache Module
+
+Create a new folder:
+
+-------------------code----------------------
+app/
+ └── utility/
+      └── cache.js
+-------------------code----------------------
+
+Import AsyncStorage:
+
+-------------------code----------------------
+import { AsyncStorage } from "react-native";
+-------------------code----------------------
+
+---
+
+# 3. Define a Cache Prefix
+
+Instead of storing raw keys directly, add a prefix.
+
+-------------------code----------------------
+const prefix = "cache";
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+listings
+-------------------code----------------------
+
+becomes:
+
+-------------------code----------------------
+cachelistings
+-------------------code----------------------
+
+This helps distinguish cache entries from other storage values.
+
+---
+
+# 4. Create the Store Function
+
+## Basic Structure
+
+-------------------code----------------------
+const store = async (key, value) => {
+};
+-------------------code----------------------
+
+---
+
+## Create a Cache Item
+
+Instead of storing the value directly:
+
+-------------------code----------------------
+value
+-------------------code----------------------
+
+Store an object containing:
+
+* The actual value
+* A timestamp
+
+-------------------code----------------------
+const item = {
+  value,
+  timestamp: Date.now(),
+};
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+{
+  value: [...],
+  timestamp: 1750000000000
+}
+-------------------code----------------------
+
+---
+
+## Save to AsyncStorage
+
+AsyncStorage only stores strings.
+
+Convert the object to JSON:
+
+-------------------code----------------------
+JSON.stringify(item)
+-------------------code----------------------
+
+Store it:
+
+-------------------code----------------------
+await AsyncStorage.setItem(
+  prefix + key,
+  JSON.stringify(item)
+);
+-------------------code----------------------
+
+---
+
+## Error Handling
+
+Wrap storage operations inside a try/catch block.
+
+-------------------code----------------------
+try {
+  await AsyncStorage.setItem(
+    prefix + key,
+    JSON.stringify(item)
+  );
+} catch (error) {
+  console.log(error);
+}
+-------------------code----------------------
+
+---
+
+## Store Function
+
+-------------------code----------------------
+const store = async (key, value) => {
+  try {
+    const item = {
+      value,
+      timestamp: Date.now(),
+    };
+
+    await AsyncStorage.setItem(
+      prefix + key,
+      JSON.stringify(item)
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
+-------------------code----------------------
+
+---
+
+# 5. Create the Get Function
+
+## Basic Structure
+
+-------------------code----------------------
+const get = async (key) => {
+};
+-------------------code----------------------
+
+---
+
+## Read Cached Data
+
+-------------------code----------------------
+const value = await AsyncStorage.getItem(
+  prefix + key
+);
+-------------------code----------------------
+
+---
+
+## Convert JSON Back to an Object
+
+-------------------code----------------------
+const item = JSON.parse(value);
+-------------------code----------------------
+
+---
+
+## Handle Missing Items
+
+If nothing exists:
+
+-------------------code----------------------
+if (!item) return null;
+-------------------code----------------------
+
+---
+
+# 6. Install Moment.js
+
+To determine whether cached data is expired:
+
+-------------------code----------------------
+npm install moment
+-------------------code----------------------
+
+Import it:
+
+-------------------code----------------------
+import moment from "moment";
+-------------------code----------------------
+
+---
+
+# 7. Calculate Cache Expiration
+
+## Define Expiration Duration
+
+-------------------code----------------------
+const expiryInMinutes = 5;
+-------------------code----------------------
+
+Meaning:
+
+-------------------code----------------------
+Cache older than 5 minutes
+=
+Expired
+-------------------code----------------------
+
+---
+
+## Current Time
+
+-------------------code----------------------
+const now = moment(Date.now());
+-------------------code----------------------
+
+---
+
+## Stored Time
+
+-------------------code----------------------
+const storedTime = moment(item.timestamp);
+-------------------code----------------------
+
+---
+
+## Difference in Minutes
+
+-------------------code----------------------
+const diff = now.diff(
+  storedTime,
+  "minutes"
+);
+-------------------code----------------------
+
+---
+
+## Determine Expiration
+
+-------------------code----------------------
+const isExpired =
+  diff > expiryInMinutes;
+-------------------code----------------------
+
+---
+
+# 8. Extract Expiration Logic
+
+The expiration logic should be moved into its own function.
+
+This follows the Single Responsibility Principle.
+
+---
+
+## Create isExpired()
+
+-------------------code----------------------
+const isExpired = (item) => {
+  const now = moment(Date.now());
+
+  const storedTime = moment(
+    item.timestamp
+  );
+
+  return (
+    now.diff(storedTime, "minutes") >
+    expiryInMinutes
+  );
+};
+-------------------code----------------------
+
+---
+
+## Why?
+
+Bad:
+
+-------------------code----------------------
+get()
+-------------------code----------------------
+
+does:
+
+* Retrieve data
+* Check expiration
+
+Two responsibilities.
+
+---
+
+Better:
+
+-------------------code----------------------
+get()
+-------------------code----------------------
+
+retrieves data only.
+
+-------------------code----------------------
+isExpired()
+-------------------code----------------------
+
+checks expiration only.
+
+Each function has one responsibility.
+
+---
+
+# 9. Handle Expired Items
+
+Inside get():
+
+-------------------code----------------------
+if (isExpired(item)) {
+  await AsyncStorage.removeItem(
+    prefix + key
+  );
+
+  return null;
+}
+-------------------code----------------------
+
+---
+
+## Why Remove Expired Data?
+
+Benefits:
+
+* Frees storage space
+* Prevents stale data accumulation
+* Keeps cache clean
+
+---
+
+# 10. Command Query Separation (CQS)
+
+The instructor discusses an important principle:
+
+## Command
+
+Changes system state.
+
+Example:
+
+-------------------code----------------------
+removeItem()
+-------------------code----------------------
+
+---
+
+## Query
+
+Returns data.
+
+Example:
+
+-------------------code----------------------
+get()
+-------------------code----------------------
+
+---
+
+Normally:
+
+-------------------code----------------------
+A function should be either:
+
+- Command
+OR
+- Query
+
+Not both
+-------------------code----------------------
+
+---
+
+### In This Example
+
+-------------------code----------------------
+get()
+-------------------code----------------------
+
+returns data:
+
+-------------------code----------------------
+Query
+-------------------code----------------------
+
+But it also removes expired items:
+
+-------------------code----------------------
+removeItem()
+-------------------code----------------------
+
+which changes state:
+
+-------------------code----------------------
+Command
+-------------------code----------------------
+
+---
+
+This technically violates:
+
+-------------------code----------------------
+Command Query Separation (CQS)
+-------------------code----------------------
+
+However, the instructor intentionally accepts this tradeoff because:
+
+* It simplifies cache cleanup
+* It keeps storage small
+* The benefit outweighs the cost
+
+---
+
+# 11. Return the Cached Value
+
+If the item exists and is not expired:
+
+-------------------code----------------------
+return item.value;
+-------------------code----------------------
+
+---
+
+# 12. Export Cache Functions
+
+Expose both methods:
+
+-------------------code----------------------
+export default {
+  store,
+  get,
+};
+-------------------code----------------------
+
+---
+
+# Complete Final Code
+
+-------------------code----------------------
+import { AsyncStorage } from "react-native";
+import moment from "moment";
+
+const prefix = "cache";
+const expiryInMinutes = 5;
+
+const store = async (key, value) => {
+  try {
+    const item = {
+      value,
+      timestamp: Date.now(),
+    };
+
+    await AsyncStorage.setItem(
+      prefix + key,
+      JSON.stringify(item)
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const isExpired = (item) => {
+  const now = moment(Date.now());
+
+  const storedTime = moment(
+    item.timestamp
+  );
+
+  return (
+    now.diff(storedTime, "minutes") >
+    expiryInMinutes
+  );
+};
+
+const get = async (key) => {
+  try {
+    const value = await AsyncStorage.getItem(
+      prefix + key
+    );
+
+    const item = JSON.parse(value);
+
+    if (!item) return null;
+
+    if (isExpired(item)) {
+      await AsyncStorage.removeItem(
+        prefix + key
+      );
+
+      return null;
+    }
+
+    return item.value;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export default {
+  store,
+  get,
+};
+-------------------code----------------------
+
+---
+
+# Important Notes & Best Practices
+
+## 1. Hide AsyncStorage Behind a Cache Layer
+
+Avoid:
+
+-------------------code----------------------
+AsyncStorage.setItem(...)
+AsyncStorage.getItem(...)
+-------------------code----------------------
+
+throughout the app.
+
+Use:
+
+-------------------code----------------------
+cache.store(...)
+cache.get(...)
+-------------------code----------------------
+
+instead.
+
+---
+
+## 2. Always Store Timestamps
+
+Without timestamps:
+
+-------------------code----------------------
+You cannot know whether cached data is stale.
+-------------------code----------------------
+
+---
+
+## 3. Centralize Expiration Logic
+
+Bad:
+
+-------------------code----------------------
+if (cacheAge > 5)
+-------------------code----------------------
+
+in multiple files.
+
+Good:
+
+-------------------code----------------------
+isExpired()
+-------------------code----------------------
+
+in one place.
+
+---
+
+## 4. Use Try/Catch Around Storage Operations
+
+Storage can fail because:
+
+* Storage is full
+* Storage is unavailable
+* Corrupted data
+
+Always handle errors safely.
+
+---
+
+## 5. Follow Single Responsibility Principle
+
+Separate:
+
+-------------------code----------------------
+get()
+-------------------code----------------------
+
+from:
+
+-------------------code----------------------
+isExpired()
+-------------------code----------------------
+
+to keep functions focused and maintainable.
+
+---
+
+# Summary
+
+## What We Built
+
+A reusable cache layer that:
+
+* Stores data in AsyncStorage
+* Automatically serializes objects
+* Automatically deserializes objects
+* Adds timestamps
+* Detects expiration
+* Removes expired cache entries
+
+---
+
+## Main Functions
+
+### Store Data
+
+-------------------code----------------------
+cache.store(key, value)
+-------------------code----------------------
+
+---
+
+### Retrieve Data
+
+-------------------code----------------------
+cache.get(key)
+-------------------code----------------------
+
+---
+
+### Check Expiration
+
+-------------------code----------------------
+isExpired(item)
+-------------------code----------------------
+
+---
+
+## Design Principles Applied
+
+### Single Responsibility Principle (SRP)
+
+Each function should have one job.
+
+---
+
+### Encapsulation
+
+Hide storage implementation details behind a cache API.
+
+---
+
+### Command Query Separation (CQS)
+
+Normally queries should not modify state.
+
+This implementation intentionally bends that rule to automatically remove expired cache entries and keep storage clean.
+
+---
+
+## Final Architecture
+
+-------------------code----------------------
+Application
+      |
+      V
+   cache.js
+      |
+      V
+ AsyncStorage
+-------------------code----------------------
+
+This cache layer will now be used by the API layer so the application can continue working when network connectivity is unavailable.
