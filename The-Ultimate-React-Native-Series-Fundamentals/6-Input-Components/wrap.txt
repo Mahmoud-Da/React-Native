@@ -1121,3 +1121,192 @@ Use color palette
 Improve UI design
 
 This component will now be used throughout your app.
+
+
+*** 4- Extracting the Default Styles ***
+
+# Extracting Default Styles into a Central Configuration File in React Native
+
+## 1. Introduction
+
+Previously, default text styles such as font, size, and color were defined inside multiple components like AppText and AppTextInput. This caused duplication and made maintenance difficult. The solution is to extract these styles into a single configuration file so all components share the same default styles.
+
+## 2. Problem: Duplicate Styles
+
+Example of duplicated styles inside components:
+
+-------------------code----------------------
+textInput: {
+  fontSize: 18,
+  color: colors.dark,
+  ...Platform.select({
+    ios: { fontFamily: "Avenir" },
+    android: { fontFamily: "Roboto" },
+  }),
+}
+-------------------code----------------------
+
+Problems:
+
+* Same code repeated in multiple files
+* Hard to update globally
+* Poor maintainability
+  Best practice: Use a single source of truth.
+
+## 3. Step 1: Create Global Styles File
+
+Create a new file:
+config/styles.js
+
+## 4. Step 2: Define Default Styles
+
+Import dependencies and export default styles:
+
+-------------------code----------------------
+import { Platform } from "react-native";
+import colors from "./colors";
+export default {
+  colors,
+  text: {
+    color: colors.dark,
+    fontSize: 18,
+    ...Platform.select({
+      ios: { fontFamily: "Avenir" },
+      android: { fontFamily: "Roboto" },
+    }),
+  },
+};
+-------------------code----------------------
+
+This file now contains default styles and colors.
+
+## 5. Step 3: Use Default Styles in AppText
+
+Before:
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  text: {
+    fontSize: 18,
+    color: colors.dark,
+  }
+});
+-------------------code----------------------
+
+After:
+
+-------------------code----------------------
+import defaultStyles from "../config/styles";
+function AppText({ children }) {
+  return <Text style={defaultStyles.text}>{children}</Text>;
+}
+-------------------code----------------------
+
+Now styles are centralized.
+
+## 6. Step 4: Use Default Styles in AppTextInput
+
+Before:
+
+-------------------code----------------------
+import colors from "../config/colors";
+color: colors.medium
+-------------------code----------------------
+
+After:
+
+-------------------code----------------------
+import defaultStyles from "../config/styles";
+color: defaultStyles.colors.medium
+-------------------code----------------------
+
+And apply text styles:
+
+-------------------code----------------------
+<TextInput style={defaultStyles.text} {...otherProps} />
+-------------------code----------------------
+
+Now remove the colors import.
+
+## 7. Final Code
+
+### config/styles.js
+
+-------------------code----------------------
+import { Platform } from "react-native";
+import colors from "./colors";
+export default {
+  colors,
+  text: {
+    color: colors.dark,
+    fontSize: 18,
+    ...Platform.select({
+      ios: { fontFamily: "Avenir" },
+      android: { fontFamily: "Roboto" },
+    }),
+  },
+};
+-------------------code----------------------
+
+### components/AppText.js
+
+-------------------code----------------------
+import React from "react";
+import { Text } from "react-native";
+import defaultStyles from "../config/styles";
+
+
+function AppText({ children }) {
+  return <Text style={defaultStyles.text}>{children}</Text>;
+}
+
+export default AppText;
+
+-------------------code----------------------
+
+### components/AppTextInput.js
+
+-------------------code----------------------
+import React from "react";
+import { View, TextInput, StyleSheet } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import defaultStyles from "../config/styles";
+function AppTextInput({ icon, ...otherProps }) {
+  return (
+    <View style={styles.container}>
+      {icon && (
+        <MaterialCommunityIcons
+          name={icon}
+          size={20}
+          color={defaultStyles.colors.medium}
+          style={styles.icon}
+        />
+      )}
+      <TextInput style={defaultStyles.text} {...otherProps} />
+    </View>
+  );
+}
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: defaultStyles.colors.light,
+    borderRadius: 25,
+    flexDirection: "row",
+    width: "100%",
+    padding: 15,
+    marginVertical: 10,
+  },
+  icon: {
+    marginRight: 10,
+  },
+});
+export default AppTextInput;
+-------------------code----------------------
+
+## 8. Best Practices
+
+Centralize shared styles in config folder. Avoid duplication. Export colors and styles together. Use defaultStyles everywhere. Never hardcode fonts repeatedly.
+
+## 9. Summary
+
+You learned how to extract default styles into a central file. 
+You created config/styles.js. You reused styles across components. You simplified AppText and AppTextInput. This makes the app cleaner, scalable, and easier to maintain.
