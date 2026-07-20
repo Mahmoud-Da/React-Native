@@ -1673,3 +1673,629 @@ Main concepts:
 * Standardized errors
 * Centralized backend communication
 * Cleaner React Native architecture
+
+*** 4- Creating an API Layer ***
+# 1. Overview of the Lecture
+
+This lecture explains why API calls should not be written directly inside React components.
+
+The instructor introduces:
+
+* Proper architecture
+* Separation of concerns
+* API layer design
+* Encapsulation of HTTP logic
+
+The main goal is:
+
+-------------------code----------------------
+Keep UI components focused only on UI
+-------------------code----------------------
+
+---
+
+# 2. The Problem With Direct API Calls in Components
+
+Many beginners write code like this directly inside screens:
+
+-------------------code----------------------
+const response = await client.get("/listings");
+-------------------code----------------------
+
+This is considered bad architecture.
+
+---
+
+# 3. Why This is Bad Practice
+
+---
+
+## 3.1 Hardcoded Endpoints
+
+Bad:
+
+-------------------code----------------------
+"/listings"
+-------------------code----------------------
+
+Problems:
+
+* Difficult to maintain
+* Easy to mistype
+* Hard to rename later
+
+---
+
+## 3.2 UI Components Know Too Much
+
+Components should NOT know:
+
+* HTTP methods
+* Endpoints
+* Headers
+* API structure
+* Request configuration
+
+---
+
+## 3.3 Violates Separation of Concerns
+
+A React component should only handle:
+
+* UI rendering
+* User interaction
+* Display logic
+
+Not backend communication details.
+
+---
+
+# 4. Responsibility of a React Component
+
+A React component should only say:
+
+-------------------code----------------------
+Give me listings
+-------------------code----------------------
+
+or
+
+-------------------code----------------------
+Save this listing
+-------------------code----------------------
+
+It should not know:
+
+* How requests are sent
+* Which endpoint is used
+* Whether request is GET or POST
+
+---
+
+# 5. What is an API Layer?
+
+An API layer is a separate abstraction between:
+
+* UI components
+* Backend server
+
+---
+
+## UI Component
+
+Talks to:
+
+-------------------code----------------------
+API Layer
+-------------------code----------------------
+
+---
+
+## API Layer
+
+Handles:
+
+* Endpoints
+* HTTP methods
+* Headers
+* API configuration
+
+---
+
+# 6. Architecture Flow
+
+---
+
+## Without API Layer
+
+-------------------code----------------------
+Screen -> HTTP Request -> Server
+-------------------code----------------------
+
+Problem:
+
+* Tight coupling
+* Hard maintenance
+
+---
+
+## With API Layer
+
+-------------------code----------------------
+Screen -> API Layer -> Server
+-------------------code----------------------
+
+Better:
+
+* Cleaner architecture
+* Easier maintenance
+* Reusable logic
+
+---
+
+# 7. Update client.js
+
+Before:
+
+-------------------code----------------------
+const response = await client.get("/listings");
+-------------------code----------------------
+
+inside `client.js`
+
+Now:
+
+* Remove direct request testing
+* Keep only API client configuration
+
+---
+
+# 8. Final client.js
+
+## File
+
+-------------------code----------------------
+app/api/client.js
+-------------------code----------------------
+
+## Code
+
+-------------------code----------------------
+import { create } from "apisauce";
+
+const client = create({
+  baseURL: "http://192.168.0.14:9000/api",
+});
+
+export default client;
+-------------------code----------------------
+
+---
+
+# 9. Create listings.js
+
+## File
+
+-------------------code----------------------
+app/api/listings.js
+-------------------code----------------------
+
+Purpose:
+
+* Encapsulate all listings-related API logic
+
+---
+
+# 10. Import API Client
+
+-------------------code----------------------
+import client from "./client";
+-------------------code----------------------
+
+---
+
+# 11. Create Endpoint Constant
+
+Instead of hardcoding endpoint multiple times:
+
+-------------------code----------------------
+"/listings"
+-------------------code----------------------
+
+Store it in a constant.
+
+---
+
+## Example
+
+-------------------code----------------------
+const endpoint = "/listings";
+-------------------code----------------------
+
+Benefits:
+
+* Easier maintenance
+* Prevent typos
+* Single source of truth
+
+---
+
+# 12. Create getListings Function
+
+-------------------code----------------------
+const getListings = () => client.get(endpoint);
+-------------------code----------------------
+
+This function:
+
+* Sends GET request
+* Hides implementation details
+* Returns response
+
+---
+
+# 13. Export API Functions
+
+Two approaches exist.
+
+---
+
+## Option 1 — Named Export
+
+-------------------code----------------------
+export const getListings = () => client.get(endpoint);
+-------------------code----------------------
+
+---
+
+## Option 2 — Default Object Export
+
+Instructor preference:
+
+-------------------code----------------------
+export default {
+  getListings,
+};
+-------------------code----------------------
+
+Benefits:
+
+* Cleaner imports
+* Easier scaling
+* Group related API functions
+
+---
+
+# 14. Full listings.js File
+
+-------------------code----------------------
+import client from "./client";
+
+const endpoint = "/listings";
+
+const getListings = () => client.get(endpoint);
+
+export default {
+  getListings,
+};
+-------------------code----------------------
+
+---
+
+# 15. Using the API Layer in Components
+
+Now components no longer call HTTP requests directly.
+
+Instead of:
+
+-------------------code----------------------
+client.get("/listings");
+-------------------code----------------------
+
+Use:
+
+-------------------code----------------------
+listingsApi.getListings();
+-------------------code----------------------
+
+This is much cleaner.
+
+---
+
+# 16. Example Component Usage
+
+-------------------code----------------------
+import listingsApi from "../api/listings";
+
+const loadListings = async () => {
+  const response = await listingsApi.getListings();
+
+  if (!response.ok) {
+    console.log(response.problem);
+    return;
+  }
+
+  console.log(response.data);
+};
+-------------------code----------------------
+
+---
+
+# 17. Benefits of an API Layer
+
+---
+
+## Cleaner Components
+
+Components focus only on UI.
+
+---
+
+## Better Maintainability
+
+Endpoints exist in one place.
+
+---
+
+## Easier Refactoring
+
+Change backend structure once.
+
+---
+
+## Reusable Logic
+
+Multiple screens can reuse same API methods.
+
+---
+
+## Easier Testing
+
+API layer can be tested separately.
+
+---
+
+# 18. Recommended Folder Structure
+
+-------------------code----------------------
+app/
+│
+├── api/
+│   ├── client.js
+│   ├── listings.js
+│   ├── auth.js
+│   └── users.js
+-------------------code----------------------
+
+---
+
+# 19. Example Future API Methods
+
+-------------------code----------------------
+const addListing = (listing) =>
+  client.post(endpoint, listing);
+
+const deleteListing = (id) =>
+  client.delete(`${endpoint}/${id}`);
+-------------------code----------------------
+
+---
+
+# 20. Separation of Concerns Explained
+
+---
+
+## UI Layer Responsibilities
+
+* Rendering
+* Interaction
+* State
+* Layout
+
+---
+
+## API Layer Responsibilities
+
+* HTTP requests
+* Endpoints
+* Authentication headers
+* Request configuration
+* Response transformation
+
+---
+
+# 21. Common Beginner Mistakes
+
+---
+
+## Mistake 1 — Calling APIs Directly in Screens
+
+Bad:
+
+-------------------code----------------------
+client.get("/listings");
+-------------------code----------------------
+
+inside screens.
+
+---
+
+## Mistake 2 — Repeating Endpoints
+
+Bad:
+
+-------------------code----------------------
+"/listings"
+"/listings"
+"/listings"
+-------------------code----------------------
+
+everywhere.
+
+---
+
+## Mistake 3 — Mixing UI and Networking Logic
+
+Avoid large screens doing everything.
+
+---
+
+## Mistake 4 — No Abstraction Layer
+
+Leads to messy architecture later.
+
+---
+
+# 22. Step-by-Step Refactor
+
+---
+
+## Step 1
+
+Keep `client.js` simple.
+
+---
+
+## Step 2
+
+Create:
+
+-------------------code----------------------
+listings.js
+-------------------code----------------------
+
+---
+
+## Step 3
+
+Import client.
+
+-------------------code----------------------
+import client from "./client";
+-------------------code----------------------
+
+---
+
+## Step 4
+
+Create endpoint constant.
+
+-------------------code----------------------
+const endpoint = "/listings";
+-------------------code----------------------
+
+---
+
+## Step 5
+
+Create API functions.
+
+-------------------code----------------------
+const getListings = () => client.get(endpoint);
+-------------------code----------------------
+
+---
+
+## Step 6
+
+Export API object.
+
+-------------------code----------------------
+export default {
+  getListings,
+};
+-------------------code----------------------
+
+---
+
+# 23. Full Final Code
+
+---
+
+## app/api/client.js
+
+-------------------code----------------------
+import { create } from "apisauce";
+
+const client = create({
+  baseURL: "http://192.168.0.14:9000/api",
+});
+
+export default client;
+-------------------code----------------------
+
+---
+
+## app/api/listings.js
+
+-------------------code----------------------
+import client from "./client";
+
+const endpoint = "/listings";
+
+const getListings = () => client.get(endpoint);
+
+export default {
+  getListings,
+};
+-------------------code----------------------
+
+---
+
+# 24. Best Practices
+
+---
+
+## Keep Screens Clean
+
+UI only.
+
+---
+
+## Create One API File Per Resource
+
+Example:
+
+* listings.js
+* auth.js
+* users.js
+
+---
+
+## Store Endpoints in Constants
+
+Avoid repeated strings.
+
+---
+
+## Encapsulate HTTP Logic
+
+Never expose request details to components.
+
+---
+
+## Scale Gradually
+
+API layer grows as app grows.
+
+---
+
+# 25. Summary
+
+In this lecture you learned:
+
+* Why direct API calls in components are bad
+* What separation of concerns means
+* Why we need an API layer
+* How to create `listings.js`
+* How to encapsulate endpoints
+* How to export reusable API methods
+* How to structure backend communication properly
+
+Main concepts:
+
+* API abstraction
+* Separation of concerns
+* Cleaner architecture
+* Reusable API functions
+* Encapsulation of HTTP logic
