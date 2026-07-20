@@ -2778,3 +2778,492 @@ This component is the **foundation** for building:
 * Image selection
 * Image deletion
 * Multiple image lists
+
+*** 9- Building ImageInput- Touches ***
+# Handling Touches and Making ImageInput Fully Reusable
+
+## 1. Introduction
+
+In this lecture, we enhance the `ImageInput` component by:
+
+* Handling user taps
+* Opening the image library
+* Deleting an image on tap
+* Making the component reusable
+* Moving permission logic inside the component
+
+This transforms `ImageInput` into a **fully interactive and reusable component**.
+
+---
+
+# 2. Handling User Touch
+
+## Step 1 — Wrap with Touchable Component
+
+We wrap the container with:
+
+-------------------code----------------------
+import { TouchableWithoutFeedback } from "react-native";
+-------------------code----------------------
+
+---
+
+## Step 2 — Add onPress
+
+-------------------code----------------------
+<TouchableWithoutFeedback onPress={handlePress}>
+  <View style={styles.container}>
+    ...
+  </View>
+</TouchableWithoutFeedback>
+-------------------code----------------------
+
+---
+
+## Important Note
+
+Always import touchables from:
+
+-------------------code----------------------
+react-native
+-------------------code----------------------
+
+Not from gesture handler libraries unless needed.
+
+---
+
+# 3. Creating handlePress Function
+
+## Step 3 — Basic Logic
+
+-------------------code----------------------
+const handlePress = () => {
+  if (!imageUri) {
+    selectImage();
+  } else {
+    // show delete alert
+  }
+};
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* No image → open library
+* Has image → ask to delete
+
+---
+
+# 4. Selecting an Image Inside Component
+
+## Step 4 — Import ImagePicker
+
+-------------------code----------------------
+import * as ImagePicker from "expo-image-picker";
+-------------------code----------------------
+
+---
+
+## Step 5 — selectImage Function
+
+-------------------code----------------------
+const selectImage = async () => {
+  try {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.5,
+    });
+
+    if (!result.canceled) {
+      onChangeImage(result.uri);
+    }
+  } catch (error) {
+    console.log("Error reading an image", error);
+  }
+};
+-------------------code----------------------
+
+---
+
+## Explanation
+
+### mediaTypes
+
+-------------------code----------------------
+ImagePicker.MediaTypeOptions.Images
+-------------------code----------------------
+
+* Allows only images (not videos)
+
+---
+
+### quality
+
+-------------------code----------------------
+quality: 0.5
+-------------------code----------------------
+
+* Reduces image size
+* Improves upload performance
+
+---
+
+# 5. Lifting State Up (Important Concept)
+
+## Problem
+
+Previously:
+
+* Component had its own state
+* Also received `imageUri` as prop
+
+This creates duplication.
+
+---
+
+## Solution
+
+Use **props instead of local state**
+
+### Add Prop
+
+-------------------code----------------------
+function ImageInput({ imageUri, onChangeImage })
+-------------------code----------------------
+
+---
+
+## Update Image
+
+-------------------code----------------------
+onChangeImage(result.uri);
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* Parent controls state
+* Component only notifies changes
+
+---
+
+# 6. Handling Image Deletion
+
+## Step 6 — Import Alert
+
+-------------------code----------------------
+import { Alert } from "react-native";
+-------------------code----------------------
+
+---
+
+## Step 7 — Show Confirmation Dialog
+
+-------------------code----------------------
+Alert.alert(
+  "Delete",
+  "Are you sure you want to delete this image?",
+  [
+    {
+      text: "Yes",
+      onPress: () => onChangeImage(null),
+    },
+    {
+      text: "No",
+    },
+  ]
+);
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* "Yes" → remove image (set null)
+* "No" → do nothing
+
+---
+
+# 7. Updating handlePress
+
+## Final Version
+
+-------------------code----------------------
+const handlePress = () => {
+  if (!imageUri) {
+    selectImage();
+  } else {
+    Alert.alert(
+      "Delete",
+      "Are you sure you want to delete this image?",
+      [
+        { text: "Yes", onPress: () => onChangeImage(null) },
+        { text: "No" },
+      ]
+    );
+  }
+};
+-------------------code----------------------
+
+---
+
+# 8. Moving Permission Logic Inside Component
+
+## Step 8 — Add useEffect
+
+-------------------code----------------------
+import { useEffect } from "react";
+-------------------code----------------------
+
+---
+
+## Step 9 — Request Permission
+
+-------------------code----------------------
+useEffect(() => {
+  requestPermission();
+}, []);
+-------------------code----------------------
+
+---
+
+## Step 10 — Permission Function
+
+-------------------code----------------------
+const requestPermission = async () => {
+  const { granted } = await ImagePicker.requestCameraRollPermissionsAsync();
+
+  if (!granted) {
+    alert("You need to enable permission to access the library.");
+  }
+};
+-------------------code----------------------
+
+---
+
+## Why This Is Important
+
+* Makes component **self-contained**
+* No need to remember permissions in parent
+* Improves reusability
+
+---
+
+# 9. Updating App.js
+
+## Step 11 — Use ImageInput Properly
+
+-------------------code----------------------
+import { useState } from "react";
+import Screen from "./app/components/Screen";
+import ImageInput from "./app/components/ImageInput";
+
+export default function App() {
+  const [imageUri, setImageUri] = useState(null);
+
+  return (
+    <Screen>
+      <ImageInput
+        imageUri={imageUri}
+        onChangeImage={(uri) => setImageUri(uri)}
+      />
+    </Screen>
+  );
+}
+-------------------code----------------------
+
+---
+
+## Remove Old Code
+
+Delete:
+
+* Button
+* Manual image display
+
+---
+
+# 10. Full Final Code
+
+## ImageInput.js
+
+-------------------code----------------------
+import React, { useEffect } from "react";
+import {
+  View,
+  StyleSheet,
+  Image,
+  TouchableWithoutFeedback,
+  Alert,
+} from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import colors from "../config/colors";
+
+function ImageInput({ imageUri, onChangeImage }) {
+  useEffect(() => {
+    requestPermission();
+  }, []);
+
+  const requestPermission = async () => {
+    const { granted } =
+      await ImagePicker.requestCameraRollPermissionsAsync();
+
+    if (!granted) {
+      alert("You need to enable permission to access the library.");
+    }
+  };
+
+  const selectImage = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.5,
+      });
+
+      if (!result.canceled) {
+        onChangeImage(result.uri);
+      }
+    } catch (error) {
+      console.log("Error reading an image", error);
+    }
+  };
+
+  const handlePress = () => {
+    if (!imageUri) {
+      selectImage();
+    } else {
+      Alert.alert(
+        "Delete",
+        "Are you sure you want to delete this image?",
+        [
+          { text: "Yes", onPress: () => onChangeImage(null) },
+          { text: "No" },
+        ]
+      );
+    }
+  };
+
+  return (
+    <TouchableWithoutFeedback onPress={handlePress}>
+      <View style={styles.container}>
+        {!imageUri && (
+          <MaterialCommunityIcons
+            name="camera"
+            size={40}
+            color={colors.medium}
+          />
+        )}
+
+        {imageUri && (
+          <Image source={{ uri: imageUri }} style={styles.image} />
+        )}
+      </View>
+    </TouchableWithoutFeedback>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: colors.light,
+    borderRadius: 15,
+    height: 100,
+    width: 100,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+  image: {
+    width: "100%",
+    height: "100%",
+  },
+});
+
+export default ImageInput;
+-------------------code----------------------
+
+---
+
+## App.js
+
+-------------------code----------------------
+import { useState } from "react";
+import Screen from "./app/components/Screen";
+import ImageInput from "./app/components/ImageInput";
+
+export default function App() {
+  const [imageUri, setImageUri] = useState(null);
+
+  return (
+    <Screen>
+      <ImageInput
+        imageUri={imageUri}
+        onChangeImage={(uri) => setImageUri(uri)}
+      />
+    </Screen>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 11. Important Notes and Best Practices
+
+## 11.1 Lift State Up
+
+* Component should not manage duplicate state
+* Parent handles data
+
+---
+
+## 11.2 Use Props for Communication
+
+-------------------code----------------------
+onChangeImage(uri)
+-------------------code----------------------
+
+---
+
+## 11.3 Keep Components Reusable
+
+* Handle permissions inside component
+* Do not depend on parent logic
+
+---
+
+## 11.4 Always Confirm Destructive Actions
+
+* Use alert before deleting
+
+---
+
+## 11.5 Optimize Image Size
+
+-------------------code----------------------
+quality: 0.5
+-------------------code----------------------
+
+Important for:
+
+* Performance
+* Upload speed
+
+---
+
+# 12. Summary
+
+* Added touch handling using `TouchableWithoutFeedback`
+* Implemented image selection inside component
+* Added delete confirmation using `Alert`
+* Moved state management to parent component
+* Used props (`imageUri`, `onChangeImage`) for communication
+* Moved permission logic into component for reusability
+* Built a fully reusable and interactive `ImageInput` component
+
+This component is now ready to be used inside:
+
+* Forms
+* Lists
+* Multi-image inputs
