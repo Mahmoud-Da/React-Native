@@ -1175,3 +1175,579 @@ In this lecture, we fixed auto-import issues in VS Code by:
 Key takeaway:
 
 Proper project configuration is essential for reliable IntelliSense and auto-import functionality in React Native and JavaScript projects.
+
+*** 6- Input Components with Dynamic Width ***
+# Improving Input and Picker Width (Dynamic Width Support)
+
+## 1. Problem Overview
+
+All input fields and pickers currently use:
+
+-------------------code----------------------
+width: "100%"
+-------------------code----------------------
+
+This creates poor UI in some cases.
+
+Example:
+
+* A price field with only 6–8 characters
+* Full-width input looks unnecessary and visually unbalanced
+
+Goal:
+
+* Allow dynamic width for inputs and pickers
+* Use 100% as the default
+* Override width when needed
+
+---
+
+# 2. Step 1 – Set Width in the Screen
+
+In `ListingEditScreen`, we want to write:
+
+-------------------code----------------------
+<AppFormField
+  name="price"
+  placeholder="Price"
+  width={120}
+/>
+-------------------code----------------------
+
+But nothing happens.
+
+Why?
+
+Because `AppFormField` does not support a `width` prop yet.
+
+---
+
+# 3. Step 2 – Add Width to AppFormField
+
+File: `AppFormField.js`
+
+### Add `width` Prop
+
+-------------------code----------------------
+function AppFormField({ name, width, ...otherProps }) {
+-------------------code----------------------
+
+### Pass Width to AppTextInput
+
+-------------------code----------------------
+<AppTextInput
+  onChangeText={handleChange(name)}
+  onBlur={() => setFieldTouched(name)}
+  width={width}
+  {...otherProps}
+/>
+-------------------code----------------------
+
+Now width reaches `AppTextInput`.
+
+---
+
+# 4. Step 3 – Make AppTextInput Support Dynamic Width
+
+File: `AppTextInput.js`
+
+### Problem
+
+Previously:
+
+-------------------code----------------------
+container: {
+  width: "100%",
+}
+-------------------code----------------------
+
+This hard-coded width prevents flexibility.
+
+---
+
+### Step 3.1 – Accept Width Prop
+
+-------------------code----------------------
+function AppTextInput({ icon, width = "100%", ...otherProps })
+-------------------code----------------------
+
+Default value:
+
+* If no width is provided → use 100%
+
+---
+
+### Step 3.2 – Apply Width Dynamically
+
+Update container style:
+
+-------------------code----------------------
+<View style={[styles.container, { width }]}>
+-------------------code----------------------
+
+Remove hardcoded width from StyleSheet.
+
+---
+
+### Updated Styles
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: defaultStyles.colors.light,
+    borderRadius: 25,
+    flexDirection: "row",
+    padding: 15,
+    marginVertical: 10,
+  },
+  icon: {
+    marginRight: 10,
+  },
+});
+-------------------code----------------------
+
+Now:
+
+* Price field can be 120px
+* Other fields remain 100%
+
+---
+
+# 5. Apply Same Logic to Picker
+
+We must repeat the same pattern for `AppPicker`.
+
+---
+
+# 6. Step 4 – Use Width in Screen
+
+Example in `ListingEditScreen`:
+
+-------------------code----------------------
+<AppFormPicker
+  items={categories}
+  name="category"
+  placeholder="Category"
+  width="50%"
+/>
+-------------------code----------------------
+
+But again:
+
+* Nothing changes
+* Because width is not supported yet
+
+---
+
+# 7. Step 5 – Add Width to AppFormPicker
+
+File: `AppFormPicker.js`
+
+### Add width prop
+
+-------------------code----------------------
+function AppFormPicker({ items, name, placeholder, width })
+-------------------code----------------------
+
+### Pass it down
+
+-------------------code----------------------
+<AppPicker
+  items={items}
+  onSelectItem={(item) => setFieldValue(name, item)}
+  placeholder={placeholder}
+  selectedItem={values[name]}
+  width={width}
+/>
+-------------------code----------------------
+
+---
+
+# 8. Step 6 – Make AppPicker Support Width
+
+File: `AppPicker.js`
+
+---
+
+### Step 6.1 – Accept Width Prop
+
+-------------------code----------------------
+function AppPicker({
+  icon,
+  items,
+  placeholder,
+  selectedItem,
+  onSelectItem,
+  width = "100%"
+})
+-------------------code----------------------
+
+---
+
+### Step 6.2 – Apply Dynamic Width
+
+Replace:
+
+-------------------code----------------------
+width: "100%",
+-------------------code----------------------
+
+With:
+
+-------------------code----------------------
+<View style={[styles.container, { width }]}>
+-------------------code----------------------
+
+Remove width from StyleSheet.
+
+---
+
+### Updated Styles
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: colors.light,
+    borderRadius: 25,
+    flexDirection: "row",
+    padding: 15,
+    marginVertical: 10,
+    alignItems: "center",
+  },
+  placeholder: {
+    color: colors.medium,
+    flex: 1,
+  },
+  text: {
+    color: colors.dark,
+    flex: 1,
+  },
+  icon: {
+    marginRight: 10,
+  },
+});
+-------------------code----------------------
+
+---
+
+# 9. Why This Works
+
+Pattern used:
+
+-------------------code----------------------
+style={[styles.container, { width }]}
+-------------------code----------------------
+
+Advantages:
+
+* Internal base styles first
+* Dynamic override second
+* Clean and flexible
+* Reusable component
+
+---
+
+# 10. Full Final Code
+
+## AppTextInput.js
+
+-------------------code----------------------
+import React from "react";
+import { View, TextInput, StyleSheet } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import defaultStyles from "../config/styles";
+
+function AppTextInput({ icon, width = "100%", ...otherProps }) {
+  return (
+    <View style={[styles.container, { width }]}>
+      {icon && (
+        <MaterialCommunityIcons
+          name={icon}
+          size={20}
+          color={defaultStyles.colors.medium}
+          style={styles.icon}
+        />
+      )}
+      <TextInput
+        placeholderTextColor={defaultStyles.colors.medium}
+        style={defaultStyles.text}
+        {...otherProps}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: defaultStyles.colors.light,
+    borderRadius: 25,
+    flexDirection: "row",
+    padding: 15,
+    marginVertical: 10,
+  },
+  icon: {
+    marginRight: 10,
+  },
+});
+
+export default AppTextInput;
+-------------------code----------------------
+
+---
+
+## AppFormField.js
+
+-------------------code----------------------
+import { useFormikContext } from "formik";
+import AppTextInput from "../AppTextInput";
+import ErrorMessage from "./ErrorMessage";
+
+function AppFormField({ name, width, ...otherProps }) {
+  const {
+    setFieldTouched,
+    handleChange,
+    errors,
+    touched
+  } = useFormikContext();
+
+  return (
+    <>
+      <AppTextInput
+        onChangeText={handleChange(name)}
+        onBlur={() => setFieldTouched(name)}
+        width={width}
+        {...otherProps}
+      />
+      <ErrorMessage
+        error={errors[name]}
+        visible={touched[name]}
+      />
+    </>
+  );
+}
+
+export default AppFormField;
+-------------------code----------------------
+
+---
+
+## AppPicker.js
+
+-------------------code----------------------
+function AppPicker({
+  icon,
+  items,
+  placeholder,
+  selectedItem,
+  onSelectItem,
+  width = "100%"
+}) {
+  const [modalVisible, setModalVisible] = useState(false);
+
+  return (
+    <>
+      <TouchableWithoutFeedback
+        onPress={() => setModalVisible(true)}
+      >
+        <View style={[styles.container, { width }]}>
+          {icon && (
+            <MaterialCommunityIcons
+              name={icon}
+              size={20}
+              color={colors.medium}
+              style={styles.icon}
+            />
+          )}
+
+          {selectedItem ? (
+            <AppText style={styles.text}>
+              {selectedItem.label}
+            </AppText>
+          ) : (
+            <AppText style={styles.placeholder}>
+              {placeholder}
+            </AppText>
+          )}
+
+          <MaterialCommunityIcons
+            name="chevron-down"
+            size={20}
+            color={colors.medium}
+          />
+        </View>
+      </TouchableWithoutFeedback>
+
+      <Modal visible={modalVisible} animationType="slide">
+        <Screen>
+          <Button
+            title="Close"
+            onPress={() => setModalVisible(false)}
+          />
+          <FlatList
+            data={items}
+            keyExtractor={(item) =>
+              item.value.toString()
+            }
+            renderItem={({ item }) => (
+              <PickerItem
+                label={item.label}
+                onPress={() => {
+                  setModalVisible(false);
+                  onSelectItem(item);
+                }}
+              />
+            )}
+          />
+        </Screen>
+      </Modal>
+    </>
+  );
+}
+-------------------code----------------------
+
+## AppPicker.js
+
+-------------------code----------------------
+import React from "react";
+import { StyleSheet } from "react-native";
+import * as Yup from "yup";
+
+import Screen from "../components/Screen";
+import AppForm from "../components/forms/AppForm";
+import AppFormField from "../components/forms/AppFormField";
+import AppFormPicker from "../components/forms/AppFormPicker";
+import SubmitButton from "../components/forms/SubmitButton";
+
+const validationSchema = Yup.object().shape({
+  title: Yup.string().required().min(1).label("Title"),
+  price: Yup.number().required().min(1).max(10000).label("Price"),
+  category: Yup.object().required().nullable().label("Category"),
+  description: Yup.string().label("Description"),
+});
+
+function ListingEditScreen() {
+  return (
+    <Screen style={styles.container}>
+      <AppForm
+        initialValues={{
+          title: "",
+          price: "",
+          category: null,
+          description: "",
+        }}
+        onSubmit={(values) => console.log(values)}
+        validationSchema={validationSchema}
+      >
+        <AppFormField
+          name="title"
+          placeholder="Title"
+        />
+
+        <AppFormField
+          name="price"
+          placeholder="Price"
+          keyboardType="numeric"
+          width={120}
+        />
+
+        <AppFormPicker
+          name="category"
+          placeholder="Category"
+          items={[]}
+          width="50%"
+        />
+
+        <AppFormField
+          name="description"
+          placeholder="Description"
+          multiline
+          numberOfLines={3}
+        />
+
+        <SubmitButton title="Post" />
+      </AppForm>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 10,
+  },
+});
+
+export default ListingEditScreen;
+-------------------code----------------------
+
+
+## AppFormPicker.js
+
+-------------------code----------------------
+import React from "react";
+import { useFormikContext } from "formik";
+
+import AppPicker from "../AppPicker";
+import ErrorMessage from "./ErrorMessage";
+
+function AppFormPicker({
+  items,
+  name,
+  placeholder,
+  width
+}) {
+  const {
+    errors,
+    setFieldValue,
+    touched,
+    values
+  } = useFormikContext();
+
+  return (
+    <>
+      <AppPicker
+        items={items}
+        onSelectItem={(item) => setFieldValue(name, item)}
+        placeholder={placeholder}
+        selectedItem={values[name]}
+        width={width}
+      />
+      <ErrorMessage
+        error={errors[name]}
+        visible={touched[name]}
+      />
+    </>
+  );
+}
+
+export default AppFormPicker;
+-------------------code----------------------
+---
+
+# 11. Best Practices
+
+1. Never hard-code layout values inside reusable components.
+2. Always provide sensible default values.
+3. Pass props down cleanly.
+4. Use style arrays for flexibility.
+5. Keep UI proportional to content.
+
+---
+
+# 12. Summary
+
+In this lecture, we:
+
+1. Identified poor UI caused by fixed 100% width.
+2. Added dynamic width support to:
+
+   * AppTextInput
+   * AppFormField
+   * AppFormPicker
+   * AppPicker
+3. Used default values to preserve existing behavior.
+4. Applied consistent style merging patterns.
+
+Key takeaway:
+
+Reusable components should never hard-code layout constraints.
+Always design them to be flexible and configurable.
