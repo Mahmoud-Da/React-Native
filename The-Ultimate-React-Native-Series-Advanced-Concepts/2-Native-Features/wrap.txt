@@ -1,0 +1,112 @@
+*** 1- Introduction ***
+# Accessing Native Device Features in React Native
+
+## 1. Introduction
+
+This lecture introduces a new section focused on **accessing native device features in React Native applications**.
+
+Mobile devices provide access to powerful hardware and system capabilities such as cameras, location services, storage, and sensors. React Native allows developers to interact with these features to build more advanced and practical mobile applications.
+
+In this section, the application built earlier in the course will be **enhanced with new capabilities that rely on device features**.
+
+---
+
+# 2. Objective of This Section
+
+The main goal of this section is to **extend the functionality of the existing app** by integrating native device capabilities.
+
+Previously, the app likely handled basic UI and data operations. Now it will be upgraded to support features commonly found in real-world applications.
+
+These improvements will allow the app to:
+
+* Capture or select images
+* Attach images to listings
+* Retrieve the user's geographic location
+* Include location data when posting listings
+
+This represents a significant step toward building **production-ready mobile apps**.
+
+---
+
+# 3. Adding Images to Listings
+
+One of the key improvements introduced in this section is the ability to **add images to listings**.
+
+Users will be able to:
+
+* Select images from their device
+* Attach those images to a listing
+* Submit the listing along with the selected images
+
+Images are an essential feature in many applications such as:
+
+* Marketplace apps
+* Real estate apps
+* Social platforms
+* Product listing apps
+
+Adding image support greatly improves the **usability and realism of the application**.
+
+---
+
+# 4. Including User Location
+
+Another feature added in this section is **capturing the user's location**.
+
+When a user posts a listing:
+
+* The app will retrieve the device's geographic location
+* The location data will be attached to the listing
+* This information can later be used for location-based features
+
+Examples of location-based features include:
+
+* Showing nearby listings
+* Displaying listings on a map
+* Filtering listings by location
+
+Location integration is commonly used in apps such as:
+
+* Marketplace platforms
+* Food delivery services
+* Ride-sharing applications
+* Local services apps
+
+---
+
+# 5. Moving the App to the Next Level
+
+This section marks an important transition in the course.
+
+The app will evolve from a **simple demonstration project** into a **more realistic mobile application** by incorporating device-level functionality.
+
+Key improvements include:
+
+* Media integration (images)
+* Device data access (location)
+* Enhanced listing submission
+
+These capabilities reflect the types of features commonly required in **real production applications**.
+
+---
+
+# 6. Learning Goals for This Section
+
+By completing this section, students will learn how to:
+
+* Access native device capabilities in React Native
+* Work with images inside a mobile application
+* Capture and use user location data
+* Attach device-generated data to app content
+
+These skills are essential for building **fully functional mobile apps**.
+
+---
+
+# 7. Key Takeaways
+
+* This section focuses on **accessing native device features**.
+* The application will be enhanced to support **image uploads for listings**.
+* User **location data will be captured and attached to listings**.
+* These improvements transform the app into a **more realistic and feature-rich mobile application**.
+* Learning to use device features is an essential skill for professional React Native development.
