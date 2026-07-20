@@ -2161,27 +2161,30 @@ export default AppPicker;
 ## 13. Example Usage – App.js
 
 -------------------code----------------------
-import AppTextInput from "./app/components/AppTextInput.js";
-import AppPicker from "./app/components/AppPicker.js";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import AppPicker from "./app/components/AppPicker.js";
+import AppTextInput from "./app/components/AppTextInput.js";
+import Screen from "./app/components/Screen.js";
 
 
 export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <AppPicker
-        placeholder="Category"
-        icon="apps"
-      />
+      <Screen>
+        <AppPicker
+          placeholder="Category"
+          icon="apps"
+        />
 
-      <AppTextInput
-        placeholder="Email"
-        icon="email"
-      />
+        <AppTextInput
+          placeholder="Email"
+          icon="email"
+        />
+      </Screen>
+
     </GestureHandlerRootView>)
-
 }
---------code----------------------
+-------------------code----------------------
 
 ---
 
@@ -2254,3 +2257,478 @@ Modal
 List of options
 
 This is foundation for building production-level picker components in React Native apps.
+
+*** 8- Modal ***
+# React Native Custom Picker – Showing Modal (Part 2)
+
+## 1. Goal of This Lesson
+
+In this lesson, you add functionality to the AppPicker component so that:
+
+When user taps the picker → a Modal appears
+
+This Modal will later display the list of picker items.
+
+In this lesson, you only learn:
+
+How to open Modal
+How to close Modal
+How to control Modal visibility
+
+---
+
+# 2. Step 1: Wrap Picker with Touchable Component
+
+## Why
+
+To detect user taps.
+
+Component used:
+
+TouchableWithoutFeedback
+
+Reason:
+
+Picker should open Modal without visual press effect.
+
+## Import
+
+-------------------code----------------------
+import { TouchableWithoutFeedback } from "react-native";
+-------------------code----------------------
+
+## Wrap Picker UI
+
+Before:
+
+-------------------code----------------------
+<View style={styles.container}>
+-------------------code----------------------
+
+After:
+
+-------------------code----------------------
+<TouchableWithoutFeedback onPress={() => {}}>
+  <View style={styles.container}>
+    ...
+  </View>
+</TouchableWithoutFeedback>
+-------------------code----------------------
+
+---
+
+# 3. Step 2: Add Modal Component
+
+## What is Modal
+
+Modal is a screen that appears above everything else.
+
+Example:
+
+Picker popup
+Dialog
+Alert
+
+## Import
+
+-------------------code----------------------
+import { Modal } from "react-native";
+-------------------code----------------------
+
+## Add Modal
+
+-------------------code----------------------
+<Modal visible={true}>
+</Modal>
+-------------------code----------------------
+
+visible controls whether modal shows.
+
+---
+
+# 4. Step 3: Fix React Error (Multiple Root Elements)
+
+Problem:
+
+React components must return ONE root element.
+
+Wrong:
+
+-------------------code----------------------
+return (
+  <TouchableWithoutFeedback />
+  <Modal />
+);
+-------------------code----------------------
+
+Correct: Wrap inside Fragment
+
+Option 1:
+
+-------------------code----------------------
+<React.Fragment>
+-------------------code----------------------
+
+Option 2 (Best):
+
+-------------------code----------------------
+<>
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+return (
+  <>
+    <TouchableWithoutFeedback>
+      ...
+    </TouchableWithoutFeedback>
+
+    <Modal visible={true}>
+    </Modal>
+  </>
+);
+-------------------code----------------------
+
+---
+
+# 5. Step 4: Add State to Control Modal
+
+Modal visibility must be dynamic.
+
+Use useState.
+
+## Import
+
+-------------------code----------------------
+import React, { useState } from "react";
+-------------------code----------------------
+
+## Create state
+
+-------------------code----------------------
+const [modalVisible, setModalVisible] = useState(false);
+-------------------code----------------------
+
+Initial value:
+
+false → hidden
+
+---
+
+# 6. Step 5: Connect State to Modal
+
+Bind visible prop:
+
+-------------------code----------------------
+<Modal visible={modalVisible}>
+-------------------code----------------------
+
+---
+
+# 7. Step 6: Open Modal on Picker Press
+
+Update TouchableWithoutFeedback:
+
+-------------------code----------------------
+<TouchableWithoutFeedback
+  onPress={() => setModalVisible(true)}
+>
+-------------------code----------------------
+
+Now:
+
+Tap picker → Modal opens
+
+---
+
+# 8. Step 7: Add Close Button Inside Modal
+
+Add Button:
+
+-------------------code----------------------
+import { Button } from "react-native";
+-------------------code----------------------
+
+Add inside Modal:
+
+-------------------code----------------------
+<Button
+  title="Close"
+  onPress={() => setModalVisible(false)}
+/>
+-------------------code----------------------
+
+Tap button → Modal closes
+
+---
+
+# 9. Step 8: Add Animation
+
+Modal supports animations.
+
+Property:
+
+animationType
+
+Options:
+
+slide
+fade
+none
+
+Example:
+
+-------------------code----------------------
+<Modal
+  visible={modalVisible}
+  animationType="slide"
+>
+-------------------code----------------------
+
+Result:
+
+Modal slides from bottom.
+
+---
+
+# 10. Step 9: Fix Notch Problem Using Screen Component
+
+Problem:
+
+Button hidden behind iPhone notch.
+
+Solution:
+
+Wrap Modal content with Screen component.
+
+Example:
+
+-------------------code----------------------
+<Modal visible={modalVisible} animationType="slide">
+
+  <Screen>
+
+    <Button
+      title="Close"
+      onPress={() => setModalVisible(false)}
+    />
+
+  </Screen>
+
+</Modal>
+-------------------code----------------------
+
+Screen component handles safe area.
+
+---
+
+# 11. Final Code – AppPicker.js
+
+-------------------code----------------------
+import React, { useState } from "react";
+
+import {
+  View,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  Modal,
+  Button
+} from "react-native";
+
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+
+import AppText from "./AppText";
+import Screen from "./Screen";
+import colors from "../config/colors";
+
+function AppPicker({ icon, placeholder }) {
+
+  const [modalVisible, setModalVisible] = useState(false);
+
+  return (
+    <>
+
+      <TouchableWithoutFeedback
+        onPress={() => setModalVisible(true)}
+      >
+
+        <View style={styles.container}>
+
+          {icon && (
+            <MaterialCommunityIcons
+              name={icon}
+              size={20}
+              color={colors.medium}
+              style={styles.icon}
+            />
+          )}
+
+          <AppText style={styles.text}>
+            {placeholder}
+          </AppText>
+
+          <MaterialCommunityIcons
+            name="chevron-down"
+            size={20}
+            color={colors.medium}
+          />
+
+        </View>
+
+      </TouchableWithoutFeedback>
+
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+      >
+
+        <Screen>
+
+          <Button
+            title="Close"
+            onPress={() => setModalVisible(false)}
+          />
+
+        </Screen>
+
+      </Modal>
+
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+
+  container: {
+    backgroundColor: colors.light,
+    borderRadius: 25,
+    flexDirection: "row",
+    width: "100%",
+    padding: 15,
+    marginVertical: 10,
+    alignItems: "center",
+  },
+
+  text: {
+    flex: 1,
+  },
+
+  icon: {
+    marginRight: 10,
+  },
+
+});
+
+export default AppPicker;
+-------------------code----------------------
+
+---
+
+# 12. How It Works – Step-by-Step Flow
+
+Initial state:
+
+modalVisible = false
+
+User taps picker:
+
+TouchableWithoutFeedback fires
+
+setModalVisible(true)
+
+Modal opens
+
+User presses Close:
+
+setModalVisible(false)
+
+Modal closes
+
+---
+
+# 13. Visual Flow Diagram
+
+Picker Pressed
+
+↓
+
+Modal Appears
+
+↓
+
+Close Pressed
+
+↓
+
+Modal Disappears
+
+---
+
+# 14. Important Notes and Best Practices
+
+Always control Modal using state.
+
+Use TouchableWithoutFeedback for picker.
+
+Use Fragment <> to wrap multiple elements.
+
+Use Screen inside Modal for safe area.
+
+Use animationType="slide" for better UX.
+
+Never use static visible={true}
+
+Always dynamic.
+
+---
+
+# 15. What You Built So Far
+
+Your Picker now supports:
+
+UI Design
+Icon
+Placeholder
+Chevron
+Tap detection
+Modal popup
+Open animation
+Close button
+
+---
+
+# 16. What’s Next
+
+Next lesson will implement:
+
+List of picker items
+
+User selection
+
+Updating selected value
+
+Real picker behavior
+
+---
+
+# 17. Summary
+
+In this lesson, you learned how to show and hide a Modal in React Native.
+
+You used:
+
+TouchableWithoutFeedback
+Modal
+useState
+
+You implemented:
+
+Opening Modal
+Closing Modal
+Animation
+Safe area support
+
+Your AppPicker is now interactive.
+
+Next step is adding selectable items inside Modal.
