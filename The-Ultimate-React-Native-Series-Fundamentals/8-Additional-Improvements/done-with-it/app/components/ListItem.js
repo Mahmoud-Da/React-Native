@@ -31,12 +31,12 @@ function ListItem({
           )}
 
           <View style={styles.detailsContainer}>
-            <AppText style={styles.title}>
+            <AppText style={styles.title} numberOfLines={1}>
               {title}
             </AppText>
 
             {subtitle && (
-              <AppText style={styles.subtitle}>
+              <AppText style={styles.subtitle} numberOfLines={2}>
                 {subtitle}
               </AppText>
             )}
