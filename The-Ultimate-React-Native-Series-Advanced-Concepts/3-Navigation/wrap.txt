@@ -1819,3 +1819,201 @@ Flow learned:
 3. Override specific screens
 
 This gives you full control over your app’s header design.
+
+*** 8- Creating a TabNavigator ***
+# 1. Overview of the Lecture
+
+This lecture explains how to **add Bottom Tab Navigation** in React Navigation.
+
+Key ideas:
+
+* Install and use **Bottom Tab Navigator**
+* Create tabs similar to stack navigator
+* Each tab represents a **main screen**
+* Replace stack navigator with tab navigator
+
+---
+
+# 2. What is Bottom Tab Navigation?
+
+Bottom tabs allow users to switch between main sections of the app.
+
+### Example:
+
+* Feed
+* Account
+
+Each tab:
+
+* Has a label
+* Renders a screen when selected
+
+---
+
+# 3. Step 1 – Install Bottom Tabs Library
+
+Each navigator is a separate package.
+
+-------------------code----------------------
+npm install @react-navigation/bottom-tabs@5.4.4
+-------------------code----------------------
+
+---
+
+# 4. Step 2 – Import and Initialize Tabs
+
+-------------------code----------------------
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+
+const Tab = createBottomTabNavigator();
+-------------------code----------------------
+
+### Explanation:
+
+* `Tab` object contains:
+
+  * `Tab.Navigator`
+  * `Tab.Screen`
+
+---
+
+# 5. Step 3 – Create Screens
+
+### Tweets (Feed)
+
+-------------------code----------------------
+const Tweets = () => (
+  <Screen>
+    <Text>Tweets</Text>
+  </Screen>
+);
+-------------------code----------------------
+
+---
+
+### Account Screen
+
+-------------------code----------------------
+const Account = () => (
+  <Screen>
+    <Text>Account</Text>
+  </Screen>
+);
+-------------------code----------------------
+
+---
+
+# 6. Step 4 – Create Tab Navigator
+
+-------------------code----------------------
+const TabNavigator = () => (
+  <Tab.Navigator>
+    <Tab.Screen name="Feed" component={Tweets} />
+    <Tab.Screen name="Account" component={Account} />
+  </Tab.Navigator>
+);
+-------------------code----------------------
+
+### Explanation:
+
+* Each `Tab.Screen` = one tab
+* `name` = label
+* `component` = screen content
+
+---
+
+# 7. Step 5 – Use Tab Navigator in App
+
+Replace stack navigator with tab navigator:
+
+-------------------code----------------------
+const App = () => (
+  <NavigationContainer>
+    <TabNavigator />
+  </NavigationContainer>
+);
+-------------------code----------------------
+
+---
+
+# 8. Behavior of Tabs
+
+* Tabs appear at the **bottom**
+* Clicking a tab switches screens instantly
+* No stack behavior (no push/pop)
+
+---
+
+# 9. Full Final Code
+
+-------------------code----------------------
+import React from "react";
+import { Text } from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+
+import Screen from "./app/components/Screen";
+
+const Tab = createBottomTabNavigator();
+
+const Tweets = () => (
+  <Screen>
+    <Text>Tweets</Text>
+  </Screen>
+);
+
+const Account = () => (
+  <Screen>
+    <Text>Account</Text>
+  </Screen>
+);
+
+const TabNavigator = () => (
+  <Tab.Navigator>
+    <Tab.Screen name="Feed" component={Tweets} />
+    <Tab.Screen name="Account" component={Account} />
+  </Tab.Navigator>
+);
+
+const App = () => (
+  <NavigationContainer>
+    <TabNavigator />
+  </NavigationContainer>
+);
+
+export default App;
+-------------------code----------------------
+
+---
+
+# 10. Important Notes & Best Practices
+
+* Each tab should represent a **main feature**
+* Keep number of tabs small (2–5 max)
+* Use clear names (Feed, Account, Settings)
+* Tabs are not for deep navigation → use Stack inside tabs later
+* Structure:
+
+  * Tabs = main navigation
+  * Stack = detailed navigation
+
+---
+
+# 11. Summary
+
+* Bottom tabs allow switching between main app sections
+* Each tab is defined using `Tab.Screen`
+* Similar structure to stack navigator
+* Easy to integrate by replacing navigator
+
+Flow learned:
+
+1. Install tab navigator
+2. Create screens
+3. Create tab navigator
+4. Add screens as tabs
+5. Use in App
+
+Next step:
+
+* Customize tab icons, colors, and styles
