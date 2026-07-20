@@ -7143,3 +7143,4 @@ Hide Upload Screen
 -------------------code----------------------
 
 The next step is replacing the percentage text with a real progress bar and eventually showing a success animation after the upload completes.
+
