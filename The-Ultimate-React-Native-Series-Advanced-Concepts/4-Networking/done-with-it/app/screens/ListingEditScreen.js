@@ -97,18 +97,17 @@ function ListingEditScreen() {
 
     if (!result.ok) {
       setUploadVisible(false);
-      return alert("Could not save the listing");
+      alert("Could not save the listing");
+      return;
     }
-
-    setUploadVisible(false);
-    alert("Success");
   };
 
   return (
     <Screen style={styles.container}>
       <UploadScreen
-        progress={progress}
         visible={uploadVisible}
+        progress={progress}
+        onDone={() => setUploadVisible(false)}
       />
 
       <Form
