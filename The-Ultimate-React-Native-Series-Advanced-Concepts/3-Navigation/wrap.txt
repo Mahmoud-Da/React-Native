@@ -3032,3 +3032,216 @@ Flow learned:
 Next step:
 
 * Switch between AuthNavigator and AppNavigator dynamically (based on login state)
+
+*** 13- Navigation Theme ***
+# 1. Overview of the Lecture
+
+This lecture explains how to **customize the global navigation theme** in React Navigation.
+
+Key idea:
+
+* Override the default theme to match your app’s design
+* Apply consistent colors across all screens
+
+---
+
+# 2. Why Use a Custom Navigation Theme?
+
+By default:
+
+* React Navigation uses a **gray background**
+* Default colors may not match your app
+
+Solution:
+
+* Create a **custom theme**
+* Apply your own color palette globally
+
+---
+
+# 3. Step 1 – Create Theme File
+
+Create a new file:
+
+-------------------code----------------------
+app/navigation/navigationTheme.js
+-------------------code----------------------
+
+---
+
+# 4. Step 2 – Import Default Theme
+
+-------------------code----------------------
+import { DefaultTheme } from "@react-navigation/native";
+-------------------code----------------------
+
+### Explanation:
+
+* `DefaultTheme` is a JavaScript object
+* Contains colors and styles used by navigation
+
+---
+
+# 5. Step 3 – Create Custom Theme
+
+Use the **spread operator** to copy and override values.
+
+-------------------code----------------------
+import colors from "../config/colors";
+
+const navigationTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: colors.primary,
+    background: colors.white,
+  },
+};
+
+export default navigationTheme;
+-------------------code----------------------
+
+---
+
+# 6. Understanding the Code
+
+### Step-by-step:
+
+1. Copy entire default theme:
+
+-------------------code----------------------
+...DefaultTheme
+-------------------code----------------------
+
+2. Override only `colors`:
+
+-------------------code----------------------
+colors: { ... }
+-------------------code----------------------
+
+3. Copy existing colors:
+
+-------------------code----------------------
+...DefaultTheme.colors
+-------------------code----------------------
+
+4. Override specific values:
+
+-------------------code----------------------
+primary: colors.primary,
+background: colors.white
+-------------------code----------------------
+
+---
+
+# 7. Step 4 – Apply Theme in App.js
+
+-------------------code----------------------
+import navigationTheme from "./app/navigation/navigationTheme";
+-------------------code----------------------
+
+---
+
+### Add to NavigationContainer:
+
+-------------------code----------------------
+<NavigationContainer theme={navigationTheme}>
+-------------------code----------------------
+
+---
+
+# 8. Updated App.js
+
+-------------------code----------------------
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+
+import AuthNavigator from "./app/navigation/AuthNavigator";
+import navigationTheme from "./app/navigation/navigationTheme";
+
+const App = () => (
+  <NavigationContainer theme={navigationTheme}>
+    <AuthNavigator />
+  </NavigationContainer>
+);
+
+export default App;
+-------------------code----------------------
+
+---
+
+# 9. Result After Applying Theme
+
+* Background becomes **white instead of gray**
+* Primary color matches your app design
+* Buttons and navigation elements use your palette
+
+---
+
+# 10. Important Notes & Best Practices
+
+* Always use a centralized color file (`config/colors.js`)
+* Override only what you need (don’t rewrite everything)
+* Keep theme consistent across app
+* Use meaningful color names (`primary`, `secondary`, etc.)
+* Avoid hardcoding colors inside components
+
+---
+
+# 11. Full Final Code
+
+## 11.1 app/navigation/navigationTheme.js
+
+-------------------code----------------------
+import { DefaultTheme } from "@react-navigation/native";
+import colors from "../config/colors";
+
+const navigationTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: colors.primary,
+    background: colors.white,
+  },
+};
+
+export default navigationTheme;
+-------------------code----------------------
+
+---
+
+## 11.2 App.js
+
+-------------------code----------------------
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+
+import AuthNavigator from "./app/navigation/AuthNavigator";
+import navigationTheme from "./app/navigation/navigationTheme";
+
+const App = () => (
+  <NavigationContainer theme={navigationTheme}>
+    <AuthNavigator />
+  </NavigationContainer>
+);
+
+export default App;
+-------------------code----------------------
+
+---
+
+# 12. Summary
+
+* React Navigation uses a default theme
+* You can override it using a custom object
+* Use spread operator to extend default theme
+* Apply theme using `NavigationContainer`
+
+Flow learned:
+
+1. Create theme file
+2. Import default theme
+3. Override colors
+4. Apply theme to app
+
+This ensures your app has a **consistent and professional design system**.
