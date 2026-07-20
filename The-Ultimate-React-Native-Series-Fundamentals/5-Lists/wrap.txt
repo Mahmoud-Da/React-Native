@@ -1110,3 +1110,442 @@ Now, when a list item is tapped:
 This structure ensures **reusable, maintainable, and visually responsive list items**.
 
 ---
+
+
+*** 6- Handling Swipes ***
+# Building Swipeable List Items in React Native
+
+## 1. Goal of This Lesson
+
+Enhance the `ListItem` component so it:
+
+1. Responds to swipe gestures.
+2. Shows a red delete action when swiping left.
+3. Keeps the component reusable.
+4. Extracts the delete UI into a reusable component.
+
+We will use **React Native Gesture Handler** and the `Swipeable` component.
+
+---
+
+# 2. Installing React Native Gesture Handler
+
+## 2.1 Why Use Expo Install?
+
+When using libraries that are part of the Expo ecosystem, always install them with:
+
+-------------------code----------------------
+expo install react-native-gesture-handler
+-------------------code----------------------
+
+### Why?
+
+* Ensures compatibility with your current Expo SDK version.
+* Under the hood, Expo still uses npm or yarn.
+* Avoids version conflicts.
+
+---
+
+# 3. Understanding Swipeable
+
+From the React Native Gesture Handler documentation:
+
+* `Swipeable` allows swipe-to-left and swipe-to-right behavior.
+* It exposes:
+
+  * `renderRightActions`
+  * `renderLeftActions`
+
+In this lesson, we use:
+
+-------------------code----------------------
+renderRightActions
+-------------------code----------------------
+
+When the user swipes left, the right-side actions appear.
+
+---
+
+# 4. Step 1 – Wrap ListItem with Swipeable
+
+## 4.1 Import Swipeable
+
+In `ListItem.js`:
+
+-------------------code----------------------
+import Swipeable from "react-native-gesture-handler/Swipeable";
+-------------------code----------------------
+
+---
+
+## 4.2 Wrap the Component
+
+Instead of returning your content directly, wrap it:
+
+-------------------code----------------------
+<Swipeable renderRightActions={renderRightActions}>
+  {/* Existing List Item Content */}
+</Swipeable>
+-------------------code----------------------
+
+---
+
+## 4.3 Keep ListItem Reusable
+
+Do NOT hardcode the delete UI inside `ListItem`.
+
+Instead:
+
+1. Accept a prop called `renderRightActions`.
+2. Pass it to `Swipeable`.
+
+### Update ListItem Component
+
+-------------------code----------------------
+function ListItem({ title, subTitle, renderRightActions, onPress }) {
+  return (
+    <Swipeable renderRightActions={renderRightActions}>
+      <TouchableHighlight
+        underlayColor={colors.light}
+        onPress={onPress}
+      >
+        <View style={styles.container}>
+          <Text>{title}</Text>
+          <Text>{subTitle}</Text>
+        </View>
+      </TouchableHighlight>
+    </Swipeable>
+  );
+}
+-------------------code----------------------
+
+Now the consumer decides what appears on swipe.
+
+---
+
+# 5. Step 2 – Test Swipe in Messages Screen
+
+In `MessagesScreen.js`, pass a temporary inline function:
+
+-------------------code----------------------
+renderRightActions={() => (
+  <View
+    style={{
+      backgroundColor: "red",
+      width: 70,
+    }}
+  />
+)}
+-------------------code----------------------
+
+Test:
+
+* Swipe left.
+* You should see a red box.
+
+This confirms `Swipeable` works.
+
+---
+
+# 6. Step 3 – Extract Delete Action into Reusable Component
+
+We should not repeat inline red-box logic everywhere.
+
+Create:
+
+-------------------code----------------------
+components/ListItemDeleteAction.js
+-------------------code----------------------
+
+---
+
+# 7. Step 4 – Create Color Palette Update
+
+In `config/colors.js`, add:
+
+-------------------code----------------------
+export default {
+  primary: "#fc5c65",
+  secondary: "#4ecdc4",
+  white: "#fff",
+  light: "#f8f4f4",
+  danger: "#ff5252",
+};
+-------------------code----------------------
+
+`danger` is a softer red.
+
+---
+
+# 8. Step 5 – Implement ListItemDeleteAction Component
+
+## 8.1 Basic Structure
+
+-------------------code----------------------
+import React from "react";
+import { View, StyleSheet } from "react-native";
+import colors from "../config/colors";
+
+function ListItemDeleteAction() {
+  return <View style={styles.container} />;
+}
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: colors.danger,
+    width: 70,
+  },
+});
+
+export default ListItemDeleteAction;
+-------------------code----------------------
+
+---
+
+# 9. Step 6 – Use Delete Component in Messages Screen
+
+Instead of inline red view:
+
+-------------------code----------------------
+renderRightActions={ListItemDeleteAction}
+-------------------code----------------------
+
+Important:
+
+We are passing a reference, NOT rendering it:
+
+Correct:
+
+-------------------code----------------------
+renderRightActions={ListItemDeleteAction}
+-------------------code----------------------
+
+Wrong:
+
+-------------------code----------------------
+renderRightActions={<ListItemDeleteAction />}
+-------------------code----------------------
+
+---
+
+# 10. Step 7 – Add Trash Icon
+
+## 10.1 Import Icon
+
+Inside `ListItemDeleteAction.js`:
+
+-------------------code----------------------
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+-------------------code----------------------
+
+---
+
+## 10.2 Add Icon
+
+Update component:
+
+-------------------code----------------------
+function ListItemDeleteAction() {
+  return (
+    <View style={styles.container}>
+      <MaterialCommunityIcons
+        name="trash-can"
+        size={35}
+        color={colors.white}
+      />
+    </View>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 11. Step 8 – Center the Icon
+
+Update styles:
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: colors.danger,
+    width: 70,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
+-------------------code----------------------
+
+Now the trash icon is perfectly centered.
+
+---
+
+# 12. Full Final Code
+
+## 12.1 config/colors.js
+
+-------------------code----------------------
+export default {
+  primary: "#fc5c65",
+  secondary: "#4ecdc4",
+  white: "#fff",
+  light: "#f8f4f4",
+  danger: "#ff5252",
+};
+-------------------code----------------------
+
+---
+
+## 12.2 components/ListItemDeleteAction.js
+
+-------------------code----------------------
+import React from "react";
+import { View, StyleSheet } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import colors from "../config/colors";
+
+function ListItemDeleteAction() {
+  return (
+    <View style={styles.container}>
+      <MaterialCommunityIcons
+        name="trash-can"
+        size={35}
+        color={colors.white}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: colors.danger,
+    width: 70,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
+
+export default ListItemDeleteAction;
+-------------------code----------------------
+
+---
+
+## 12.3 components/ListItem.js
+
+-------------------code----------------------
+import { Image, StyleSheet, TouchableHighlight, View } from 'react-native';
+import Swipeable from "react-native-gesture-handler/Swipeable";
+import colors from '../config/colors';
+import AppText from './AppText';
+
+function ListItem({ title, subtitle, image, onPress, renderRightActions }) {
+  return (
+    <Swipeable renderRightActions={renderRightActions}>
+      <TouchableHighlight
+        underlayColor={colors.light}
+        onPress={onPress}
+      >
+
+        <View style={styles.container}>
+          <Image source={image} style={styles.image} />
+
+          <View>
+            <AppText style={styles.title}>{title}</AppText>
+            <AppText style={styles.subtitle}>{subtitle}</AppText>
+          </View>
+        </View>
+      </TouchableHighlight>
+    </Swipeable>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    padding: 15,
+  },
+  image: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    marginRight: 10,
+  },
+  title: {
+    fontWeight: '500',
+  },
+  subtitle: {
+    color: colors.medium,
+  },
+});
+
+export default ListItem;
+-------------------code----------------------
+
+---
+
+## 12.4 screens/MessagesScreen.js (Usage)
+
+-------------------code----------------------
+import React from "react";
+import { FlatList } from "react-native";
+import ListItem from "../components/ListItem";
+import ListItemDeleteAction from "../components/ListItemDeleteAction";
+
+function MessagesScreen() {
+  return (
+    <FlatList
+      data={messages}
+      keyExtractor={(item) => item.id.toString()}
+      renderItem={({ item }) => (
+        <ListItem
+          title={item.title}
+          subTitle={item.description}
+          renderRightActions={ListItemDeleteAction}
+          onPress={() => console.log("Message selected", item)}
+        />
+      )}
+    />
+  );
+}
+-------------------code----------------------
+
+
+App.js
+-------------------code----------------------
+import MessagesScreen from "./app/screens/MessagesScreen";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
+
+export default function App() {
+  return (<GestureHandlerRootView style={{ flex: 1 }}> <MessagesScreen />;</GestureHandlerRootView>)
+
+}
+-------------------code----------------------
+---
+
+# 13. Important Notes and Best Practices
+
+1. Always install Expo-supported libraries using `expo install`.
+2. Keep components reusable:
+
+   * Do not hardcode logic.
+   * Accept props for behavior.
+3. Extract repeated UI into separate components.
+4. Use a centralized color palette.
+5. Pass component references to `renderRightActions`, not JSX.
+6. Keep styles clean and consistent.
+
+---
+
+# 14. Summary
+
+In this lesson, you learned how to:
+
+1. Install and use React Native Gesture Handler.
+2. Wrap a component with `Swipeable`.
+3. Use `renderRightActions` to show actions on swipe.
+4. Keep components reusable by passing behavior via props.
+5. Extract delete UI into a reusable component.
+6. Add and style icons using Expo vector icons.
+7. Center elements properly using flexbox.
+
+You now have a professional, reusable swipe-to-delete list item pattern that can be reused across your app.
