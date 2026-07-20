@@ -406,3 +406,353 @@ export default MessagesScreen;
 * The safe area issue was identified and deferred to the next lesson
 
 This screen forms the foundation for more advanced list features coming next.
+
+
+*** 3- Extracting the Screen Component ***
+
+---
+
+# Fixing Safe Area Issues and Creating a Reusable Screen Component
+
+## 1. Problem: Content Under the Status Bar
+
+When rendering the `MessagesScreen`, the content appears:
+
+* Under the status bar on Android
+* Properly spaced on iOS (after using `SafeAreaView`)
+
+### Why?
+
+* `SafeAreaView` only fully solves this issue on **iOS**
+* On Android, additional padding is required
+
+---
+
+# Part 1: Basic SafeAreaView Fix
+
+## 2. Wrapping Content in SafeAreaView
+
+### Step 1: Import SafeAreaView
+
+-------------------code----------------------
+import { SafeAreaView } from "react-native";
+-------------------code----------------------
+
+### Step 2: Wrap the Screen Content
+
+-------------------code----------------------
+<SafeAreaView>
+  <FlatList ... />
+</SafeAreaView>
+-------------------code----------------------
+
+Result:
+
+* iOS issue resolved
+* Android still has overlap
+
+---
+
+# Part 2: Fixing Android with Platform and StatusBar
+
+## 3. Detect Platform and Apply Padding
+
+### Step 1: Import Required APIs
+
+-------------------code----------------------
+import { StyleSheet, Platform, StatusBar } from "react-native";
+-------------------code----------------------
+
+### Step 2: Create a Style for the Screen
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  screen: {
+    paddingTop:
+      Platform.OS === "android" ? StatusBar.currentHeight : 0,
+  },
+});
+-------------------code----------------------
+
+### Step 3: Apply the Style
+
+-------------------code----------------------
+<SafeAreaView style={styles.screen}>
+  <FlatList ... />
+</SafeAreaView>
+-------------------code----------------------
+
+Result:
+
+* Works on iOS
+* Works on Android
+
+However, this approach requires repeating the same logic in every screen.
+
+---
+
+# Part 3: Better Approach Using expo-constants
+
+Instead of manually checking the platform, we can use `expo-constants`.
+
+## 4. Install expo-constants
+
+-------------------code----------------------
+npm i expo-constants
+-------------------code----------------------
+
+---
+
+## 5. Import Constants
+
+-------------------code----------------------
+import Constants from "expo-constants";
+-------------------code----------------------
+
+Important:
+
+* No curly braces
+* It is a default export
+
+---
+
+## 6. Use Constants for Status Bar Height
+
+Replace the previous platform logic with:
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  screen: {
+    paddingTop: Constants.statusBarHeight,
+  },
+});
+-------------------code----------------------
+
+Why this works:
+
+* On Android → returns 24px
+* On iOS → returns 44px
+* SafeAreaView already handles iOS safe area
+* Extra padding does not negatively affect iOS
+
+Now:
+
+* Platform API is no longer needed
+* StatusBar API is no longer needed
+* Code is simpler
+
+---
+
+# Part 4: Avoid Repetition (Create Reusable Screen Component)
+
+Problem:
+Every new screen would require:
+
+* Import SafeAreaView
+* Import Constants
+* Add padding style
+* Apply styles
+
+This is repetitive.
+
+Solution:
+Create a reusable `Screen` component.
+
+---
+
+# Part 5: Creating the Screen Component
+
+## 7. Create a New File
+
+-------------------code----------------------
+components/Screen.js
+-------------------code----------------------
+
+---
+
+## 8. Implement Screen Component
+
+### Step 1: Imports
+
+-------------------code----------------------
+import React from "react";
+import { SafeAreaView, StyleSheet } from "react-native";
+import Constants from "expo-constants";
+-------------------code----------------------
+
+---
+
+### Step 2: Create Styles
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  screen: {
+    paddingTop: Constants.statusBarHeight,
+  },
+});
+-------------------code----------------------
+
+---
+
+### Step 3: Accept and Render Children
+
+-------------------code----------------------
+function Screen({ children }) {
+  return (
+    <SafeAreaView style={styles.screen}>
+      {children}
+    </SafeAreaView>
+  );
+}
+-------------------code----------------------
+
+This allows us to use it like `SafeAreaView`.
+
+---
+
+### Step 4: Export
+
+-------------------code----------------------
+export default Screen;
+-------------------code----------------------
+
+---
+
+# Part 6: Using the Screen Component
+
+## 9. Update MessagesScreen
+
+### Step 1: Import Screen
+
+-------------------code----------------------
+import Screen from "../components/Screen";
+-------------------code----------------------
+
+### Step 2: Replace SafeAreaView
+
+Before:
+
+-------------------code----------------------
+<SafeAreaView style={styles.screen}>
+  <FlatList ... />
+</SafeAreaView>
+-------------------code----------------------
+
+After:
+
+-------------------code----------------------
+<Screen>
+  <FlatList ... />
+</Screen>
+-------------------code----------------------
+
+Now:
+
+* No SafeAreaView import needed
+* No Constants import needed
+* No screen style needed
+
+Code is cleaner and reusable.
+
+---
+
+# 10. Final Code
+
+---
+
+## Screen.js
+
+-------------------code----------------------
+import React from "react";
+import { SafeAreaView, StyleSheet } from "react-native";
+import Constants from "expo-constants";
+
+function Screen({ children }) {
+  return (
+    <SafeAreaView style={styles.screen}>
+      {children}
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: {
+    paddingTop: Constants.statusBarHeight,
+  },
+});
+
+export default Screen;
+-------------------code----------------------
+
+---
+
+## MessagesScreen.js
+
+-------------------code----------------------
+import React from "react";
+import { FlatList } from "react-native";
+import Screen from "../components/Screen";
+import ListItem from "../components/ListItem";
+
+const messages = [
+  {
+    id: 1,
+    title: "t1",
+    description: "d1",
+    image: require("../assets/mosh.jpg"),
+  },
+  {
+    id: 2,
+    title: "t2",
+    description: "d2",
+    image: require("../assets/mosh.jpg"),
+  },
+];
+
+function MessagesScreen() {
+  return (
+    <Screen>
+      <FlatList
+        data={messages}
+        keyExtractor={(message) => message.id.toString()}
+        renderItem={({ item }) => (
+          <ListItem
+            title={item.title}
+            subtitle={item.description}
+            image={item.image}
+          />
+        )}
+      />
+    </Screen>
+  );
+}
+
+export default MessagesScreen;
+-------------------code----------------------
+
+---
+
+# 11. Best Practices
+
+1. Always protect screens from status bar overlap.
+2. Avoid duplicating platform logic in multiple screens.
+3. Encapsulate repeated layout logic in reusable components.
+4. Prefer `expo-constants` for clean status bar handling.
+5. Keep screens clean and focused on layout.
+
+---
+
+# 12. Summary
+
+In this lesson, we:
+
+* Fixed the status bar overlap issue
+* Learned that `SafeAreaView` alone is not enough for Android
+* Used `expo-constants` to simplify platform detection
+* Eliminated repeated code by creating a reusable `Screen` component
+* Refactored `MessagesScreen` to use the new component
+
+Result:
+Cleaner, reusable, maintainable screen structure across the entire app.
+
+Next step: Adding separators between list items.

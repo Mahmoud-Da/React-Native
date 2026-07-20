@@ -1,5 +1,6 @@
 import React from "react";
-import { View, FlatList } from "react-native";
+import { FlatList } from "react-native";
+import Screen from "../components/Screen";
 import ListItem from "../components/ListItem";
 
 const messages = [
@@ -19,7 +20,7 @@ const messages = [
 
 function MessagesScreen() {
   return (
-    <View>
+    <Screen>
       <FlatList
         data={messages}
         keyExtractor={(message) => message.id.toString()}
@@ -31,7 +32,7 @@ function MessagesScreen() {
           />
         )}
       />
-    </View>
+    </Screen>
   );
 }
 
