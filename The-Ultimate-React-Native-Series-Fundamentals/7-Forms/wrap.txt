@@ -1094,7 +1094,7 @@ export default function App() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <LoginScreen />;
+      <LoginScreen />
     </GestureHandlerRootView>
   );
 }
@@ -2352,3 +2352,493 @@ Clean code
 Easy to scale
 
 Industry standard approach
+
+*** 5- Building the ErrorMessage Component ***
+# Creating a Reusable ErrorMessage Component — Structured Notes
+
+This lecture explains how to create a **reusable component for displaying validation errors**, instead of repeating `<AppText>` everywhere.
+
+This improves:
+
+* Code cleanliness
+* Reusability
+* Maintainability
+
+---
+
+# 1. Problem With Current Approach
+
+Previously, errors were displayed like this:
+
+-------------------code----------------------
+<AppText style={{ color: "red" }}>
+   {errors.email}
+</AppText>
+-------------------code----------------------
+
+Problems:
+
+* Repeated code
+* Hard to maintain
+* Not reusable
+* Styling duplicated everywhere
+
+Solution: Create reusable ErrorMessage component
+
+---
+
+# 2. Create ErrorMessage Component File
+
+## Step 1: Create file
+
+Location:
+
+-------------------code----------------------text
+components/ErrorMessage.js
+-------------------code----------------------
+
+---
+
+# 3. Create Basic Component
+
+## Step 1: Create function component
+
+-------------------code----------------------
+import React from "react";
+
+function ErrorMessage(props) {
+
+}
+
+export default ErrorMessage;
+-------------------code----------------------
+
+---
+
+# 4. Import Required Components
+
+We need:
+
+* AppText → to display message
+* StyleSheet → for styling
+
+## Step 1: Import AppText
+
+-------------------code----------------------
+import AppText from "./AppText";
+-------------------code----------------------
+
+---
+
+## Step 2: Import StyleSheet
+
+-------------------code----------------------
+import { StyleSheet } from "react-native";
+-------------------code----------------------
+
+---
+
+# 5. Extract Error Prop
+
+ErrorMessage will receive error as prop.
+
+Example usage later:
+
+-------------------code----------------------
+<ErrorMessage error={errors.email} />
+-------------------code----------------------
+
+Extract error using destructuring:
+
+-------------------code----------------------
+function ErrorMessage({ error }) {
+
+}
+-------------------code----------------------
+
+---
+
+# 6. Display Error Message
+
+## Step 1: Render AppText
+
+-------------------code----------------------
+function ErrorMessage({ error }) {
+
+   return (
+
+      <AppText>
+         {error}
+      </AppText>
+
+   );
+
+}
+-------------------code----------------------
+
+---
+
+# 7. Prevent Rendering Empty Errors
+
+Problem:
+
+If error is empty or undefined:
+
+Bad:
+
+Empty AppText renders.
+
+Solution:
+
+Return null.
+
+## Step 1: Add condition
+
+-------------------code----------------------
+function ErrorMessage({ error }) {
+
+   if (!error)
+      return null;
+
+   return (
+
+      <AppText>
+         {error}
+      </AppText>
+
+   );
+
+}
+-------------------code----------------------
+
+Explanation:
+
+null means render nothing.
+
+Best practice in React.
+
+---
+
+# 8. Add Styling
+
+Error messages should be red.
+
+---
+
+## Step 1: Create styles
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+
+   error: {
+
+      color: "red"
+
+   }
+
+});
+-------------------code----------------------
+
+---
+
+## Step 2: Apply style
+
+-------------------code----------------------
+<AppText style={styles.error}>
+   {error}
+</AppText>
+-------------------code----------------------
+
+---
+
+# 9. Final ErrorMessage Component
+
+-------------------code----------------------
+function ErrorMessage({ error }) {
+
+   if (!error)
+      return null;
+
+   return (
+
+      <AppText style={styles.error}>
+         {error}
+      </AppText>
+
+   );
+
+}
+-------------------code----------------------
+
+---
+
+# 10. Use ErrorMessage in LoginScreen
+
+Replace old AppText error display.
+
+---
+
+## Before:
+
+-------------------code----------------------
+<AppText style={{ color: "red" }}>
+   {errors.email}
+</AppText>
+-------------------code----------------------
+
+---
+
+## After:
+
+-------------------code----------------------
+<ErrorMessage error={errors.email} />
+-------------------code----------------------
+
+---
+
+## Password:
+
+-------------------code----------------------
+<ErrorMessage error={errors.password} />
+-------------------code----------------------
+
+---
+
+# 11. Important Problem: Wrong Auto Import
+
+Error received:
+
+-------------------code----------------------text
+Objects are not valid as a React child
+-------------------code----------------------
+
+Cause:
+
+Wrong import:
+
+Formik also has component called ErrorMessage.
+
+Wrong:
+
+-------------------code----------------------
+import { ErrorMessage } from "formik";
+-------------------code----------------------
+
+Correct:
+
+-------------------code----------------------
+import ErrorMessage from "../components/ErrorMessage";
+-------------------code----------------------
+
+Always check imports.
+
+---
+
+# 12. Best Practice: Use Unique Component Names
+
+Avoid name conflicts with libraries.
+
+Good examples:
+
+AppErrorMessage
+
+MyErrorMessage
+
+CustomErrorMessage
+
+This prevents import confusion.
+
+---
+
+# 13. Benefits of Reusable ErrorMessage Component
+
+Cleaner code:
+
+Before:
+
+-------------------code----------------------
+<AppText style={{ color: "red" }}>
+   {errors.email}
+</AppText>
+
+<AppText style={{ color: "red" }}>
+   {errors.password}
+</AppText>
+-------------------code----------------------
+
+After:
+
+-------------------code----------------------
+<ErrorMessage error={errors.email} />
+
+<ErrorMessage error={errors.password} />
+-------------------code----------------------
+
+Much cleaner.
+
+---
+
+# 14. Full Final Code
+
+---
+
+# components/ErrorMessage.js
+
+-------------------code----------------------
+import { StyleSheet } from "react-native";
+import AppText from "./AppText";
+
+function ErrorMessage({ error }) {
+  if (!error)
+    return null;
+
+  return (
+    <AppText style={styles.error}>
+      {error}
+    </AppText>
+  );
+}
+
+const styles = StyleSheet.create({
+  error: {
+    color: "red"
+  }
+});
+
+export default ErrorMessage;
+-------------------code----------------------
+
+---
+
+# Updated LoginScreen.js
+
+-------------------code----------------------
+import { Formik } from "formik";
+import {
+  Image,
+  StyleSheet
+} from "react-native";
+import * as Yup from "yup";
+import AppButton from "../components/AppButton";
+import AppTextInput from "../components/AppTextInput";
+import ErrorMessage from "../components/ErrorMessage";
+import Screen from "../components/Screen";
+
+const validationSchema = Yup.object().shape({
+  email: Yup.string()
+    .required()
+    .email()
+    .label("Email"),
+  password: Yup.string()
+    .required()
+    .min(4)
+    .label("Password")
+});
+
+function LoginScreen() {
+  return (
+    <Screen style={styles.container}>
+      <Image
+        source={require("../assets/logo-red.png")}
+        style={styles.logo}
+      />
+      <Formik
+        initialValues={{
+          email: "",
+          password: ""
+        }}
+        validationSchema={validationSchema}
+        onSubmit={(values) => console.log(values)}
+      >
+        {({
+          handleChange,
+          handleSubmit,
+          errors
+        }) => (
+          <>
+            <AppTextInput
+              icon="email"
+              placeholder="Email"
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="email-address"
+              textContentType="emailAddress"
+              onChangeText={handleChange("email")}
+            />
+            <ErrorMessage error={errors.email} />
+            <AppTextInput
+              icon="lock"
+              placeholder="Password"
+              autoCapitalize="none"
+              autoCorrect={false}
+              secureTextEntry
+              textContentType="password"
+              onChangeText={handleChange("password")}
+            />
+            <ErrorMessage error={errors.password} />
+            <AppButton
+              title="Login"
+              onPress={handleSubmit}
+            />
+          </>
+        )}
+      </Formik>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 10
+  },
+  logo: {
+    width: 80,
+    height: 80,
+    alignSelf: "center",
+    marginTop: 50,
+    marginBottom: 20
+  }
+});
+
+export default LoginScreen;
+-------------------code----------------------
+
+---
+
+# 15. Summary
+
+---
+
+# What you learned
+
+Created reusable ErrorMessage component
+
+Removed duplicate error display code
+
+Improved form structure
+
+---
+
+# Key Concepts
+
+Return null if no error
+
+Use props to pass error message
+
+Use reusable components
+
+---
+
+# Major Benefit
+
+Cleaner
+
+Reusable
+
+Professional code
+
+---
+
+# Best Practice
+
+Always create reusable components for repeated UI elements
