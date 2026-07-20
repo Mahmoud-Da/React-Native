@@ -4385,3 +4385,628 @@ const response =
 -------------------code----------------------
 
 without any modifications, while gaining automatic offline support through the API client.
+
+*** 10- Caching Images ***
+# React Native Offline Support - Image Caching & Progressive Loading
+
+## 1. Overview
+
+In this lesson, the application is enhanced with:
+
+1. Image caching
+2. Offline image support
+3. Progressive image loading
+4. Thumbnail previews
+5. Faster image rendering
+6. Better user experience on slow networks
+
+Instead of using React Native's default `Image` component, a specialized image caching library is used.
+
+---
+
+# 2. Why React Native Image Is Not Enough
+
+The standard React Native `Image` component:
+
+* Does not provide advanced caching
+* Does not support progressive loading
+* Requires re-downloading images frequently
+* Provides a poorer offline experience
+
+Because of this, we use a dedicated image caching solution.
+
+---
+
+# 3. FastImage vs Expo
+
+A very popular library is:
+
+-------------------code----------------------
+react-native-fast-image
+-------------------code----------------------
+
+Features:
+
+* Aggressive caching
+* Progressive loading
+* Authorization headers
+* Excellent performance
+
+However:
+
+-------------------code----------------------
+FastImage is not supported in Expo.
+-------------------code----------------------
+
+So an alternative is required.
+
+---
+
+# 4. Expo Alternative
+
+Install:
+
+-------------------code----------------------
+npm install react-native-expo-image-cache
+-------------------code----------------------
+
+Also install:
+
+-------------------code----------------------
+expo install expo-blur
+-------------------code----------------------
+
+Important:
+
+-------------------code----------------------
+expo-blur is required.
+
+Without it, the application will crash at runtime.
+-------------------code----------------------
+
+---
+
+# 5. Replace React Native Image Component
+
+## Before
+
+-------------------code----------------------
+import {
+  View,
+  StyleSheet,
+  Image,
+  TouchableWithoutFeedback,
+} from "react-native";
+-------------------code----------------------
+
+---
+
+## After
+
+Remove:
+
+-------------------code----------------------
+Image
+-------------------code----------------------
+
+Import:
+
+-------------------code----------------------
+import { Image } from "react-native-expo-image-cache";
+-------------------code----------------------
+
+---
+
+# 6. Update Card Component
+
+The image cache library uses a different API.
+
+---
+
+## Before
+
+-------------------code----------------------
+<Image
+  style={styles.image}
+  source={{ uri: imageUrl }}
+/>
+-------------------code----------------------
+
+---
+
+## After
+
+-------------------code----------------------
+<Image
+  style={styles.image}
+  uri={imageUrl}
+/>
+-------------------code----------------------
+
+Notice:
+
+-------------------code----------------------
+uri
+-------------------code----------------------
+
+instead of:
+
+-------------------code----------------------
+source={{ uri }}
+-------------------code----------------------
+
+---
+
+# 7. How Image Caching Works
+
+When the image loads:
+
+-------------------code----------------------
+Server
+   ↓
+Device File System
+   ↓
+Cache
+-------------------code----------------------
+
+The image is stored locally.
+
+Later:
+
+-------------------code----------------------
+Offline
+   ↓
+Image loaded from cache
+-------------------code----------------------
+
+No network request is needed.
+
+---
+
+# 8. Problem With Cached Images
+
+Even with caching, a slight delay may occur before displaying the full image.
+
+The image may briefly appear blank while loading.
+
+To improve this experience:
+
+-------------------code----------------------
+Use Progressive Loading
+-------------------code----------------------
+
+---
+
+# 9. What Is Progressive Loading?
+
+Instead of loading a large image immediately:
+
+1. Load a tiny thumbnail first
+2. Show a blurred preview
+3. Load the full image
+4. Replace thumbnail with full image
+
+Result:
+
+-------------------code----------------------
+User sees something immediately
+-------------------code----------------------
+
+instead of a blank area.
+
+---
+
+# 10. Server Requirements
+
+Each image returned by the API contains:
+
+-------------------code----------------------
+{
+  url: "...",
+  thumbnailUrl: "..."
+}
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+images: [
+  {
+    url: "https://...",
+    thumbnailUrl: "https://..."
+  }
+]
+-------------------code----------------------
+
+---
+
+# 11. Thumbnail Generation
+
+The backend automatically generates thumbnails.
+
+Alternative:
+
+Use cloud services like:
+
+[Cloudinary](https://cloudinary.com?utm_source=chatgpt.com)
+
+Cloudinary can:
+
+* Store images
+* Generate thumbnails
+* Resize images
+* Optimize images automatically
+
+---
+
+# 12. Update Card Component Props
+
+## Before
+
+-------------------code----------------------
+<Card
+  title={item.title}
+  subTitle={"$" + item.price}
+  imageUrl={item.images[0].url}
+/>
+-------------------code----------------------
+
+---
+
+## After
+
+-------------------code----------------------
+<Card
+  title={item.title}
+  subTitle={"$" + item.price}
+  imageUrl={item.images[0].url}
+  thumbnailUrl={item.images[0].thumbnailUrl}
+/>
+-------------------code----------------------
+
+---
+
+# 13. Update Card Component
+
+## Add New Prop
+
+-------------------code----------------------
+const Card = ({
+  title,
+  subTitle,
+  imageUrl,
+  thumbnailUrl,
+  onPress,
+}) => {
+-------------------code----------------------
+
+---
+
+## Use Preview
+
+-------------------code----------------------
+<Image
+  style={styles.image}
+  uri={imageUrl}
+  preview={{
+    uri: thumbnailUrl,
+  }}
+/>
+-------------------code----------------------
+
+---
+
+# 14. Improve Appearance
+
+The thumbnail initially displays with a dark tint.
+
+Add:
+
+-------------------code----------------------
+<Image
+  style={styles.image}
+  uri={imageUrl}
+  preview={{
+    uri: thumbnailUrl,
+  }}
+  tint="light"
+/>
+-------------------code----------------------
+
+Result:
+
+-------------------code----------------------
+Cleaner blur effect
+Better transition
+-------------------code----------------------
+
+---
+
+# 15. Offline Support
+
+Now the application supports:
+
+### Cached Listing Data
+
+Stored using AsyncStorage.
+
+### Cached Images
+
+Stored by the image cache library.
+
+When offline:
+
+-------------------code----------------------
+Listings appear
+Images appear
+-------------------code----------------------
+
+without contacting the server.
+
+---
+
+# 16. Bug Found In ListingDetailsScreen
+
+## Problem
+
+Current code:
+
+-------------------code----------------------
+<Image
+  style={styles.image}
+  source={listing.image}
+/>
+-------------------code----------------------
+
+But the API returns:
+
+-------------------code----------------------
+listing.images
+-------------------code----------------------
+
+not:
+
+-------------------code----------------------
+listing.image
+-------------------code----------------------
+
+So the image does not display.
+
+---
+
+# 17. Fix ListingDetailsScreen
+
+Replace:
+
+-------------------code----------------------
+<Image
+  style={styles.image}
+  source={listing.image}
+/>
+-------------------code----------------------
+
+with:
+
+-------------------code----------------------
+<Image
+  style={styles.image}
+  uri={listing.images[0].url}
+  preview={{
+    uri: listing.images[0].thumbnailUrl,
+  }}
+  tint="light"
+/>
+-------------------code----------------------
+
+---
+
+# 18. Update Imports
+
+## Before
+
+-------------------code----------------------
+import { View, Image, StyleSheet } from "react-native";
+-------------------code----------------------
+
+---
+
+## After
+
+-------------------code----------------------
+import { View, StyleSheet } from "react-native";
+import { Image } from "react-native-expo-image-cache";
+-------------------code----------------------
+
+---
+
+# 19. Full Final Card Component
+
+-------------------code----------------------
+import React from "react";
+import {
+  View,
+  StyleSheet,
+  TouchableWithoutFeedback,
+} from "react-native";
+
+import { Image } from "react-native-expo-image-cache";
+
+import Text from "./Text";
+import colors from "../config/colors";
+
+const Card = ({
+  title,
+  subTitle,
+  imageUrl,
+  thumbnailUrl,
+  onPress,
+}) => {
+  return (
+    <TouchableWithoutFeedback onPress={onPress}>
+      <View style={styles.card}>
+        <Image
+          style={styles.image}
+          uri={imageUrl}
+          preview={{
+            uri: thumbnailUrl,
+          }}
+          tint="light"
+        />
+
+        <View style={styles.detailsContainer}>
+          <Text style={styles.title} numberOfLines={1}>
+            {title}
+          </Text>
+
+          <Text style={styles.subTitle} numberOfLines={2}>
+            {subTitle}
+          </Text>
+        </View>
+      </View>
+    </TouchableWithoutFeedback>
+  );
+};
+
+const styles = StyleSheet.create({
+  card: {
+    borderRadius: 15,
+    backgroundColor: colors.white,
+    marginBottom: 20,
+    overflow: "hidden",
+  },
+  detailsContainer: {
+    padding: 20,
+  },
+  image: {
+    width: "100%",
+    height: 200,
+  },
+  subTitle: {
+    color: colors.secondary,
+    fontWeight: "bold",
+  },
+  title: {
+    marginBottom: 7,
+  },
+});
+
+export default Card;
+-------------------code----------------------
+
+---
+
+# 20. Full Final ListingsScreen Update
+
+-------------------code----------------------
+<Card
+  title={item.title}
+  subTitle={"$" + item.price}
+  imageUrl={item.images[0].url}
+  thumbnailUrl={item.images[0].thumbnailUrl}
+  onPress={() =>
+    navigation.navigate(routes.LISTING_DETAILS, item)
+  }
+/>
+-------------------code----------------------
+
+---
+
+# 21. Full Final ListingDetailsScreen
+
+-------------------code----------------------
+import React from "react";
+import { View, StyleSheet } from "react-native";
+import { Image } from "react-native-expo-image-cache";
+
+import colors from "../config/colors";
+import ListItem from "../components/lists/ListItem";
+import Text from "../components/Text";
+
+function ListingDetailsScreen({ route }) {
+  const listing = route.params;
+
+  return (
+    <View>
+      <Image
+        style={styles.image}
+        uri={listing.images[0].url}
+        preview={{
+          uri: listing.images[0].thumbnailUrl,
+        }}
+        tint="light"
+      />
+
+      <View style={styles.detailsContainer}>
+        <Text style={styles.title}>
+          {listing.title}
+        </Text>
+
+        <Text style={styles.price}>
+          ${listing.price}
+        </Text>
+
+        <View style={styles.userContainer}>
+          <ListItem
+            image={require("../assets/mosh.jpg")}
+            title="Mosh Hamedani"
+            subTitle="5 Listings"
+          />
+        </View>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  detailsContainer: {
+    padding: 20,
+  },
+  image: {
+    width: "100%",
+    height: 300,
+  },
+  price: {
+    color: colors.secondary,
+    fontWeight: "bold",
+    fontSize: 20,
+    marginVertical: 10,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "500",
+  },
+  userContainer: {
+    marginVertical: 40,
+  },
+});
+
+export default ListingDetailsScreen;
+-------------------code----------------------
+
+---
+
+# Important Notes
+
+1. `react-native-fast-image` is not supported in Expo.
+2. `react-native-expo-image-cache` requires `expo-blur`.
+3. Cached images remain available offline.
+4. Progressive loading requires thumbnail images from the server.
+5. Use `thumbnailUrl` whenever possible for better UX.
+6. Fix any references to `listing.image`; your API uses `listing.images`.
+
+---
+
+# Summary
+
+In this lesson you learned:
+
+* Why image caching is important
+* Why FastImage cannot be used in Expo
+* How to install `react-native-expo-image-cache`
+* Why `expo-blur` is required
+* How image caching works offline
+* How to implement progressive image loading
+* How to use `thumbnailUrl`
+* How to fix image rendering in `ListingDetailsScreen`
+* How to provide a smoother user experience on slow networks
+* How to support fully cached listings and images while offline
