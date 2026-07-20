@@ -1751,3 +1751,455 @@ Key takeaway:
 
 Reusable components should never hard-code layout constraints.
 Always design them to be flexible and configurable.
+
+
+*** 7- Flexible Architecture ***
+# Enhancing the Picker with Flexible Architecture (Category Picker Item)
+
+## 1. Introduction
+
+In this lecture, we improve the existing `AppPicker` component by making it more flexible.
+
+### Goal
+
+Instead of always rendering a simple flat list of items, we want the ability to:
+
+* Render a **custom picker item component**
+* Display categories with colorful icons
+* Keep the architecture reusable and scalable
+
+This approach prevents tight coupling and allows different screens to render picker items differently.
+
+---
+
+# 2. Problem with Current Implementation
+
+Currently:
+
+* `AppPicker` directly renders `PickerItem`
+* The component is tightly coupled to one specific UI
+* If we modify `PickerItem` to support icons, it affects all pickers in the app
+
+### Why This Is a Problem
+
+We may want:
+
+* One picker with simple text items
+* Another picker with colorful category cards
+* Another picker with thumbnails
+
+Hardcoding one item type makes the component inflexible.
+
+---
+
+# 3. Solution: Make Picker Item Replaceable
+
+We will:
+
+1. Create a new component: `CategoryPickerItem`
+2. Add a new prop to `AppPicker` called `pickerItemComponent`
+3. Provide a default value to prevent breaking changes
+4. Pass this prop down through `AppFormPicker`
+5. Use it in `ListingEditScreen`
+
+This creates a flexible and extensible architecture.
+
+---
+
+# 4. Step 1 – Modify `AppPicker`
+
+## 4.1 Add a New Prop
+
+We add a new prop:
+
+-------------------code----------------------
+pickerItemComponent
+-------------------code----------------------
+
+Naming convention:
+
+* Capitalized words indicate a React component
+* This prop expects a component, not a value
+
+---
+
+## 4.2 Provide a Default Value
+
+To avoid breaking existing code, we set:
+
+-------------------code----------------------
+pickerItemComponent = PickerItem
+-------------------code----------------------
+
+This ensures:
+
+* If no custom component is provided,
+* The picker continues using the default `PickerItem`.
+
+---
+
+## 4.3 Update FlatList to Use Dynamic Component
+
+Instead of rendering `PickerItem` directly, we render:
+
+-------------------code----------------------
+<PickerItemComponent />
+-------------------code----------------------
+
+---
+
+## Updated `AppPicker.js`
+
+-------------------code----------------------
+import React, { useState } from "react";
+import {
+  Modal,
+  View,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+} from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import Screen from "./Screen";
+import AppText from "./AppText";
+import PickerItem from "./PickerItem";
+
+function AppPicker({
+  icon,
+  items,
+  numberOfColumns = 1,
+  onSelectItem,
+  PickerItemComponent = PickerItem,
+  placeholder,
+  selectedItem,
+}) {
+  const [modalVisible, setModalVisible] = useState(false);
+
+  return (
+    <>
+      <TouchableOpacity
+        style={styles.container}
+        onPress={() => setModalVisible(true)}
+      >
+        {icon && (
+          <MaterialCommunityIcons
+            name={icon}
+            size={20}
+            color="#6e6969"
+            style={styles.icon}
+          />
+        )}
+
+        <AppText style={styles.text}>
+          {selectedItem ? selectedItem.label : placeholder}
+        </AppText>
+
+        <MaterialCommunityIcons
+          name="chevron-down"
+          size={20}
+          color="#6e6969"
+        />
+      </TouchableOpacity>
+
+      <Modal visible={modalVisible} animationType="slide">
+        <Screen>
+          <FlatList
+            data={items}
+            keyExtractor={(item) => item.value.toString()}
+            numColumns={numberOfColumns}
+            renderItem={({ item }) => (
+              <PickerItemComponent
+                item={item}
+                onPress={() => {
+                  setModalVisible(false);
+                  onSelectItem(item);
+                }}
+              />
+            )}
+          />
+        </Screen>
+      </Modal>
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: "#f8f4f4",
+    borderRadius: 25,
+    flexDirection: "row",
+    padding: 15,
+    marginVertical: 10,
+  },
+  text: {
+    flex: 1,
+  },
+  icon: {
+    marginRight: 10,
+  },
+});
+
+export default AppPicker;
+-------------------code----------------------
+
+---
+
+# 5. Step 2 – Update `AppFormPicker`
+
+Since `AppFormPicker` wraps `AppPicker`, we must pass the new prop down.
+
+---
+
+## Updated `AppFormPicker.js`
+
+-------------------code----------------------
+function AppPicker({
+  icon,
+  items,
+  placeholder,
+  PickerItemComponent = PickerItem,
+  selectedItem,
+  onSelectItem,
+  width = "100%"
+}) {
+  const [modalVisible, setModalVisible] = useState(false);
+
+  return (
+    <>
+      <TouchableWithoutFeedback
+        onPress={() => setModalVisible(true)}
+      >
+        <View style={[styles.container, { width }]}>
+          {icon && (
+            <MaterialCommunityIcons
+              name={icon}
+              size={20}
+              color={colors.medium}
+              style={styles.icon}
+            />
+          )}
+
+          {selectedItem ? (
+            <AppText style={styles.text}>
+              {selectedItem.label}
+            </AppText>
+          ) : (
+            <AppText style={styles.placeholder}>
+              {placeholder}
+            </AppText>
+          )}
+
+          <MaterialCommunityIcons
+            name="chevron-down"
+            size={20}
+            color={colors.medium}
+          />
+        </View>
+      </TouchableWithoutFeedback>
+
+      <Modal visible={modalVisible} animationType="slide">
+        <Screen>
+          <Button
+            title="Close"
+            onPress={() => setModalVisible(false)}
+          />
+          <FlatList
+            data={items}
+            keyExtractor={(item) =>
+              item.value.toString()
+            }
+            renderItem={({ item }) => (
+              <PickerItemComponent
+                label={item.label}
+                onPress={() => {
+                  setModalVisible(false);
+                  onSelectItem(item);
+                }}
+              />
+            )}
+          />
+        </Screen>
+      </Modal>
+    </>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 6. Step 3 – Create `CategoryPickerItem`
+
+Now we create a new custom picker item component.
+
+Initially, return `null` to test flexibility.
+
+---
+
+## `CategoryPickerItem.js`
+
+-------------------code----------------------
+import React from "react";
+import { View } from "react-native";
+
+function CategoryPickerItem({ item, onPress }) {
+  return null;
+}
+
+export default CategoryPickerItem;
+-------------------code----------------------
+
+Testing this confirms:
+
+* Items disappear from the modal
+* The component override works
+
+This verifies our architecture is flexible.
+
+---
+
+# 7. Step 4 – Use It in `ListingEditScreen`
+
+Now we pass our new component into the form picker.
+
+---
+
+## Updated `ListingEditScreen.js`
+
+-------------------code----------------------
+import React from "react";
+import { StyleSheet } from "react-native";
+import * as Yup from "yup";
+
+import Screen from "../components/Screen";
+import AppForm from "../components/forms/AppForm";
+import AppFormField from "../components/forms/AppFormField";
+import AppFormPicker from "../components/forms/AppFormPicker";
+import SubmitButton from "../components/forms/SubmitButton";
+import CategoryPickerItem from "../components/CategoryPickerItem";
+
+const validationSchema = Yup.object().shape({
+  title: Yup.string().required().min(1).label("Title"),
+  price: Yup.number().required().min(1).max(10000).label("Price"),
+  category: Yup.object().required().nullable().label("Category"),
+  description: Yup.string().label("Description"),
+});
+
+const categories = [
+  { label: "Furniture", value: 1 },
+  { label: "Clothing", value: 2 },
+  { label: "Cameras", value: 3 },
+];
+
+function ListingEditScreen() {
+  return (
+    <Screen style={styles.container}>
+      <AppForm
+        initialValues={{
+          title: "",
+          price: "",
+          category: null,
+          description: "",
+        }}
+        onSubmit={(values) => console.log(values)}
+        validationSchema={validationSchema}
+      >
+        <AppFormField
+          maxLength={255}
+          name="title"
+          placeholder="Title"
+        />
+
+        <AppFormField
+          keyboardType="numeric"
+          maxLength={8}
+          name="price"
+          placeholder="Price"
+        />
+        <AppFormPicker
+          items={categories}
+          name="category"
+          numberOfColumns={3}
+          placeholder="Category"
+          PickerItemComponent={CategoryPickerItem}
+        />
+
+        <AppFormField
+          name="description"
+          placeholder="Description"
+          multiline
+          numberOfLines={3}
+        />
+
+        <SubmitButton title="Post" />
+      </AppForm>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 10,
+  },
+});
+
+export default ListingEditScreen;
+-------------------code----------------------
+
+---
+
+# 8. Important Notes and Best Practices
+
+### 1. Always Provide Default Props
+
+Prevents breaking existing components.
+
+### 2. Use Component Props for Flexibility
+
+Passing components as props allows:
+
+* Reusability
+* Custom rendering
+* Scalable architecture
+
+### 3. Avoid Tight Coupling
+
+Never hardcode UI inside reusable components.
+
+### 4. Follow Naming Conventions
+
+* `PickerItemComponent` clearly indicates a React component.
+
+### 5. Test Incrementally
+
+Returning `null` first is a great way to verify architecture before building UI.
+
+---
+
+# 9. Architectural Concept: Flexible Design
+
+This pattern allows:
+
+* Composition over duplication
+* Swappable UI pieces
+* Cleaner separation of concerns
+* Easy scaling in larger apps
+
+This is a key React Native architectural principle.
+
+---
+
+# 10. Summary
+
+In this lecture, we:
+
+1. Identified tight coupling in `AppPicker`
+2. Added a dynamic `PickerItemComponent` prop
+3. Provided a safe default value
+4. Passed the prop through `AppFormPicker`
+5. Created a new `CategoryPickerItem`
+6. Injected it from `ListingEditScreen`
+7. Verified flexible architecture
+
+Key takeaway:
+
+Design reusable components so that internal pieces can be replaced without rewriting the whole component. This is how you build scalable and maintainable React Native applications.

@@ -8,6 +8,7 @@ function AppFormPicker({
   items,
   name,
   placeholder,
+  PickerItemComponent,
   width
 }) {
   const {
@@ -25,6 +26,7 @@ function AppFormPicker({
         placeholder={placeholder}
         selectedItem={values[name]}
         width={width}
+        PickerItemComponent={PickerItemComponent}
       />
       <ErrorMessage
         error={errors[name]}

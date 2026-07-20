@@ -2,6 +2,7 @@ function AppPicker({
   icon,
   items,
   placeholder,
+  PickerItemComponent = PickerItem,
   selectedItem,
   onSelectItem,
   width = "100%"
@@ -53,7 +54,7 @@ function AppPicker({
               item.value.toString()
             }
             renderItem={({ item }) => (
-              <PickerItem
+              <PickerItemComponent
                 label={item.label}
                 onPress={() => {
                   setModalVisible(false);
