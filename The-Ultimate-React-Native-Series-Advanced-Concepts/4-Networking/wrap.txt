@@ -7144,3 +7144,443 @@ Hide Upload Screen
 
 The next step is replacing the percentage text with a real progress bar and eventually showing a success animation after the upload completes.
 
+*** 17- Adding a Progress Bar ***
+# 1. Goal of This Lesson
+
+In the previous lesson, we created an **UploadScreen** that displayed upload progress as a percentage.
+
+Example:
+
+-------------------code----------------------
+25%
+50%
+75%
+100%
+-------------------code----------------------
+
+In this lesson, we replace the text with a professional-looking **progress bar** using the `react-native-progress` library.
+
+---
+
+# 2. Install react-native-progress
+
+Install the package:
+
+-------------------code----------------------
+npm install react-native-progress
+-------------------code----------------------
+
+The instructor used:
+
+-------------------code----------------------
+react-native-progress@4.1.2
+-------------------code----------------------
+
+### Why this library?
+
+It provides ready-made progress components:
+
+* Progress Bar
+* Circle Progress
+* Pie Progress
+
+For this course, we only need:
+
+-------------------code----------------------
+<Progress.Bar />
+-------------------code----------------------
+
+---
+
+# 3. Import the Library
+
+In `UploadScreen.js`:
+
+-------------------code----------------------
+import * as Progress from "react-native-progress";
+-------------------code----------------------
+
+The instructor imports everything under the namespace:
+
+-------------------code----------------------
+Progress
+-------------------code----------------------
+
+So later we can write:
+
+-------------------code----------------------
+<Progress.Bar />
+-------------------code----------------------
+
+---
+
+# 4. Replace the Text with a Progress Bar
+
+Previously:
+
+-------------------code----------------------
+<Text>{progress * 100}%</Text>
+-------------------code----------------------
+
+Replace with:
+
+-------------------code----------------------
+<Progress.Bar progress={progress} />
+-------------------code----------------------
+
+---
+
+## Understanding the progress prop
+
+The library expects a value between:
+
+-------------------code----------------------
+0 → 1
+-------------------code----------------------
+
+Examples:
+
+-------------------code----------------------
+0      = 0%
+0.25   = 25%
+0.5    = 50%
+0.75   = 75%
+1      = 100%
+-------------------code----------------------
+
+Earlier we already calculated upload progress as:
+
+-------------------code----------------------
+progress.loaded / progress.total
+-------------------code----------------------
+
+So our value is already in the correct format.
+
+---
+
+# 5. Customize the Progress Bar
+
+## Set Color
+
+Import colors:
+
+-------------------code----------------------
+import colors from "../config/colors";
+-------------------code----------------------
+
+Then:
+
+-------------------code----------------------
+<Progress.Bar
+  progress={progress}
+  color={colors.primary}
+/>
+-------------------code----------------------
+
+---
+
+## Set Width
+
+-------------------code----------------------
+<Progress.Bar
+  progress={progress}
+  color={colors.primary}
+  width={200}
+/>
+-------------------code----------------------
+
+Result:
+
+-------------------code----------------------text
+[==========          ]
+-------------------code----------------------
+
+instead of a very short bar.
+
+---
+
+# 6. Updated UploadScreen
+
+## Before
+
+-------------------code----------------------
+<Text>{progress * 100}%</Text>
+-------------------code----------------------
+
+## After
+
+-------------------code----------------------
+<Progress.Bar
+  progress={progress}
+  color={colors.primary}
+  width={200}
+/>
+-------------------code----------------------
+
+---
+
+# 7. Bug: Progress Starts from Previous Value
+
+After testing, a visual bug appears.
+
+Example:
+
+### First Upload
+
+-------------------code----------------------text
+0% → 100%
+-------------------code----------------------
+
+### Second Upload
+
+Instead of:
+
+-------------------code----------------------text
+0% → 100%
+-------------------code----------------------
+
+It may start from:
+
+-------------------code----------------------text
+100% → 30% → 70% → 100%
+-------------------code----------------------
+
+This looks strange because the previous upload left the state at:
+
+-------------------code----------------------
+progress = 1
+-------------------code----------------------
+
+---
+
+# 8. Reset Progress Before Uploading
+
+In `ListingEditScreen.js`
+
+Inside:
+
+-------------------code----------------------
+handleSubmit()
+-------------------code----------------------
+
+Before showing the upload screen:
+
+-------------------code----------------------
+setProgress(0);
+-------------------code----------------------
+
+---
+
+## Before
+
+-------------------code----------------------
+setUploadVisible(true);
+-------------------code----------------------
+
+---
+
+## After
+
+-------------------code----------------------
+setProgress(0);
+setUploadVisible(true);
+-------------------code----------------------
+
+Now every upload starts from:
+
+-------------------code----------------------text
+0%
+-------------------code----------------------
+
+which provides a smoother user experience.
+
+---
+
+# 9. Updated handleSubmit Logic
+
+-------------------code----------------------
+const handleSubmit = async (listing) => {
+  setProgress(0);
+  setUploadVisible(true);
+
+  const result = await listingsApi.addListing(
+    { ...listing, location },
+    (progress) => setProgress(progress)
+  );
+
+  if (!result.ok) {
+    setUploadVisible(false);
+    return alert("Could not save the listing");
+  }
+
+  setUploadVisible(false);
+  alert("Success");
+};
+-------------------code----------------------
+
+---
+
+# 10. Complete UploadScreen.js
+
+-------------------code----------------------
+import React from "react";
+import { Modal, StyleSheet, View } from "react-native";
+import * as Progress from "react-native-progress";
+
+import colors from "../config/colors";
+
+function UploadScreen({ progress = 0, visible = false }) {
+  return (
+    <Modal visible={visible}>
+      <View style={styles.container}>
+        <Progress.Bar
+          progress={progress}
+          width={200}
+          color={colors.primary}
+        />
+      </View>
+    </Modal>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});
+
+export default UploadScreen;
+-------------------code----------------------
+
+---
+
+# 11. Complete ListingEditScreen Changes
+
+### New State Variables
+
+-------------------code----------------------
+const [uploadVisible, setUploadVisible] = useState(false);
+const [progress, setProgress] = useState(0);
+-------------------code----------------------
+
+---
+
+### Updated handleSubmit
+
+-------------------code----------------------
+const handleSubmit = async (listing) => {
+  setProgress(0);
+  setUploadVisible(true);
+
+  const result = await listingsApi.addListing(
+    { ...listing, location },
+    (progress) => setProgress(progress)
+  );
+
+  if (!result.ok) {
+    setUploadVisible(false);
+    return alert("Could not save the listing");
+  }
+
+  setUploadVisible(false);
+  alert("Success");
+};
+-------------------code----------------------
+
+---
+
+### Render UploadScreen
+
+-------------------code----------------------
+<UploadScreen
+  visible={uploadVisible}
+  progress={progress}
+/>
+-------------------code----------------------
+
+Place it anywhere inside the screen component.
+
+---
+
+# Important Notes
+
+### Progress Bar Values
+
+The progress component expects:
+
+-------------------code----------------------
+0 → 1
+-------------------code----------------------
+
+Not:
+
+-------------------code----------------------
+0 → 100
+-------------------code----------------------
+
+Correct:
+
+-------------------code----------------------
+0.5
+-------------------code----------------------
+
+Wrong:
+
+-------------------code----------------------
+50
+-------------------code----------------------
+
+---
+
+### Reset Progress
+
+Always reset progress before starting a new upload:
+
+-------------------code----------------------
+setProgress(0);
+-------------------code----------------------
+
+Otherwise the bar may jump backward visually.
+
+---
+
+### Upload Screen State
+
+Control visibility with:
+
+-------------------code----------------------
+uploadVisible
+-------------------code----------------------
+
+and not by directly showing/hiding components manually.
+
+---
+
+# Summary
+
+In this lesson:
+
+1. Installed `react-native-progress`.
+2. Imported it into `UploadScreen`.
+3. Replaced the percentage text with a progress bar.
+4. Customized the bar color and width.
+5. Discovered a bug where progress started from the previous value.
+6. Fixed it by resetting progress to `0`.
+7. Connected upload progress updates to the UI through state.
+8. Prepared the upload screen for the next lesson, where a success animation will be shown after the upload completes.
+
+The upload flow is now:
+
+-------------------code----------------------text
+User presses Post
+        ↓
+UploadScreen appears
+        ↓
+Progress bar fills from 0 → 100%
+        ↓
+Upload completes
+        ↓
+Ready for success animation
+-------------------code----------------------

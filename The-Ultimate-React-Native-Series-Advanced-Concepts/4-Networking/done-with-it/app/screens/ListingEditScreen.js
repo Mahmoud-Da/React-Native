@@ -92,16 +92,15 @@ function ListingEditScreen() {
 
     const result = await listingsApi.addListing(
       { ...listing, location },
-      (progress) => {
-        setProgress(progress);
-      }
+      (progress) => setProgress(progress)
     );
 
-    setUploadVisible(false);
-
-    if (!result.ok)
+    if (!result.ok) {
+      setUploadVisible(false);
       return alert("Could not save the listing");
+    }
 
+    setUploadVisible(false);
     alert("Success");
   };
 
