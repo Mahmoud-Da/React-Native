@@ -2955,9 +2955,9 @@ This shows only API calls.
 
 When calling an API like:
 
-```js
+-------------------code----------------------js
 listingsApi.getListings();
-```
+-------------------code----------------------
 
 In React Native Debugger you can see:
 
@@ -3031,3 +3031,288 @@ In this lecture you learned:
 * Why remote debugging slows performance
 
 This tool is essential for understanding how your app communicates with the backend and for quickly identifying API issues.
+
+
+*** 7- Handling Errors ***
+# 1. Handling Network Errors in React Native
+
+When working with APIs, network requests can fail for many reasons:
+
+* Server is down
+* Internet connection issues
+* Wrong endpoint
+* Timeout errors
+
+A good app must **handle errors gracefully** instead of showing a blank screen.
+
+---
+
+# 2. Simulating a Server Failure
+
+To test error handling:
+
+1. Stop the backend server:
+
+-------------------code----------------------
+ctrl + c
+-------------------code----------------------
+
+2. Restart the app
+
+Result:
+
+* The app shows a **black or empty screen**
+* No feedback to the user
+
+This is a bad user experience.
+
+---
+
+# 3. Adding Error State
+
+We introduce a state variable to track errors.
+
+-------------------code----------------------
+const [error, setError] = useState(false);
+-------------------code----------------------
+
+### Explanation:
+
+* `error` → tracks if request failed
+* `setError` → updates error state
+* Default value is `false`
+
+---
+
+# 4. Handling API Response Properly
+
+Using API Sauce:
+
+* Promises are always resolved
+* Even on failure
+
+So we check manually:
+
+-------------------code----------------------
+const loadListings = async () => {
+  const response = await listingsApi.getListings();
+
+  if (!response.ok) {
+    setError(true);
+    return;
+  }
+
+  setError(false);
+  setListings(response.data);
+};
+-------------------code----------------------
+
+---
+
+# 5. Understanding response.ok
+
+| Property | Meaning           |
+| -------- | ----------------- |
+| `true`   | Request succeeded |
+| `false`  | Request failed    |
+
+---
+
+# 6. Understanding response.problem
+
+If an error occurs, we can inspect:
+
+-------------------code----------------------
+response.problem
+-------------------code----------------------
+
+Possible values:
+
+* client error
+* server error
+* timeout error
+* connection error
+
+But in this case, we don’t need to differentiate.
+
+---
+
+# 7. Best Practice: Handle Errors First
+
+It is recommended to:
+
+* Handle errors first
+* Exit early if failure occurs
+
+Improved structure:
+
+-------------------code----------------------
+if (!response.ok) {
+  setError(true);
+  return;
+}
+-------------------code----------------------
+
+This avoids deeply nested logic.
+
+---
+
+# 8. Showing Error UI Conditionally
+
+We display an error message only when needed.
+
+-------------------code----------------------
+{error && (
+  <>
+    <Text>Couldn't retrieve the listings.</Text>
+    <Button title="Retry" onPress={loadListings} />
+  </>
+)}
+-------------------code----------------------
+
+---
+
+# 9. Retry Mechanism
+
+The retry button simply calls the API again:
+
+-------------------code----------------------
+onPress={loadListings}
+-------------------code----------------------
+
+Flow:
+
+1. User sees error
+2. User taps Retry
+3. API is called again
+4. Data loads if successful
+
+---
+
+# 10. Full Final Code — ListingsScreen (with error handling)
+
+-------------------code----------------------
+import React, { useEffect, useState } from "react";
+import { FlatList, StyleSheet } from "react-native";
+
+import Card from "../components/Card";
+import Screen from "../components/Screen";
+import Text from "../components/Text";
+import Button from "../components/Button";
+
+import colors from "../config/colors";
+import routes from "../navigation/routes";
+import listingsApi from "../api/listings";
+
+const ListingsScreen = ({ navigation }) => {
+  const [listings, setListings] = useState([]);
+  const [error, setError] = useState(false);
+
+  const loadListings = async () => {
+    const response = await listingsApi.getListings();
+
+    if (!response.ok) {
+      setError(true);
+      return;
+    }
+
+    setError(false);
+    setListings(response.data);
+  };
+
+  useEffect(() => {
+    loadListings();
+  }, []);
+
+  return (
+    <Screen style={styles.screen}>
+      {error && (
+        <>
+          <Text>Couldn't retrieve the listings.</Text>
+          <Button title="Retry" onPress={loadListings} />
+        </>
+      )}
+
+      <FlatList
+        data={listings}
+        keyExtractor={(listing) => listing.id.toString()}
+        renderItem={({ item }) => (
+          <Card
+            title={item.title}
+            subTitle={"$" + item.price}
+            imageUrl={item.images[0].url}
+            onPress={() =>
+              navigation.navigate(routes.LISTING_DETAILS, item)
+            }
+          />
+        )}
+      />
+    </Screen>
+  );
+};
+
+const styles = StyleSheet.create({
+  screen: {
+    padding: 20,
+    backgroundColor: colors.light,
+  },
+});
+
+export default ListingsScreen;
+-------------------code----------------------
+
+---
+
+# 11. Best Practices
+
+## 1. Always handle network errors
+
+Never assume API calls will succeed.
+
+---
+
+## 2. Use early return pattern
+
+-------------------code----------------------
+if (!response.ok) return;
+-------------------code----------------------
+
+Keeps code clean and readable.
+
+---
+
+## 3. Show user-friendly messages
+
+Avoid technical errors. Use:
+
+* "Couldn't load data"
+* "Try again"
+
+---
+
+## 4. Always provide retry option
+
+Users should not be stuck.
+
+---
+
+## 5. Use a single source of truth for API logic
+
+Keep API logic inside API layer, not UI components.
+
+---
+
+# 12. Summary
+
+In this lecture you learned:
+
+* Why API calls can fail
+* How to simulate backend failure
+* How to use `useState` for error handling
+* How to use `response.ok` to detect errors
+* Why API Sauce always resolves promises
+* How to display error messages in UI
+* How to implement a retry mechanism
+* Best practices for clean error handling
+
+Now the app gracefully handles network failures instead of showing a blank screen.
