@@ -4340,3 +4340,582 @@ In this lecture, you learned how to:
 10. Understand version compatibility issues with Expo and Lottie
 
 The app now has a much more polished and professional loading experience compared to the default React Native spinner.
+
+*** 11- Creating a Reusable Hook ***
+# React Native Custom Hooks for API Calls Notes
+
+# 1. The Problem With Repeating API Logic
+
+A typical API implementation usually includes:
+
+* Loading state
+* Error state
+* Data state
+* Request function
+* Error handling
+* Activity indicator logic
+
+Example:
+
+-------------------code----------------------
+const [listings, setListings] = useState([]);
+const [error, setError] = useState(false);
+const [loading, setLoading] = useState(false);
+-------------------code----------------------
+
+And then:
+
+-------------------code----------------------
+const loadListings = async () => {
+  setLoading(true);
+
+  const response = await listingsApi.getListings();
+
+  setLoading(false);
+
+  if (!response.ok) return setError(true);
+
+  setError(false);
+  setListings(response.data);
+};
+-------------------code----------------------
+
+---
+
+# 2. Why This Is a Problem
+
+This pattern gets repeated in many screens.
+
+Problems:
+
+* Duplicate code
+* Harder maintenance
+* More bugs
+* Difficult to scale
+* Violates DRY principle (Don't Repeat Yourself)
+
+The only thing that changes is:
+
+-------------------code----------------------
+listingsApi.getListings()
+-------------------code----------------------
+
+Everything else is almost identical.
+
+---
+
+# 3. The Solution: Custom Hooks
+
+React Hooks allow us to:
+
+* Reuse stateful logic
+* Encapsulate behavior
+* Keep components clean
+
+Instead of repeating API logic everywhere, we create:
+
+-------------------code----------------------
+hooks/useApi.js
+-------------------code----------------------
+
+---
+
+# 4. Creating the useApi Hook
+
+## Step 1: Create Hook File
+
+-------------------code----------------------
+hooks/useApi.js
+-------------------code----------------------
+
+---
+
+## Step 2: Create Hook Function
+
+-------------------code----------------------
+export default function useApi(apiFunc) {
+-------------------code----------------------
+
+The hook receives an API function as a parameter.
+
+Example:
+
+-------------------code----------------------
+listingsApi.getListings
+-------------------code----------------------
+
+---
+
+# 5. Move State Into the Hook
+
+Before:
+
+-------------------code----------------------
+const [listings, setListings] = useState([]);
+-------------------code----------------------
+
+After:
+
+-------------------code----------------------
+const [data, setData] = useState([]);
+const [error, setError] = useState(false);
+const [loading, setLoading] = useState(false);
+-------------------code----------------------
+
+---
+
+# 6. Why Rename listings → data
+
+The hook should work with:
+
+* Listings
+* Messages
+* Users
+* Products
+* Any API response
+
+So we use a generic name:
+
+-------------------code----------------------
+data
+-------------------code----------------------
+
+instead of:
+
+-------------------code----------------------
+listings
+-------------------code----------------------
+
+This makes the hook reusable.
+
+---
+
+# 7. Create a Generic Request Function
+
+Rename:
+
+-------------------code----------------------
+loadListings
+-------------------code----------------------
+
+to:
+
+-------------------code----------------------
+request
+-------------------code----------------------
+
+because this hook can make any request.
+
+---
+
+# 8. Import useState
+
+-------------------code----------------------
+import { useState } from "react";
+-------------------code----------------------
+
+---
+
+# 9. Implement the Request Function
+
+-------------------code----------------------
+const request = async (...args) => {
+  setLoading(true);
+
+  const response = await apiFunc(...args);
+
+  setLoading(false);
+
+  if (!response.ok) {
+    setError(true);
+    return;
+  }
+
+  setError(false);
+  setData(response.data);
+};
+-------------------code----------------------
+
+---
+
+# 10. Understanding the Rest Operator
+
+-------------------code----------------------
+(...args)
+-------------------code----------------------
+
+This allows the function to receive:
+
+* Zero arguments
+* One argument
+* Multiple arguments
+
+All arguments are stored in an array.
+
+---
+
+## Example
+
+If the API function requires:
+
+-------------------code----------------------
+apiFunc(a, b, c)
+-------------------code----------------------
+
+Then:
+
+-------------------code----------------------
+request(1, 2, 3)
+-------------------code----------------------
+
+becomes:
+
+-------------------code----------------------
+apiFunc(...args)
+-------------------code----------------------
+
+which expands into:
+
+-------------------code----------------------
+apiFunc(1, 2, 3)
+-------------------code----------------------
+
+---
+
+# 11. Return State and Functions
+
+At the end of the hook:
+
+-------------------code----------------------
+return {
+  data,
+  error,
+  loading,
+  request,
+};
+-------------------code----------------------
+
+This exposes everything the component needs.
+
+---
+
+# 12. Full useApi Hook
+
+-------------------code----------------------
+import { useState } from "react";
+
+export default function useApi(apiFunc) {
+  const [data, setData] = useState([]);
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const request = async (...args) => {
+    setLoading(true);
+
+    const response = await apiFunc(...args);
+
+    setLoading(false);
+
+    if (!response.ok) {
+      setError(true);
+      return;
+    }
+
+    setError(false);
+    setData(response.data);
+  };
+
+  return {
+    data,
+    error,
+    loading,
+    request,
+  };
+}
+-------------------code----------------------
+
+---
+
+# 13. Using the Hook in a Component
+
+## Import Hook
+
+-------------------code----------------------
+import useApi from "../hooks/useApi";
+-------------------code----------------------
+
+---
+
+## Create Hook Instance
+
+-------------------code----------------------
+const {
+  data: listings,
+  error,
+  loading,
+  request: loadListings,
+} = useApi(listingsApi.getListings);
+-------------------code----------------------
+
+---
+
+# 14. Important Detail: Passing Function Reference
+
+Correct:
+
+-------------------code----------------------
+useApi(listingsApi.getListings)
+-------------------code----------------------
+
+Wrong:
+
+-------------------code----------------------
+useApi(listingsApi.getListings())
+-------------------code----------------------
+
+---
+
+## Why?
+
+Correct version:
+
+* Passes the function itself
+
+Wrong version:
+
+* Immediately executes the function
+
+The hook needs the function reference so it can call it later.
+
+---
+
+# 15. Using useEffect
+
+-------------------code----------------------
+useEffect(() => {
+  loadListings();
+}, []);
+-------------------code----------------------
+
+---
+
+# 16. Full Updated ListingsScreen
+
+-------------------code----------------------
+import React, { useEffect } from "react";
+import { FlatList, StyleSheet } from "react-native";
+
+import listingsApi from "../api/listings";
+import useApi from "../hooks/useApi";
+
+import Card from "../components/Card";
+import Screen from "../components/Screen";
+import Button from "../components/Button";
+import AppText from "../components/Text";
+import ActivityIndicator from "../components/ActivityIndicator";
+
+import colors from "../config/colors";
+import routes from "../navigation/routes";
+
+function ListingsScreen({ navigation }) {
+  const {
+    data: listings,
+    error,
+    loading,
+    request: loadListings,
+  } = useApi(listingsApi.getListings);
+
+  useEffect(() => {
+    loadListings();
+  }, []);
+
+  return (
+    <Screen style={styles.screen}>
+      {error && (
+        <>
+          <AppText>Couldn't retrieve the listings.</AppText>
+          <Button title="Retry" onPress={loadListings} />
+        </>
+      )}
+
+      <ActivityIndicator visible={loading} />
+
+      <FlatList
+        data={listings}
+        keyExtractor={(listing) => listing.id.toString()}
+        renderItem={({ item }) => (
+          <Card
+            title={item.title}
+            subTitle={"$" + item.price}
+            imageUrl={item.images[0].url}
+            onPress={() =>
+              navigation.navigate(routes.LISTING_DETAILS, item)
+            }
+          />
+        )}
+      />
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: {
+    padding: 20,
+    backgroundColor: colors.light,
+  },
+});
+
+export default ListingsScreen;
+-------------------code----------------------
+
+---
+
+# 17. Alternative Usage Without Destructuring
+
+Instead of:
+
+-------------------code----------------------
+const {
+  data,
+  error,
+  loading,
+  request,
+} = useApi(...)
+-------------------code----------------------
+
+You can store the entire object:
+
+-------------------code----------------------
+const getListingsApi = useApi(listingsApi.getListings);
+-------------------code----------------------
+
+Then access properties like:
+
+-------------------code----------------------
+getListingsApi.data
+getListingsApi.error
+getListingsApi.loading
+getListingsApi.request()
+-------------------code----------------------
+
+---
+
+# 18. When This Alternative Is Useful
+
+Useful when:
+
+* Calling multiple APIs in one component
+* Avoiding naming conflicts
+* Organizing API state clearly
+
+Example:
+
+-------------------code----------------------
+const getListingsApi = useApi(...);
+const addListingApi = useApi(...);
+const deleteListingApi = useApi(...);
+-------------------code----------------------
+
+---
+
+# 19. Benefits of Custom Hooks
+
+## Reusability
+
+Same hook works everywhere.
+
+---
+
+## Cleaner Components
+
+Components focus on:
+
+* UI
+* User interaction
+
+instead of networking logic.
+
+---
+
+## Better Architecture
+
+Separates:
+
+* UI layer
+* API layer
+* State management
+
+---
+
+## Easier Maintenance
+
+Fix logic in one place:
+
+-------------------code----------------------
+hooks/useApi.js
+-------------------code----------------------
+
+instead of updating many screens.
+
+---
+
+# 20. Best Practices
+
+## Keep Hooks Generic
+
+Good:
+
+-------------------code----------------------
+data
+request
+-------------------code----------------------
+
+Avoid overly specific names inside reusable hooks.
+
+---
+
+## Return Everything Needed
+
+A good hook exposes:
+
+* Data
+* Error
+* Loading
+* Functions
+
+---
+
+## Handle Errors Inside Hooks
+
+This keeps screens simple.
+
+---
+
+## Avoid Repeating Async Logic
+
+Custom hooks are ideal for:
+
+* API requests
+* Form handling
+* Authentication
+* Timers
+* Pagination
+
+---
+
+# 21. Summary
+
+In this lecture, you learned how to:
+
+1. Identify repeated API logic
+2. Create a reusable custom hook
+3. Move loading/error/data state into the hook
+4. Create a generic `request` function
+5. Pass API functions dynamically
+6. Use the rest operator for flexible parameters
+7. Return reusable state and functions
+8. Clean up React Native screens
+9. Use object destructuring with hooks
+10. Improve scalability and maintainability
+
+The app architecture is now much cleaner because API-related logic is centralized inside a reusable hook instead of being duplicated across multiple screens.
