@@ -1516,7 +1516,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 
 export default function App() {
-  return (<GestureHandlerRootView style={{ flex: 1 }}> <MessagesScreen />;</GestureHandlerRootView>)
+  return (<GestureHandlerRootView style={{ flex: 1 }}> <MessagesScreen /></GestureHandlerRootView>)
 
 }
 -------------------code----------------------
@@ -1549,3 +1549,382 @@ In this lesson, you learned how to:
 7. Center elements properly using flexbox.
 
 You now have a professional, reusable swipe-to-delete list item pattern that can be reused across your app.
+
+
+*** 7- Deleting an Item ***
+# Deleting Items from a Swipeable List (React Native)
+
+This lecture explains how to delete a list item when the user taps the red swipe action. We will:
+
+1. Make the delete action touchable
+2. Keep the component reusable
+3. Move delete logic to the screen
+4. Use `useState` (React Hooks)
+5. Remove the item using `filter`
+6. Trigger re-render correctly
+
+---
+
+# 1. Making the Delete Action Touchable
+
+We are inside:
+
+-------------------code----------------------
+ListItemDeleteAction.js
+-------------------code----------------------
+
+To detect taps on the red delete box, we wrap it with a touchable component.
+
+## Why Not TouchableOpacity or TouchableHighlight?
+
+In this context:
+
+* Opacity effect looks strange
+* Highlight effect looks strange
+
+Best choice here:
+
+-------------------code----------------------
+TouchableWithoutFeedback
+-------------------code----------------------
+
+---
+
+## Step 1 – Wrap the View
+
+-------------------code----------------------
+import { StyleSheet, View, TouchableWithoutFeedback } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import colors from "../config/colors";
+
+function ListItemDeleteAction({ onPress }) {
+  return (
+    <TouchableWithoutFeedback onPress={onPress}>
+      <View style={styles.container}>
+        <MaterialCommunityIcons
+          name="trash-can"
+          size={35}
+          color={colors.white}
+        />
+      </View>
+    </TouchableWithoutFeedback>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 2. Keep the Component Reusable
+
+Important principle:
+
+The delete action component should NOT contain deletion logic.
+
+Why?
+
+Because:
+
+* Today it deletes messages
+* Tomorrow it may delete notes
+* The behavior must be controlled by the parent
+
+So we pass:
+
+-------------------code----------------------
+onPress
+-------------------code----------------------
+
+as a prop and delegate the action.
+
+---
+
+# 3. Passing onPress from MessagesScreen
+
+In `MessagesScreen.js`, you cannot pass props directly like this:
+
+-------------------code----------------------
+renderRightActions={ListItemDeleteAction}
+-------------------code----------------------
+
+Because you need to attach `onPress`.
+
+Instead, pass a function that renders the component.
+
+---
+
+## Step 2 – Update renderRightActions
+
+-------------------code----------------------
+renderRightActions={() => (
+  <ListItemDeleteAction
+    onPress={() => handleDelete(item)}
+  />
+)}
+-------------------code----------------------
+
+Now we can control what happens when the delete button is pressed.
+
+---
+
+# 4. Why We Need State
+
+If we remove an item from the array directly:
+
+-------------------code----------------------
+messages.splice(...)
+-------------------code----------------------
+
+The component will NOT re-render.
+
+Why?
+
+Because React only re-renders when state changes.
+
+Solution:
+
+Use the `useState` hook.
+
+---
+
+# 5. Using useState (React Hook)
+
+## Step 3 – Import useState
+
+-------------------code----------------------
+import React, { useState } from "react";
+-------------------code----------------------
+
+---
+
+## Step 4 – Rename Static Array
+
+Instead of:
+
+-------------------code----------------------
+const messages = [...]
+-------------------code----------------------
+
+Use:
+
+-------------------code----------------------
+const initialMessages = [...]
+-------------------code----------------------
+
+---
+
+## Step 5 – Declare State
+
+-------------------code----------------------
+const [messages, setMessages] = useState(initialMessages);
+-------------------code----------------------
+
+Explanation:
+
+* `messages` → current state
+* `setMessages` → function to update state
+* `initialMessages` → initial value
+
+Whenever `setMessages` is called → component re-renders.
+
+---
+
+# 6. Implement handleDelete
+
+## Step 6 – Create Delete Function
+
+-------------------code----------------------
+const handleDelete = (message) => {
+  setMessages(messages.filter(m => m.id !== message.id));
+};
+-------------------code----------------------
+
+Explanation:
+
+* `filter()` creates a NEW array
+* Keeps all items except the deleted one
+* Updating state triggers re-render
+
+Important:
+
+Never mutate state directly.
+
+Bad:
+
+-------------------code----------------------
+messages.splice(...)
+-------------------code----------------------
+
+Good:
+
+-------------------code----------------------
+filter()
+-------------------code----------------------
+
+Always return a new array.
+
+---
+
+# 7. Use handleDelete
+
+Replace console log:
+
+-------------------code----------------------
+renderRightActions={() => (
+  <ListItemDeleteAction
+    onPress={() => handleDelete(item)}
+  />
+)}
+-------------------code----------------------
+
+Now tapping delete removes the item visually.
+
+---
+
+# Final Code
+
+---
+
+## ListItemDeleteAction.js
+
+-------------------code----------------------
+import { StyleSheet, View, TouchableWithoutFeedback } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import colors from "../config/colors";
+
+function ListItemDeleteAction({ onPress }) {
+  return (
+    <TouchableWithoutFeedback onPress={onPress}>
+      <View style={styles.container}>
+        <MaterialCommunityIcons
+          name="trash-can"
+          size={35}
+          color={colors.white}
+        />
+      </View>
+    </TouchableWithoutFeedback>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: colors.danger,
+    width: 70,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
+
+export default ListItemDeleteAction;
+-------------------code----------------------
+
+---
+
+## MessagesScreen.js
+
+-------------------code----------------------
+import React, { useState } from "react";
+import { FlatList } from "react-native";
+import ListItem from "../components/ListItem";
+import ListItemDeleteAction from "../components/ListItemDeleteAction";
+import ListItemSeparator from "../components/ListItemSeparator";
+import Screen from "./Screen";
+
+const initialMessages = [
+  {
+    id: 1,
+    title: "t1",
+    description: "d1",
+    image: require("../assets/mosh.jpg"),
+  },
+  {
+    id: 2,
+    title: "t2",
+    description: "d2",
+    image: require("../assets/mosh.jpg"),
+  },
+];
+
+function MessagesScreen() {
+  const [messages, setMessages] = useState(initialMessages);
+
+  const handleDelete = (message) => {
+    setMessages(messages.filter(m => m.id !== message.id));
+  };
+
+  return (
+    <Screen>
+      <FlatList
+        data={messages}
+        keyExtractor={(message) => message.id.toString()}
+        renderItem={({ item }) => (
+          <ListItem
+            title={item.title}
+            subtitle={item.description}
+            image={item.image}
+            onPress={() => console.log("Message selected:", item)}
+            renderRightActions={() => (
+              <ListItemDeleteAction
+                onPress={() => handleDelete(item)}
+              />
+            )}
+          />
+        )}
+        ItemSeparatorComponent={ListItemSeparator}
+      />
+    </Screen>
+  );
+}
+
+export default MessagesScreen;
+-------------------code----------------------
+
+---
+
+# Important Best Practices
+
+1. Never mutate state directly.
+2. Always use setState (or setMessages).
+3. Use filter() to remove items.
+4. Keep components reusable.
+5. Delegate logic to parent components.
+6. Hooks only work inside function components.
+7. Any function starting with "use" is a Hook.
+
+---
+
+# What Happens Internally
+
+When you call:
+
+-------------------code----------------------
+setMessages(newArray)
+-------------------code----------------------
+
+React:
+
+1. Updates state
+2. Re-runs the component function
+3. Re-renders UI
+4. FlatList receives new data
+5. Removed item disappears
+
+---
+
+# Summary
+
+In this lecture you learned:
+
+* How to make the swipe delete button clickable
+* Why deletion logic belongs in the screen component
+* How to use `useState` hook
+* How to update state correctly
+* Why `filter()` is used to remove items
+* How React re-renders when state changes
+
+You now understand:
+
+Reusable components
+State management with hooks
+Proper deletion pattern in React Native
+
+Next concept: Pull to refresh.
