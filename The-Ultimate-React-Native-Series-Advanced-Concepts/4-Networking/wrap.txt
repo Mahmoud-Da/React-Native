@@ -488,3 +488,536 @@ Main concepts introduced:
 * Backend architecture
 
 This section transforms the project from a static demo app into a production-style mobile application.
+
+
+*** 2- Setting Up the Backend ***
+# 1. Overview of the Lecture
+
+This lecture explains how to set up the backend server for the React Native app.
+
+The backend:
+
+* Is a Node.js project
+* Provides fake API endpoints
+* Serves listings and images
+* Simulates a real backend server
+
+This backend is used for:
+
+* Fetching listings
+* Uploading listings
+* Serving images
+
+---
+
+# 2. Purpose of the Backend
+
+The backend acts as the server for the mobile app.
+
+It will:
+
+* Store listings temporarily
+* Return listings through APIs
+* Handle uploads
+* Serve images
+
+---
+
+# 3. Download the Backend Project
+
+The instructor provides a ZIP file containing the backend.
+
+After extracting it:
+
+-------------------code----------------------
+backend/
+│
+├── config/
+├── assets/
+├── routes/
+├── index.js
+├── package.json
+-------------------code----------------------
+
+---
+
+# 4. Open Backend Separately
+
+Open the backend project in a separate VS Code window.
+
+Reason:
+
+* Run backend independently
+* Keep frontend and backend organized
+* Easier debugging
+
+---
+
+# 5. Install Dependencies
+
+Inside backend project:
+
+-------------------code----------------------
+npm install
+-------------------code----------------------
+
+This installs required Node.js packages.
+
+---
+
+# 6. Configuration Files
+
+Inside:
+
+-------------------code----------------------
+config/
+-------------------code----------------------
+
+there are environment configuration files.
+
+Example:
+
+-------------------code----------------------
+development.json
+-------------------code----------------------
+
+---
+
+# 7. Important Backend Settings
+
+The backend contains two important settings:
+
+---
+
+## 7.1 assetsBaseUrl
+
+Example:
+
+-------------------code----------------------
+"assetsBaseUrl": "http://192.168.0.12:9000/assets/"
+-------------------code----------------------
+
+Purpose:
+
+* Defines where images are served from
+
+---
+
+## 7.2 port
+
+Example:
+
+-------------------code----------------------
+"port": 9000
+-------------------code----------------------
+
+Purpose:
+
+* Defines server port
+
+---
+
+# 8. DO NOT Use localhost
+
+Important:
+
+-------------------code----------------------
+localhost will NOT work on mobile devices
+-------------------code----------------------
+
+Why?
+
+Because:
+
+* Emulator/device is separate from your computer
+* `localhost` inside phone means the phone itself
+
+---
+
+# 9. Use Your Machine IP Address
+
+Instead of:
+
+-------------------code----------------------
+localhost
+-------------------code----------------------
+
+Use:
+
+-------------------code----------------------
+192.168.x.x
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+"http://192.168.0.12:9000/assets/"
+-------------------code----------------------
+
+---
+
+# 10. How to Find Your IP Address
+
+---
+
+## macOS / Linux
+
+-------------------code----------------------
+ifconfig
+-------------------code----------------------
+
+---
+
+## Windows
+
+-------------------code----------------------
+ipconfig
+-------------------code----------------------
+
+Look for:
+
+-------------------code----------------------
+192.168.x.x
+-------------------code----------------------
+
+---
+
+# 11. Starting the Backend Server
+
+Run:
+
+-------------------code----------------------
+node index.js
+-------------------code----------------------
+
+Expected result:
+
+-------------------code----------------------
+Server started on port 9000
+-------------------code----------------------
+
+---
+
+# 12. Test the API in Browser
+
+Open:
+
+-------------------code----------------------
+http://localhost:9000/api/listings
+-------------------code----------------------
+
+You should see:
+
+-------------------code----------------------
+[
+  {
+    "id": 1,
+    "title": "Red Jacket"
+  }
+]
+-------------------code----------------------
+
+This confirms:
+
+* Server is working
+* API is accessible
+
+---
+
+# 13. Fake Backend Explained
+
+This backend:
+
+* Does NOT use a database
+* Stores data in memory only
+
+Meaning:
+
+* Fast setup
+* Easy for learning
+* No MongoDB setup required
+
+---
+
+# 14. Important Limitation
+
+Data is temporary.
+
+If you restart the server:
+
+-------------------code----------------------
+All created listings disappear
+-------------------code----------------------
+
+Because data exists only in memory.
+
+---
+
+# 15. Why Use a Fake Backend?
+
+Benefits:
+
+* Faster learning
+* Simpler setup
+* Focus on React Native
+* No database configuration needed
+
+This is common in tutorials and prototypes.
+
+---
+
+# 16. Backend Workflow
+
+---
+
+## Mobile App
+
+-------------------code----------------------
+React Native App
+-------------------code----------------------
+
+Sends requests to:
+
+---
+
+## Backend Server
+
+-------------------code----------------------
+Node.js API Server
+-------------------code----------------------
+
+Returns:
+
+* Listings
+* Images
+* Upload responses
+
+---
+
+# 17. API Endpoint Structure
+
+---
+
+## Get Listings
+
+-------------------code----------------------
+GET /api/listings
+-------------------code----------------------
+
+---
+
+## Assets
+
+-------------------code----------------------
+GET /assets/image.jpg
+-------------------code----------------------
+
+---
+
+# 18. Typical Development Setup
+
+You now run two projects simultaneously:
+
+---
+
+## Terminal 1
+
+-------------------code----------------------
+npm start
+-------------------code----------------------
+
+Runs React Native app.
+
+---
+
+## Terminal 2
+
+-------------------code----------------------
+node index.js
+-------------------code----------------------
+
+Runs backend server.
+
+---
+
+# 19. Common Beginner Mistakes
+
+---
+
+## Mistake 1 — Using localhost in Mobile App
+
+Wrong:
+
+-------------------code----------------------
+http://localhost:9000
+-------------------code----------------------
+
+Correct:
+
+-------------------code----------------------
+http://192.168.x.x:9000
+-------------------code----------------------
+
+---
+
+## Mistake 2 — Wrong IP Address
+
+Ensure:
+
+* Phone/emulator and computer are on same network
+
+---
+
+## Mistake 3 — Port Mismatch
+
+If port changes:
+
+-------------------code----------------------
+9000
+-------------------code----------------------
+
+update it everywhere.
+
+---
+
+## Mistake 4 — Forgetting npm install
+
+Always install dependencies first.
+
+---
+
+# 20. Full Backend Setup Flow
+
+---
+
+## Step 1
+
+Download backend ZIP
+
+---
+
+## Step 2
+
+Extract project
+
+---
+
+## Step 3
+
+Open in VS Code
+
+---
+
+## Step 4
+
+Install dependencies
+
+-------------------code----------------------
+npm install
+-------------------code----------------------
+
+---
+
+## Step 5
+
+Update IP address
+
+-------------------code----------------------
+assetsBaseUrl
+-------------------code----------------------
+
+---
+
+## Step 6
+
+Start server
+
+-------------------code----------------------
+node index.js
+-------------------code----------------------
+
+---
+
+## Step 7
+
+Test in browser
+
+-------------------code----------------------
+http://localhost:9000/api/listings
+-------------------code----------------------
+
+---
+
+# 21. Example Configuration File
+
+-------------------code----------------------
+{
+  "assetsBaseUrl": "http://192.168.0.12:9000/assets/",
+  "port": 9000
+}
+-------------------code----------------------
+
+---
+
+# 22. Expected Future Integration
+
+Soon the React Native app will:
+
+* Fetch listings from this server
+* Upload new listings
+* Upload images
+* Display backend data dynamically
+
+---
+
+# 23. Best Practices
+
+---
+
+## Keep Backend Separate
+
+Use separate VS Code windows.
+
+---
+
+## Use Environment Configurations
+
+Avoid hardcoding IPs in multiple places.
+
+---
+
+## Test APIs in Browser First
+
+Verify backend works before debugging mobile app.
+
+---
+
+## Keep Phone and PC on Same Network
+
+Otherwise requests will fail.
+
+---
+
+# 24. Summary
+
+In this lecture you learned how to:
+
+1. Set up the backend server
+2. Install Node.js dependencies
+3. Configure IP address and port
+4. Start the server
+5. Test API endpoints
+6. Understand fake backend limitations
+
+Main concepts:
+
+* Node.js backend
+* API endpoints
+* Local network access
+* Fake in-memory database
+* Mobile-to-server communication
+
+This backend will now power your React Native application.
+
+NOTE:
+Use docker for Backend in case need to run it to avoid the mismatch node version
