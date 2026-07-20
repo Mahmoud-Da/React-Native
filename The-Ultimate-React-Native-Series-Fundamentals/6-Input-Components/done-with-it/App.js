@@ -1,11 +1,31 @@
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import AppTextInput from "./components/AppTextInput";
+import React, { useState } from "react";
+import { View, Switch, StyleSheet } from "react-native";
 
-export default function App() {
-  return (<GestureHandlerRootView style={{ flex: 1 }}>
-    <AppTextInput
-      icon="email"
-      placeholder="Email"
-    />
-  </GestureHandlerRootView>)
+function App() {
+
+  const [isNew, setIsNew] = useState(false);
+
+  return (
+
+    <View style={styles.container}>
+      <Switch
+        value={isNew}
+        onValueChange={setIsNew}
+      />
+    </View>
+
+  );
+
 }
+
+const styles = StyleSheet.create({
+
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+});
+
+export default App;
