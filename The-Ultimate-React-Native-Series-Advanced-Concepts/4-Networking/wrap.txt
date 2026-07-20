@@ -5443,3 +5443,533 @@ You also learned important backend communication concepts:
 * clean separation of concerns
 
 The app is now ready to create and upload real listings to the server.
+
+*** 14- Posting Data ***
+# 1. Overview
+
+In this lecture, the app is connected to the backend API for creating new listings.
+
+The main goal is to:
+
+* Submit form data to the server
+* Use the `addListing()` API function
+* Send images and location data
+* Handle API success and failure
+* Keep code clean and maintainable
+
+This lecture focuses on integrating the frontend form with the backend API.
+
+---
+
+# 2. Import the Listings API
+
+Inside:
+
+-------------------code----------------------
+ListingEditScreen.js
+-------------------code----------------------
+
+Import the API layer.
+
+-------------------code----------------------
+import listingsApi from "../api/listings";
+-------------------code----------------------
+
+---
+
+# 3. Replace Inline onSubmit Function
+
+Previously:
+
+-------------------code----------------------
+onSubmit={(values) => console.log(location)}
+-------------------code----------------------
+
+Now we replace it with a function reference.
+
+-------------------code----------------------
+onSubmit={handleSubmit}
+-------------------code----------------------
+
+This keeps the JSX cleaner and makes the logic reusable.
+
+---
+
+# 4. Create handleSubmit Function
+
+Add a new function inside the component.
+
+-------------------code----------------------
+const handleSubmit = async (listing) => {
+
+};
+-------------------code----------------------
+
+---
+
+# 5. Call the API
+
+Inside `handleSubmit`:
+
+-------------------code----------------------
+const result = await listingsApi.addListing();
+-------------------code----------------------
+
+But we must pass the listing object.
+
+---
+
+# 6. Add Location to the Listing
+
+The form values do not contain location automatically.
+
+Location comes from:
+
+-------------------code----------------------
+const location = useLocation();
+-------------------code----------------------
+
+So we must combine:
+
+* form data
+* location object
+
+---
+
+# 7. Avoid Mutating the Original Object
+
+Bad practice:
+
+-------------------code----------------------
+listing.location = location;
+-------------------code----------------------
+
+This directly modifies Formik's object.
+
+Instead, create a new object.
+
+---
+
+# 8. Use the Spread Operator
+
+Correct approach:
+
+-------------------code----------------------
+{
+  ...listing,
+  location,
+}
+-------------------code----------------------
+
+This copies all listing properties and adds location safely.
+
+---
+
+# 9. Final API Call
+
+-------------------code----------------------
+const result = await listingsApi.addListing({
+  ...listing,
+  location,
+});
+-------------------code----------------------
+
+---
+
+# 10. Handle API Errors
+
+API Sauce responses contain:
+
+-------------------code----------------------
+result.ok
+-------------------code----------------------
+
+If the request fails:
+
+-------------------code----------------------
+if (!result.ok)
+-------------------code----------------------
+
+Show an error message.
+
+-------------------code----------------------
+if (!result.ok)
+  return alert("Could not save the listing.");
+-------------------code----------------------
+
+---
+
+# 11. Handle Success
+
+If everything works:
+
+-------------------code----------------------
+alert("Success");
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+alert("Success");
+-------------------code----------------------
+
+At this stage, the lecture focuses only on basic functionality.
+
+Advanced features like:
+
+* progress bars
+* animations
+* upload tracking
+
+will be added later.
+
+---
+
+# 12. Why Baby Steps Matter
+
+The instructor emphasizes:
+
+> Build features one small step at a time.
+
+Instead of building everything together:
+
+* first make uploading work
+* then add progress
+* then animations
+* then polish UX
+
+This makes debugging much easier.
+
+---
+
+# 13. Full Updated Code
+
+# ListingEditScreen.js
+
+-------------------code----------------------
+import React from "react";
+import { StyleSheet } from "react-native";
+import * as Yup from "yup";
+
+import {
+  Form,
+  FormField,
+  FormPicker as Picker,
+  SubmitButton,
+} from "../components/forms";
+
+import CategoryPickerItem from "../components/CategoryPickerItem";
+import Screen from "../components/Screen";
+import FormImagePicker from "../components/forms/FormImagePicker";
+import useLocation from "../hooks/useLocation";
+import listingsApi from "../api/listings";
+
+const validationSchema = Yup.object().shape({
+  title: Yup.string().required().min(1).label("Title"),
+  price: Yup.number().required().min(1).max(10000).label("Price"),
+  description: Yup.string().label("Description"),
+  category: Yup.object().required().nullable().label("Category"),
+  images: Yup.array().min(1, "Please select at least one image."),
+});
+
+const categories = [
+  {
+    backgroundColor: "#fc5c65",
+    icon: "floor-lamp",
+    label: "Furniture",
+    value: 1,
+  },
+  {
+    backgroundColor: "#fd9644",
+    icon: "car",
+    label: "Cars",
+    value: 2,
+  },
+  {
+    backgroundColor: "#fed330",
+    icon: "camera",
+    label: "Cameras",
+    value: 3,
+  },
+  {
+    backgroundColor: "#26de81",
+    icon: "cards",
+    label: "Games",
+    value: 4,
+  },
+  {
+    backgroundColor: "#2bcbba",
+    icon: "shoe-heel",
+    label: "Clothing",
+    value: 5,
+  },
+  {
+    backgroundColor: "#45aaf2",
+    icon: "basketball",
+    label: "Sports",
+    value: 6,
+  },
+  {
+    backgroundColor: "#4b7bec",
+    icon: "headphones",
+    label: "Movies & Music",
+    value: 7,
+  },
+  {
+    backgroundColor: "#a55eea",
+    icon: "book-open-variant",
+    label: "Books",
+    value: 8,
+  },
+  {
+    backgroundColor: "#778ca3",
+    icon: "application",
+    label: "Other",
+    value: 9,
+  },
+];
+
+function ListingEditScreen() {
+  const location = useLocation();
+
+  const handleSubmit = async (listing) => {
+    const result = await listingsApi.addListing({
+      ...listing,
+      location,
+    });
+
+    if (!result.ok)
+      return alert("Could not save the listing.");
+
+    alert("Success");
+  };
+
+  return (
+    <Screen style={styles.container}>
+      <Form
+        initialValues={{
+          title: "",
+          price: "",
+          description: "",
+          category: null,
+          images: [],
+        }}
+        onSubmit={handleSubmit}
+        validationSchema={validationSchema}
+      >
+        <FormImagePicker name="images" />
+
+        <FormField
+          maxLength={255}
+          name="title"
+          placeholder="Title"
+        />
+
+        <FormField
+          keyboardType="numeric"
+          maxLength={8}
+          name="price"
+          placeholder="Price"
+          width={120}
+        />
+
+        <Picker
+          items={categories}
+          name="category"
+          numberOfColumns={3}
+          PickerItemComponent={CategoryPickerItem}
+          placeholder="Category"
+          width="50%"
+        />
+
+        <FormField
+          maxLength={255}
+          multiline
+          name="description"
+          numberOfLines={3}
+          placeholder="Description"
+        />
+
+        <SubmitButton title="Post" />
+      </Form>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 10,
+  },
+});
+
+export default ListingEditScreen;
+-------------------code----------------------
+
+---
+
+# 14. Step-by-Step Flow
+
+## User fills form
+
+↓
+
+## User presses Post
+
+↓
+
+## handleSubmit() runs
+
+↓
+
+## Form values combined with location
+
+↓
+
+## addListing() API called
+
+↓
+
+## FormData created
+
+↓
+
+## Images uploaded
+
+↓
+
+## Server response returned
+
+↓
+
+## Success or error displayed
+
+---
+
+# 15. Important Notes
+
+## Do Not Modify Formik Values Directly
+
+Avoid:
+
+-------------------code----------------------
+listing.location = location;
+-------------------code----------------------
+
+Formik manages its own internal state.
+
+Mutating objects directly can create bugs.
+
+---
+
+## Always Handle API Failures
+
+Never assume requests succeed.
+
+Always check:
+
+-------------------code----------------------
+result.ok
+-------------------code----------------------
+
+---
+
+## Keep API Logic in API Layer
+
+Good:
+
+-------------------code----------------------
+listingsApi.addListing()
+-------------------code----------------------
+
+Bad:
+
+-------------------code----------------------
+fetch(...)
+axios.post(...)
+-------------------code----------------------
+
+inside components.
+
+---
+
+## Use Function References in JSX
+
+Better:
+
+-------------------code----------------------
+onSubmit={handleSubmit}
+-------------------code----------------------
+
+instead of:
+
+-------------------code----------------------
+onSubmit={(values) => ...}
+-------------------code----------------------
+
+Cleaner and easier to maintain.
+
+---
+
+# 16. Best Practices
+
+## Keep Components Focused on UI
+
+Components should:
+
+* render UI
+* handle user interaction
+
+API layer should:
+
+* call endpoints
+* upload files
+* manage request details
+
+---
+
+## Use Async/Await for Readability
+
+Good:
+
+-------------------code----------------------
+const result = await listingsApi.addListing();
+-------------------code----------------------
+
+Cleaner than chained `.then()` calls.
+
+---
+
+## Build Features Incrementally
+
+Recommended workflow:
+
+1. Make upload work
+2. Handle errors
+3. Add loading state
+4. Add progress tracking
+5. Add animations
+6. Improve UX
+
+---
+
+# 17. Summary
+
+In this lecture, you learned how to:
+
+* Connect the form to the backend API
+* Import and use the API layer
+* Create a reusable `handleSubmit()` function
+* Upload listings to the server
+* Merge form data with location data
+* Handle API success and failure
+* Avoid mutating Formik values
+* Use async/await cleanly
+
+You also learned important architectural concepts:
+
+* separation of concerns
+* safe object handling
+* clean component structure
+* incremental feature development
+
+The app can now successfully upload real listings with images and location data to the backend server.

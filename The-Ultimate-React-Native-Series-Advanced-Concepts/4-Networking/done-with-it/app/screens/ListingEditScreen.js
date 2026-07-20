@@ -8,10 +8,12 @@ import {
   FormPicker as Picker,
   SubmitButton,
 } from "../components/forms";
+
 import CategoryPickerItem from "../components/CategoryPickerItem";
 import Screen from "../components/Screen";
 import FormImagePicker from "../components/forms/FormImagePicker";
 import useLocation from "../hooks/useLocation";
+import listingsApi from "../api/listings";
 
 const validationSchema = Yup.object().shape({
   title: Yup.string().required().min(1).label("Title"),
@@ -81,6 +83,18 @@ const categories = [
 function ListingEditScreen() {
   const location = useLocation();
 
+  const handleSubmit = async (listing) => {
+    const result = await listingsApi.addListing({
+      ...listing,
+      location,
+    });
+
+    if (!result.ok)
+      return alert("Could not save the listing.");
+
+    alert("Success");
+  };
+
   return (
     <Screen style={styles.container}>
       <Form
@@ -91,11 +105,17 @@ function ListingEditScreen() {
           category: null,
           images: [],
         }}
-        onSubmit={(values) => console.log(location)}
+        onSubmit={handleSubmit}
         validationSchema={validationSchema}
       >
         <FormImagePicker name="images" />
-        <FormField maxLength={255} name="title" placeholder="Title" />
+
+        <FormField
+          maxLength={255}
+          name="title"
+          placeholder="Title"
+        />
+
         <FormField
           keyboardType="numeric"
           maxLength={8}
@@ -103,6 +123,7 @@ function ListingEditScreen() {
           placeholder="Price"
           width={120}
         />
+
         <Picker
           items={categories}
           name="category"
@@ -111,6 +132,7 @@ function ListingEditScreen() {
           placeholder="Category"
           width="50%"
         />
+
         <FormField
           maxLength={255}
           multiline
@@ -118,6 +140,7 @@ function ListingEditScreen() {
           numberOfLines={3}
           placeholder="Description"
         />
+
         <SubmitButton title="Post" />
       </Form>
     </Screen>
@@ -129,4 +152,5 @@ const styles = StyleSheet.create({
     padding: 10,
   },
 });
+
 export default ListingEditScreen;
