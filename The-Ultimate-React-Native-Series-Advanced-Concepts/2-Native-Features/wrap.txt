@@ -4959,3 +4959,403 @@ if (!granted) return;
 * Ensured optional behavior
 
 Your form now supports images, validation, and location, making it much closer to a production-ready listing system.
+
+*** 15- Building Custom Hooks ***
+# Creating a Custom Hook for Location (useLocation)
+
+## 1. Introduction
+
+In the previous implementation, we fetched the user’s location directly inside `ListingEditScreen`.
+
+### Problem
+
+* Code is **not reusable**
+* If another screen needs location → we must duplicate logic
+
+### Solution
+
+Create a **custom hook**:
+
+-------------------code----------------------
+useLocation
+-------------------code----------------------
+
+This allows:
+
+* Reusability
+* Cleaner components
+* Better separation of concerns
+
+---
+
+# 2. What is a Custom Hook?
+
+## Definition
+
+A **custom hook** is:
+
+* A regular JavaScript function
+* Uses React hooks (`useState`, `useEffect`)
+* Encapsulates logic + state
+* Can be reused anywhere
+
+---
+
+## Naming Convention
+
+-------------------code----------------------
+Must start with "use"
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+useLocation
+useAuth
+useApi
+-------------------code----------------------
+
+---
+
+# 3. Creating the Hook
+
+## Step 1 — Create Folder
+
+-------------------code----------------------
+app/hooks/
+-------------------code----------------------
+
+---
+
+## Step 2 — Create File
+
+-------------------code----------------------
+useLocation.js
+-------------------code----------------------
+
+---
+
+## Step 3 — Basic Structure
+
+-------------------code----------------------
+const useLocation = () => {
+  return null;
+};
+
+export default useLocation;
+-------------------code----------------------
+
+---
+
+# 4. Moving Logic into Hook
+
+## Step 4 — Import Dependencies
+
+-------------------code----------------------
+import { useEffect, useState } from "react";
+import * as Location from "expo-location";
+-------------------code----------------------
+
+---
+
+## Step 5 — Add State
+
+-------------------code----------------------
+const [location, setLocation] = useState(null);
+-------------------code----------------------
+
+---
+
+## Step 6 — Add getLocation Function
+
+-------------------code----------------------
+const getLocation = async () => {
+  try {
+    const { granted } = await Location.requestForegroundPermissionsAsync();
+
+    if (!granted) return;
+
+    const {
+      coords: { latitude, longitude },
+    } = await Location.getLastKnownPositionAsync();
+
+    setLocation({ latitude, longitude });
+  } catch (error) {
+    console.log("Error getting location", error);
+  }
+};
+-------------------code----------------------
+
+---
+
+## Step 7 — Use useEffect
+
+-------------------code----------------------
+useEffect(() => {
+  getLocation();
+}, []);
+-------------------code----------------------
+
+---
+
+## Step 8 — Return Value
+
+-------------------code----------------------
+return location;
+-------------------code----------------------
+
+---
+
+# 5. Full Hook Code
+
+## useLocation.js
+
+-------------------code----------------------
+import { useEffect, useState } from "react";
+import * as Location from "expo-location";
+
+const useLocation = () => {
+  const [location, setLocation] = useState(null);
+
+  const getLocation = async () => {
+    try {
+      const { granted } = await Location.requestForegroundPermissionsAsync();
+
+      if (!granted) return;
+
+      const {
+        coords: { latitude, longitude },
+      } = await Location.getLastKnownPositionAsync();
+
+      setLocation({ latitude, longitude });
+    } catch (error) {
+      console.log("Error getting location", error);
+    }
+  };
+
+  useEffect(() => {
+    getLocation();
+  }, []);
+
+  return location;
+};
+
+export default useLocation;
+-------------------code----------------------
+
+---
+
+# 6. Using the Custom Hook
+
+## Step 9 — Import Hook
+
+-------------------code----------------------
+import useLocation from "../hooks/useLocation";
+-------------------code----------------------
+
+---
+
+## Step 10 — Use Inside Component
+
+-------------------code----------------------
+const location = useLocation();
+-------------------code----------------------
+
+---
+
+## Replace Old Code
+
+Remove:
+
+-------------------code----------------------
+useState
+useEffect
+getLocation function
+-------------------code----------------------
+
+---
+
+# 7. Updated ListingEditScreen
+
+## Key Change
+
+-------------------code----------------------
+const location = useLocation();
+-------------------code----------------------
+
+---
+
+## Full Updated Code
+
+-------------------code----------------------
+import React from "react";
+import { StyleSheet } from "react-native";
+import * as Yup from "yup";
+
+import useLocation from "../hooks/useLocation";
+
+import {
+  Form,
+  FormField,
+  FormPicker as Picker,
+  SubmitButton,
+  FormImagePicker,
+} from "../components/forms";
+
+import CategoryPickerItem from "../components/CategoryPickerItem";
+import Screen from "../components/Screen";
+
+const validationSchema = Yup.object().shape({
+  title: Yup.string().required().min(1).label("Title"),
+  price: Yup.number().required().min(1).max(10000).label("Price"),
+  description: Yup.string().label("Description"),
+  category: Yup.object().required().nullable().label("Category"),
+  images: Yup.array().min(1, "Please select at least one image."),
+});
+
+const categories = [
+  { backgroundColor: "#fc5c65", icon: "floor-lamp", label: "Furniture", value: 1 },
+  { backgroundColor: "#fd9644", icon: "car", label: "Cars", value: 2 },
+  { backgroundColor: "#fed330", icon: "camera", label: "Cameras", value: 3 },
+  { backgroundColor: "#26de81", icon: "cards", label: "Games", value: 4 },
+  { backgroundColor: "#2bcbba", icon: "shoe-heel", label: "Clothing", value: 5 },
+  { backgroundColor: "#45aaf2", icon: "basketball", label: "Sports", value: 6 },
+  { backgroundColor: "#4b7bec", icon: "headphones", label: "Movies & Music", value: 7 },
+  { backgroundColor: "#a55eea", icon: "book-open-variant", label: "Books", value: 8 },
+  { backgroundColor: "#778ca3", icon: "application", label: "Other", value: 9 },
+];
+
+function ListingEditScreen() {
+  const location = useLocation();
+
+  return (
+    <Screen style={styles.container}>
+      <Form
+        initialValues={{
+          title: "",
+          price: "",
+          description: "",
+          category: null,
+          images: [],
+        }}
+        onSubmit={(values) => {
+          console.log(values, location);
+        }}
+        validationSchema={validationSchema}
+      >
+        <FormImagePicker name="images" />
+
+        <FormField maxLength={255} name="title" placeholder="Title" />
+
+        <FormField
+          keyboardType="numeric"
+          maxLength={8}
+          name="price"
+          placeholder="Price"
+          width={120}
+        />
+
+        <Picker
+          items={categories}
+          name="category"
+          numberOfColumns={3}
+          PickerItemComponent={CategoryPickerItem}
+          placeholder="Category"
+          width="50%"
+        />
+
+        <FormField
+          maxLength={255}
+          multiline
+          name="description"
+          numberOfLines={3}
+          placeholder="Description"
+        />
+
+        <SubmitButton title="Post" />
+      </Form>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 10,
+  },
+});
+
+export default ListingEditScreen;
+-------------------code----------------------
+
+---
+
+# 8. Important Notes and Best Practices
+
+## 8.1 Always Use Custom Hooks for Reusable Logic
+
+* Avoid duplicating code across screens
+
+---
+
+## 8.2 Keep Components Clean
+
+Before:
+
+-------------------code----------------------
+// too much logic inside component
+-------------------code----------------------
+
+After:
+
+-------------------code----------------------
+const location = useLocation();
+-------------------code----------------------
+
+---
+
+## 8.3 Always Handle Errors
+
+-------------------code----------------------
+try {
+} catch (error) {
+  console.log(error);
+}
+-------------------code----------------------
+
+---
+
+## 8.4 Hooks Must Be Called at Top Level
+
+Correct:
+
+-------------------code----------------------
+const location = useLocation();
+-------------------code----------------------
+
+Wrong:
+
+-------------------code----------------------
+if (condition) {
+  useLocation(); // not allowed
+}
+-------------------code----------------------
+
+---
+
+## 8.5 Return Only What You Need
+
+* Here we return only `location`
+* Keep API simple
+
+---
+
+# 9. Summary
+
+* Identified code duplication problem
+* Created reusable custom hook `useLocation`
+* Moved state + logic into hook
+* Added error handling with try/catch
+* Simplified component usage
+* Improved code readability and maintainability
+
+Now your app follows a clean, scalable architecture and is ready for more advanced features.
