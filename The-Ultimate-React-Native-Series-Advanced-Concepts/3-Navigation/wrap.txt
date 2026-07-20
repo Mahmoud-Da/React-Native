@@ -1584,3 +1584,238 @@ Flow learned:
 4. Access route params for dynamic behavior
 
 This is essential for making your app feel **dynamic and user-friendly**.
+
+*** 7- Customizing Headers ***
+# 1. Overview of the Lecture
+
+This lecture explains how to **customize the header (top bar)** in React Navigation.
+
+Key ideas:
+
+* Customize header per screen using `options`
+* Apply global styles using `screenOptions`
+* Override global styles for specific screens
+
+---
+
+# 2. Header Customization Basics
+
+Each screen (`Stack.Screen`) supports an `options` prop.
+
+### Example:
+
+-------------------code----------------------
+<Stack.Screen
+  name="Tweets"
+  component={Tweets}
+  options={{ title: "Tweets" }}
+/>
+-------------------code----------------------
+
+---
+
+# 3. Step 1 – Customize Header for One Screen
+
+### Add background color
+
+-------------------code----------------------
+options={{
+  headerStyle: { backgroundColor: "tomato" },
+}}
+-------------------code----------------------
+
+---
+
+### Change text color
+
+-------------------code----------------------
+options={{
+  headerStyle: { backgroundColor: "tomato" },
+  headerTintColor: "white",
+}}
+-------------------code----------------------
+
+---
+
+### Hide header
+
+-------------------code----------------------
+options={{
+  headerShown: false,
+}}
+-------------------code----------------------
+
+---
+
+# 4. Important Behavior
+
+* These styles apply **only to that screen**
+* Other screens remain unchanged
+
+---
+
+# 5. Step 2 – Apply Global Header Styles
+
+Instead of repeating styles for every screen, use `screenOptions` in the navigator.
+
+-------------------code----------------------
+<Stack.Navigator
+  screenOptions={{
+    headerStyle: { backgroundColor: "dodgerblue" },
+    headerTintColor: "white",
+  }}
+>
+-------------------code----------------------
+
+---
+
+# 6. How Global Styles Work
+
+* Applied to **all screens by default**
+* Cleaner and more maintainable
+
+---
+
+# 7. Step 3 – Override Global Styles
+
+You can still override styles for specific screens:
+
+-------------------code----------------------
+<Stack.Screen
+  name="Tweets"
+  component={Tweets}
+  options={{ headerShown: false }}
+/>
+-------------------code----------------------
+
+### Result:
+
+* Global style → blue header
+* Tweets screen → no header
+
+---
+
+# 8. Common Header Options
+
+| Property          | Description        |
+| ----------------- | ------------------ |
+| `headerStyle`     | Background styling |
+| `headerTintColor` | Text & icon color  |
+| `headerShown`     | Show/hide header   |
+| `title`           | Header title       |
+
+---
+
+# 9. Step 4 – Complete Example
+
+### Tweets Screen
+
+-------------------code----------------------
+const Tweets = ({ navigation }) => (
+  <Screen>
+    <Button
+      title="View Tweet"
+      onPress={() =>
+        navigation.navigate("TweetDetails", { id: 1 })
+      }
+    />
+  </Screen>
+);
+-------------------code----------------------
+
+---
+
+### TweetDetails Screen
+
+-------------------code----------------------
+const TweetDetails = ({ route }) => (
+  <Screen>
+    <Text>Tweet ID: {route.params.id}</Text>
+  </Screen>
+);
+-------------------code----------------------
+
+---
+
+# 10. Full Final Code
+
+-------------------code----------------------
+import React from "react";
+import { Text, Button } from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+
+import Screen from "./app/components/Screen";
+
+const Stack = createStackNavigator();
+
+const Tweets = ({ navigation }) => (
+  <Screen>
+    <Button
+      title="View Tweet"
+      onPress={() =>
+        navigation.navigate("TweetDetails", { id: 1 })
+      }
+    />
+  </Screen>
+);
+
+const TweetDetails = ({ route }) => (
+  <Screen>
+    <Text>Tweet ID: {route.params.id}</Text>
+  </Screen>
+);
+
+const StackNavigator = () => (
+  <Stack.Navigator
+    screenOptions={{
+      headerStyle: { backgroundColor: "dodgerblue" },
+      headerTintColor: "white",
+    }}
+  >
+    <Stack.Screen
+      name="Tweets"
+      component={Tweets}
+      options={{ headerShown: false }}
+    />
+    <Stack.Screen
+      name="TweetDetails"
+      component={TweetDetails}
+    />
+  </Stack.Navigator>
+);
+
+const App = () => (
+  <NavigationContainer>
+    <StackNavigator />
+  </NavigationContainer>
+);
+
+export default App;
+-------------------code----------------------
+
+---
+
+# 11. Important Notes & Best Practices
+
+* Use `screenOptions` for global styles
+* Override only when needed (avoid duplication)
+* Keep header consistent across app
+* Hide header only when necessary (e.g., full-screen UI)
+* Use readable colors for accessibility
+
+---
+
+# 12. Summary
+
+* `options` → customize header per screen
+* `screenOptions` → apply global styles
+* You can override global styles anytime
+
+Flow learned:
+
+1. Customize one screen
+2. Apply global styles
+3. Override specific screens
+
+This gives you full control over your app’s header design.
