@@ -2896,3 +2896,663 @@ This follows a professional development mindset:
 * Divide work into small pieces.
 * Build, test, confirm.
 * Then move to the next layer.
+
+*** 12- Extending the ListItem Component ***
+# React Native Lecture Notes: Extending ListItem to Support Icons and Conditional Rendering
+
+## 1. Introduction
+
+In this lecture, the goal is to improve the `ListItem` component to make it more reusable and flexible by:
+
+1. Supporting icons in addition to images.
+2. Removing empty space when no image exists.
+3. Improving layout when subtitle is missing.
+4. Avoiding unnecessary props and duplication.
+
+---
+
+# 2. Problem 1: Empty Space When Image is Missing
+
+## Explanation
+
+Previously, the `ListItem` always rendered an `Image`.
+
+Even if no image was provided, React Native still reserved space because of:
+
+-------------------code----------------------
+width: 70
+-------------------code----------------------
+
+This created unwanted blank space.
+
+---
+
+## Solution: Conditional Rendering
+
+Render the image only if it exists.
+
+### Step 1: Fix Image Rendering
+
+### Before
+
+-------------------code----------------------
+<Image source={image} style={styles.image} />
+-------------------code----------------------
+
+### After
+
+-------------------code----------------------
+{image && <Image source={image} style={styles.image} />}
+-------------------code----------------------
+
+This means:
+
+* If image exists → render it
+* If not → render nothing
+
+---
+
+# 3. Problem 2: Adding Icon Support Without Complicating Props
+
+## Bad Approach (Not Recommended)
+
+Adding multiple props like:
+
+-------------------code----------------------
+iconName
+iconSize
+iconColor
+iconBackgroundColor
+-------------------code----------------------
+
+This makes component harder to use.
+
+---
+
+## Better Approach: Pass a Component Instead
+
+Introduce a new prop:
+
+-------------------code----------------------
+ImageComponent
+-------------------code----------------------
+
+Naming rule:
+
+Capital letter because it is a component, not data.
+
+---
+
+# 4. Step 2: Render ImageComponent
+
+Add this inside container:
+
+-------------------code----------------------
+{ImageComponent}
+-------------------code----------------------
+
+Full example:
+
+-------------------code----------------------
+<View style={styles.container}>
+
+  {ImageComponent}
+
+  {image && <Image source={image} style={styles.image} />}
+
+  <View style={styles.detailsContainer}>
+    ...
+  </View>
+
+</View>
+-------------------code----------------------
+
+If ImageComponent is not provided → nothing renders.
+
+---
+
+# 5. Step 3: Use ImageComponent in App.js
+
+Example:
+
+-------------------code----------------------
+<ListItem
+  title="My Title"
+  subtitle="My Subtitle"
+  ImageComponent={
+    <Icon
+      name="email"
+      size={40}
+      backgroundColor="red"
+      iconColor="white"
+    />
+  }
+/>
+-------------------code----------------------
+
+Now ListItem supports icons.
+
+---
+
+# 6. Problem 3: Avoid Duplicate Margin
+
+Previously margin was applied to image:
+
+-------------------code----------------------
+marginRight: 10
+-------------------code----------------------
+
+But icons also need spacing.
+
+Instead of duplicating margin, apply margin to text container.
+
+---
+
+## Step 4: Add detailsContainer Style
+
+-------------------code----------------------
+detailsContainer: {
+  marginLeft: 10,
+}
+-------------------code----------------------
+
+---
+
+## Apply it
+
+-------------------code----------------------
+<View style={styles.detailsContainer}>
+-------------------code----------------------
+
+---
+
+## Remove marginRight from image
+
+Before:
+
+-------------------code----------------------
+marginRight: 10
+-------------------code----------------------
+
+After:
+
+Remove it.
+
+---
+
+# 7. Problem 4: Fix Layout When Subtitle is Missing
+
+If subtitle does not exist, title should be centered vertically.
+
+---
+
+## Step 5: Add justifyContent
+
+-------------------code----------------------
+detailsContainer: {
+  marginLeft: 10,
+  justifyContent: "center",
+}
+-------------------code----------------------
+
+---
+
+# 8. Step 6: Conditionally Render Subtitle
+
+Before:
+
+-------------------code----------------------
+<AppText style={styles.subtitle}>{subtitle}</AppText>
+-------------------code----------------------
+
+After:
+
+-------------------code----------------------
+{subtitle && (
+  <AppText style={styles.subtitle}>{subtitle}</AppText>
+)}
+-------------------code----------------------
+
+Now subtitle renders only when exists.
+
+---
+
+# 9. Updated ListItem Code Step-by-Step
+
+## Updated Component
+
+-------------------code----------------------
+function ListItem({
+  title,
+  subtitle,
+  image,
+  ImageComponent,
+  onPress,
+  renderRightActions
+}) {
+-------------------code----------------------
+
+---
+
+## Container Layout
+
+-------------------code----------------------
+<View style={styles.container}>
+
+  {ImageComponent}
+
+  {image && (
+    <Image source={image} style={styles.image} />
+  )}
+
+  <View style={styles.detailsContainer}>
+
+    <AppText style={styles.title}>
+      {title}
+    </AppText>
+
+    {subtitle && (
+      <AppText style={styles.subtitle}>
+        {subtitle}
+      </AppText>
+    )}
+
+  </View>
+
+</View>
+-------------------code----------------------
+
+---
+
+# 10. Full Final Code (Complete ListItem)
+
+-------------------code----------------------
+import { Image, StyleSheet, TouchableHighlight, View } from 'react-native';
+import Swipeable from "react-native-gesture-handler/Swipeable";
+
+import colors from '../config/colors';
+import AppText from './AppText';
+
+function ListItem({
+  title,
+  subtitle,
+  image,
+  ImageComponent,
+  onPress,
+  renderRightActions
+}) {
+  return (
+
+    <Swipeable renderRightActions={renderRightActions}>
+
+      <TouchableHighlight
+        underlayColor={colors.light}
+        onPress={onPress}
+      >
+
+        <View style={styles.container}>
+
+          {ImageComponent}
+
+          {image && (
+            <Image
+              source={image}
+              style={styles.image}
+            />
+          )}
+
+          <View style={styles.detailsContainer}>
+
+            <AppText style={styles.title}>
+              {title}
+            </AppText>
+
+            {subtitle && (
+              <AppText style={styles.subtitle}>
+                {subtitle}
+              </AppText>
+            )}
+
+          </View>
+
+        </View>
+
+      </TouchableHighlight>
+
+    </Swipeable>
+
+  );
+}
+
+const styles = StyleSheet.create({
+
+  container: {
+    flexDirection: 'row',
+    padding: 15,
+  },
+
+  detailsContainer: {
+    marginLeft: 10,
+    justifyContent: "center",
+  },
+
+  image: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+  },
+
+  title: {
+    fontWeight: '500',
+  },
+
+  subtitle: {
+    color: colors.medium,
+  },
+
+});
+
+export default ListItem;
+-------------------code----------------------
+
+App.js
+-------------------code----------------------
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import ListItem from "./app/components/ListItem";
+import Screen from "./app/screens/Screen.js";
+import Icon from "./app/components/Icon.js";
+
+export default function App() {
+  return (<GestureHandlerRootView style={{ flex: 1 }}>
+    <Screen>
+      <ListItem
+        title="My title"
+        subtitle="My subtitle"
+        ImageComponent={<Icon name="email" />} />
+    </Screen>
+  </GestureHandlerRootView>)
+}
+-------------------code----------------------
+---
+
+# 11. Best Practices
+
+## 1. Use Conditional Rendering
+
+Always avoid rendering unused UI.
+
+Example:
+
+-------------------code----------------------
+image && <Image />
+-------------------code----------------------
+
+---
+
+## 2. Pass Components Instead of Many Props
+
+Better:
+
+-------------------code----------------------
+ImageComponent={<Icon />}
+-------------------code----------------------
+
+Avoid:
+
+-------------------code----------------------
+iconName
+iconSize
+iconColor
+-------------------code----------------------
+
+---
+
+## 3. Avoid Style Duplication
+
+Use shared containers.
+
+Bad:
+
+margin on multiple elements
+
+Good:
+
+margin on parent container
+
+---
+
+## 4. Make Components Reusable
+
+Reusable components:
+
+Work in multiple situations
+
+Support optional props
+
+---
+
+# 12. Visual Structure
+
+Final Layout:
+
+-------------------code----------------------
+[ Icon or Image ]   Title
+                    Subtitle
+-------------------code----------------------
+
+Or:
+
+-------------------code----------------------
+[ Icon ]   Title
+-------------------code----------------------
+
+Centered correctly.
+
+---
+
+# 13. Summary
+
+In this lecture you learned:
+
+1. How to conditionally render image
+2. How to support icons using ImageComponent prop
+3. How to remove unwanted empty space
+4. How to center content when subtitle missing
+5. How to write more reusable components
+6. How to avoid duplicated styles
+
+Final Result:
+
+A fully reusable professional ListItem component that supports:
+
+• Image
+• Icon
+• Title only
+• Title + Subtitle
+• Swipe actions
+
+---
+
+
+NOTE:
+
+Error
+-------------------code----------------------
+[Error: PanGestureHandler must be used as a descendant of GestureHandlerRootView. 
+Otherwise the gestures will not be recognized. 
+See https://docs.swmansion.com/react-native-gesture-handler/docs/fundamentals/installation for more details.]
+-------------------code----------------------
+
+Solution:
+This error happens because you're using Swipeable from react-native-gesture-handler, but your app is not wrapped with GestureHandlerRootView.
+
+Swipeable internally uses PanGestureHandler, and it only works if the root of your app is GestureHandlerRootView.
+
+This library is developed by Software Mansion.
+
+This error happens because you're using `Swipeable` from **react-native-gesture-handler**, but your app is not wrapped with `GestureHandlerRootView`.
+
+`Swipeable` internally uses `PanGestureHandler`, and it **only works if the root of your app is GestureHandlerRootView**.
+
+This library is developed by Software Mansion.
+
+---
+
+# Why this error happens
+
+You probably have:
+
+-------------------code----------------------
+import Swipeable from "react-native-gesture-handler/Swipeable";
+-------------------code----------------------
+
+But your `App.js` looks like this:
+
+-------------------code----------------------
+export default function App() {
+  return <AccountScreen />;
+}
+-------------------code----------------------
+
+This is missing the required root wrapper.
+
+---
+
+# Fix (Required)
+
+## Step 1: Import GestureHandlerRootView
+
+In App.js:
+
+-------------------code----------------------
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+-------------------code----------------------
+
+---
+
+## Step 2: Wrap your entire app
+
+Correct code:
+
+-------------------code----------------------
+import React from "react";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
+import AccountScreen from "./app/screens/AccountScreen";
+
+export default function App() {
+
+  return (
+
+    <GestureHandlerRootView style={{ flex: 1 }}>
+
+      <AccountScreen />
+
+    </GestureHandlerRootView>
+
+  );
+
+}
+-------------------code----------------------
+
+---
+
+# Why flex: 1 is important
+
+Without it, your app may render blank screen.
+
+Always include:
+
+-------------------code----------------------
+style={{ flex: 1 }}
+-------------------code----------------------
+
+---
+
+# After Fix
+
+Your Swipeable will work:
+
+• swipe left
+• swipe right
+• gestures recognized
+
+---
+
+# Common mistake beginners make
+
+Wrong:
+
+-------------------code----------------------
+<Screen>
+  <ListItem
+    title="My title"
+    subtitle="My subtitle"
+    ImageComponent={<Icon name="email" />} />
+</Screen>
+-------------------code----------------------
+
+Correct:
+
+-------------------code----------------------
+<GestureHandlerRootView style={{ flex: 1 }}>
+  <Screen>
+    <ListItem
+      title="My title"
+      subtitle="My subtitle"
+      ImageComponent={<Icon name="email" />} />
+  </Screen>
+</GestureHandlerRootView>
+-------------------code----------------------
+
+---
+
+# Additional Important Note (If using Expo)
+
+No extra installation needed.
+
+If using bare React Native:
+
+Run:
+
+-------------------code----------------------bash
+npm install react-native-gesture-handler
+-------------------code----------------------
+
+then:
+
+-------------------code----------------------bash
+npx pod-install
+-------------------code----------------------
+
+---
+
+# Summary
+
+Error cause:
+
+GestureHandlerRootView missing
+
+Fix:
+
+Wrap your root app:
+
+-------------------code----------------------
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import ListItem from "./app/components/ListItem";
+import Screen from "./app/screens/Screen.js";
+import Icon from "./app/components/Icon.js";
+
+export default function App() {
+  return (<GestureHandlerRootView style={{ flex: 1 }}>
+    <Screen>
+      <ListItem
+        title="My title"
+        subtitle="My subtitle"
+        ImageComponent={<Icon name="email" />} />
+    </Screen>
+  </GestureHandlerRootView>)
+}
+-------------------code----------------------
+
+---
