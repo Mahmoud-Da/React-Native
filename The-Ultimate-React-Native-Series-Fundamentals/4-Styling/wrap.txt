@@ -4318,3 +4318,234 @@ In this lecture, you:
 * Handled spacing at the correct architectural level
 
 Now your Listing Details screen looks complete and professionally structured.
+
+*** 16- Improving the View Image Screen ***
+Below are **clean, structured notes** based on the lecture, written for easy later review and study.
+
+---
+
+# Improving the View Image Screen (Icons Upgrade)
+
+## 1. Goal of This Step
+
+The purpose of this step is to improve the **View Image Screen** by:
+
+* Replacing placeholder views with real icons
+* Cleaning up unnecessary styles
+* Using icons that are visually clear and properly positioned
+
+This makes the screen more polished and closer to a production-ready UI.
+
+---
+
+## 2. Replacing Placeholders with Icons
+
+### Concept
+
+Instead of using placeholder `View` components, we will:
+
+* Use **MaterialCommunityIcons** from Expo
+* Place icons inside existing positioned containers
+* Control icon appearance using size and color props
+
+---
+
+## 3. Importing MaterialCommunityIcons
+
+### Step
+
+At the top of `ViewImageScreen.js`, import the icon component:
+
+-------------------code----------------------
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+-------------------code----------------------
+
+This allows us to use ready-made icons instead of manual shapes.
+
+---
+
+## 4. Cleaning Up Close Icon Styles
+
+### Concept
+
+Since we are now using an icon:
+
+* Width, height, and background color are no longer needed
+* Positioning styles are still required
+
+### Before (placeholder-based styles)
+
+-------------------code----------------------
+closeIcon: {
+  width: 50,
+  height: 50,
+  backgroundColor: "#000",
+  position: "absolute",
+  top: 40,
+  left: 30,
+}
+-------------------code----------------------
+
+### After (icon-based styles)
+
+-------------------code----------------------
+closeIcon: {
+  position: "absolute",
+  top: 40,
+  left: 30,
+}
+-------------------code----------------------
+
+Best practice: remove unused styles to keep code clean and readable.
+
+---
+
+## 5. Adding the Close Icon
+
+### Step
+
+Place the icon inside the container styled with `closeIcon`.
+
+-------------------code----------------------
+<View style={styles.closeIcon}>
+  <MaterialCommunityIcons
+    name="close"
+    size={30}
+    color="white"
+  />
+</View>
+-------------------code----------------------
+
+### Notes
+
+* Icons default to black, so a white color is required here
+* Size `30` provides good visibility without being oversized
+
+---
+
+## 6. Cleaning Up Delete Icon Styles
+
+Repeat the same cleanup process for the delete icon container.
+
+### Before
+
+Includes unnecessary width, height, or background color.
+
+### After
+
+Keep only positioning styles:
+
+-------------------code----------------------
+deleteIcon: {
+  position: "absolute",
+  top: 40,
+  right: 30,
+}
+-------------------code----------------------
+
+---
+
+## 7. Adding the Delete Icon
+
+### Step
+
+Reuse the same icon component with a different icon name.
+
+-------------------code----------------------
+<View style={styles.deleteIcon}>
+  <MaterialCommunityIcons
+    name="trash-can-outline"
+    size={35}
+    color="white"
+  />
+</View>
+-------------------code----------------------
+
+### Notes
+
+* Slightly larger size (`35`) improves visual balance
+* Icon name comes from MaterialCommunityIcons library
+
+---
+
+## 8. Full Final Code (ViewImageScreen.js)
+
+-------------------code----------------------
+import React from "react";
+import { View, Image, StyleSheet } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import colors from "../config/colors";
+
+function ViewImageScreen() {
+  return (
+    <View style={styles.container}>
+      <View style={styles.closeIcon}>
+        <MaterialCommunityIcons
+          name="close"
+          size={30}
+          color={colors.white}
+        />
+      </View>
+
+      <View style={styles.deleteIcon}>
+        <MaterialCommunityIcons
+          name="trash-can-outline"
+          size={35}
+          color={colors.white}
+        />
+      </View>
+
+      <Image
+        resizeMode="contain"
+        style={styles.image}
+        source={require("../assets/chair.jpg")}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: colors.black,
+    flex: 1,
+  },
+  closeIcon: {
+    position: "absolute",
+    top: 40,
+    left: 30,
+  },
+  deleteIcon: {
+    position: "absolute",
+    top: 40,
+    right: 30,
+  },
+  image: {
+    width: "100%",
+    height: "100%",
+  },
+});
+
+export default ViewImageScreen;
+-------------------code----------------------
+
+---
+
+## 9. Important Notes & Best Practices
+
+* Prefer icons over placeholder views for clarity and consistency
+* Always remove unused styles after refactoring
+* Use absolute positioning carefully for overlay elements
+* Icons default to black, so explicitly set color when needed
+* Keep UI components visually balanced (icon sizes matter)
+
+---
+
+## 10. Summary
+
+* Replaced placeholder views with MaterialCommunityIcons
+* Cleaned up unnecessary styling
+* Added close and delete icons with proper positioning
+* Improved UI clarity and code cleanliness
+* Final screen is simpler, cleaner, and more reusable
+
+This completes the View Image Screen improvement.
