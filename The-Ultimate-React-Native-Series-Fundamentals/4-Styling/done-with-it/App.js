@@ -1,5 +1,7 @@
-import MessagesScreen from "./screens/MessagesScreen";
+import ListingDetailsScreen from "./app/screens/ListingDetailsScreen";
 
 export default function App() {
-  return <MessagesScreen />;
+  return (
+    <ListingDetailsScreen></ListingDetailsScreen>
+  );
 }
