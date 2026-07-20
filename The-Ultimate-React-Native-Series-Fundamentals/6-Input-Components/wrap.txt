@@ -401,3 +401,264 @@ Best Practice
 * Use modal for picker
 
 This is the foundation for handling user input in React Native.
+
+
+*** 2- TextInput ***
+---
+
+# React Native TextInput – Clean Structured Notes
+
+# 1. What is TextInput
+
+TextInput is used to get text input from the user. It is equivalent to the `<input>` element in React web. It is used for names, emails, passwords, phone numbers, and more.
+
+---
+
+# 2. Import TextInput
+
+Always import TextInput from react-native, not react-native-gesture-handler.
+
+-------------------code----------------------
+import { TextInput } from "react-native";
+-------------------code----------------------
+
+---
+
+# 3. Render Basic TextInput
+
+-------------------code----------------------
+import React from "react";
+import { TextInput } from "react-native";
+import Screen from "./app/components/Screen";
+
+function App() {
+  return (
+    <Screen>
+      <TextInput />
+    </Screen>
+  );
+}
+export default App;
+-------------------code----------------------
+
+The input exists but is not visually clear.
+
+---
+
+# 4. Add Placeholder
+
+Placeholder shows hint text.
+
+-------------------code----------------------
+<TextInput placeholder="First Name" />
+-------------------code----------------------
+
+---
+
+# 5. Add Styling
+
+-------------------code----------------------
+<TextInput
+  placeholder="First Name"
+  style={{
+    borderBottomColor: "#ccc",
+    borderBottomWidth: 1,
+  }}
+/>
+-------------------code----------------------
+
+This makes the input visible.
+
+---
+
+# 6. Create State using useState
+
+Import useState:
+
+-------------------code----------------------
+import React, { useState } from "react";
+-------------------code----------------------
+
+Create state:
+
+-------------------code----------------------
+const [firstName, setFirstName] = useState("");
+-------------------code----------------------
+
+firstName = value
+setFirstName = update function
+
+---
+
+# 7. Handle Text Change
+
+Use onChangeText:
+
+-------------------code----------------------
+<TextInput
+  placeholder="First Name"
+  onChangeText={(text) => setFirstName(text)}
+/>
+-------------------code----------------------
+
+---
+
+# 8. Display Entered Text
+
+-------------------code----------------------
+import { Text } from "react-native";
+
+<Text>{firstName}</Text>
+-------------------code----------------------
+
+Now text updates live.
+
+---
+
+# 9. Important Props
+
+## maxLength
+
+-------------------code----------------------
+<TextInput maxLength={10} />
+-------------------code----------------------
+
+Limits characters.
+
+---
+
+## keyboardType
+
+-------------------code----------------------
+<TextInput keyboardType="numeric" />
+-------------------code----------------------
+
+Shows numeric keyboard.
+
+Other values:
+numeric
+email-address
+phone-pad
+default
+
+---
+
+## clearButtonMode (iOS only)
+
+-------------------code----------------------
+<TextInput clearButtonMode="always" />
+-------------------code----------------------
+
+Shows clear button.
+
+---
+
+## secureTextEntry (Password)
+
+-------------------code----------------------
+<TextInput secureTextEntry />
+-------------------code----------------------
+
+Hides password text.
+
+Equivalent to:
+
+-------------------code----------------------
+secureTextEntry={true}
+-------------------code----------------------
+
+---
+
+# 10. How It Works Internally
+
+User types
+↓
+onChangeText fires
+↓
+setState updates
+↓
+Component re-renders
+↓
+UI updates
+
+---
+
+# 11. Best Practices
+
+Always use useState:
+
+-------------------code----------------------
+const [value, setValue] = useState("");
+-------------------code----------------------
+
+Always import from react-native
+
+Use proper keyboardType:
+
+Phone:
+
+-------------------code----------------------
+keyboardType="phone-pad"
+-------------------code----------------------
+
+Email:
+
+-------------------code----------------------
+keyboardType="email-address"
+-------------------code----------------------
+
+Use secureTextEntry for passwords
+
+Always use placeholder
+
+Create reusable input component later
+
+---
+
+# 12. Full Final Code
+
+-------------------code----------------------
+import React, { useState } from "react";
+import { TextInput, Text, StyleSheet } from "react-native";
+import Screen from "./app/components/Screen";
+
+function App() {
+  const [firstName, setFirstName] = useState("");
+
+  return (
+    <Screen>
+      <TextInput
+        placeholder="First Name"
+        style={styles.input}
+        onChangeText={(text) => setFirstName(text)}
+        maxLength={20}
+        keyboardType="default"
+        clearButtonMode="always"
+      />
+      <Text>{firstName}</Text>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  input: {
+    borderBottomColor: "#ccc",
+    borderBottomWidth: 1,
+    padding: 10,
+  },
+});
+
+export default App;
+-------------------code----------------------
+
+---
+
+# 13. Summary
+
+TextInput is used to capture user input.
+useState stores input value.
+onChangeText updates state.
+Important props include maxLength, keyboardType, clearButtonMode, secureTextEntry.
+Component re-renders automatically when state changes.
+
+---
