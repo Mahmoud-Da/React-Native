@@ -1928,3 +1928,345 @@ State management with hooks
 Proper deletion pattern in React Native
 
 Next concept: Pull to refresh.
+
+*** 8- Implementing Pull to Refresh ***
+# Implementing Pull to Refresh in React Native
+
+In this lecture, we implement pull-to-refresh using `FlatList`, fix a layout issue, and explain why Hooks must be declared at the top of function components.
+
+---
+
+# 1. What is Pull to Refresh?
+
+Pull to refresh allows users to:
+
+* Drag the list downward
+* Trigger a refresh action
+* Reload updated data (usually from a backend)
+
+React Native makes this very simple using two props:
+
+* `refreshing`
+* `onRefresh`
+
+---
+
+# 2. Add a Refreshing State
+
+Pull to refresh needs a boolean state to indicate whether the list is refreshing.
+
+## Step 1 – Import useState
+
+-------------------code----------------------
+import React, { useState } from "react";
+-------------------code----------------------
+
+---
+
+## Step 2 – Declare refreshing State
+
+Hooks must be declared at the top of the component.
+
+-------------------code----------------------
+const [refreshing, setRefreshing] = useState(false);
+-------------------code----------------------
+
+Explanation:
+
+* `refreshing` → current boolean state
+* `setRefreshing` → function to update it
+* `false` → initial value (not refreshing)
+
+---
+
+# 3. Connect refreshing to FlatList
+
+## Step 3 – Bind refreshing Prop
+
+-------------------code----------------------
+<FlatList
+  data={messages}
+  refreshing={refreshing}
+  ...
+/>
+-------------------code----------------------
+
+Now FlatList knows whether it should show the loading indicator.
+
+---
+
+# 4. Implement onRefresh
+
+## Step 4 – Add onRefresh Function
+
+-------------------code----------------------
+<FlatList
+  data={messages}
+  refreshing={refreshing}
+  onRefresh={() => {
+    setMessages([initialMessages[1]]);
+  }}
+/>
+-------------------code----------------------
+
+In a real app:
+
+* You would call an API
+* Fetch new messages
+* Update state
+
+Here we simulate it by replacing the array.
+
+When you pull down:
+
+* First item disappears
+* List updates
+
+---
+
+# 5. Fix Layout Cut-Off Issue
+
+After implementing pull to refresh, a visual issue appears:
+
+* Screen does not take full height
+* Pull gesture shows a cut-off area
+
+Why?
+
+Because the `Screen` component does not fill the entire screen.
+
+---
+
+# 6. Fix Screen Component
+
+## Step 5 – Add flex: 1
+
+Inside `Screen.js`:
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  screen: {
+    paddingTop: Constants.statusBarHeight,
+    flex: 1,
+  },
+});
+-------------------code----------------------
+
+Why `flex: 1`?
+
+It tells the component:
+
+Take the entire available screen space.
+
+After adding this:
+
+* No more cut-off
+* Smooth pull-to-refresh behavior
+* Layout behaves correctly
+
+---
+
+# 7. Why Hooks Must Be at the Top
+
+You asked:
+
+Why must Hooks be called at the beginning of the component?
+
+This is one of the fundamental rules of Hooks.
+
+---
+
+## Rule of Hooks
+
+Hooks must:
+
+1. Be called at the top level of a function component
+2. Never be inside loops
+3. Never be inside conditions
+4. Never be inside nested functions
+
+---
+
+## Why?
+
+React relies on the order of Hooks.
+
+Example:
+
+Correct:
+
+-------------------code----------------------
+function Example() {
+  const [count, setCount] = useState(0);
+  const [name, setName] = useState("");
+
+  return null;
+}
+-------------------code----------------------
+
+React remembers:
+
+Hook #1 → count
+Hook #2 → name
+
+Now imagine this:
+
+Wrong:
+
+-------------------code----------------------
+function Example() {
+  if (someCondition) {
+    const [count, setCount] = useState(0);
+  }
+
+  const [name, setName] = useState("");
+
+  return null;
+}
+-------------------code----------------------
+
+If `someCondition` changes between renders:
+
+The order of Hooks changes.
+
+React gets confused because it matches Hooks by position, not by name.
+
+This can cause:
+
+* State corruption
+* Unexpected behavior
+* Crashes
+
+That’s why Hooks must always:
+
+Be at the top.
+Always run in the same order.
+
+---
+
+# 8. Final Code
+
+---
+
+## MessagesScreen.js
+
+-------------------code----------------------
+import React, { useState } from "react";
+import { FlatList } from "react-native";
+import ListItem from "../components/ListItem";
+import ListItemDeleteAction from "../components/ListItemDeleteAction";
+import ListItemSeparator from "../components/ListItemSeparator";
+import Screen from "./Screen";
+
+const initialMessages = [
+  {
+    id: 1,
+    title: "t1",
+    description: "d1",
+    image: require("../assets/mosh.jpg"),
+  },
+  {
+    id: 2,
+    title: "t2",
+    description: "d2",
+    image: require("../assets/mosh.jpg"),
+  },
+];
+
+function MessagesScreen() {
+  const [messages, setMessages] = useState(initialMessages);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleDelete = (message) => {
+    setMessages(messages.filter(m => m.id !== message.id));
+  };
+
+  return (
+    <Screen>
+      <FlatList
+        data={messages}
+        keyExtractor={(message) => message.id.toString()}
+        refreshing={refreshing}
+        onRefresh={() => {
+          setMessages([initialMessages[1]]);
+        }}
+        renderItem={({ item }) => (
+          <ListItem
+            title={item.title}
+            subtitle={item.description}
+            image={item.image}
+            onPress={() => console.log("Message selected:", item)}
+            renderRightActions={() => (
+              <ListItemDeleteAction
+                onPress={() => handleDelete(item)}
+              />
+            )}
+          />
+        )}
+        ItemSeparatorComponent={ListItemSeparator}
+      />
+    </Screen>
+  );
+}
+
+export default MessagesScreen;
+-------------------code----------------------
+
+---
+
+## Screen.js
+
+-------------------code----------------------
+import { SafeAreaView, StyleSheet } from "react-native";
+import Constants from "expo-constants";
+
+function Screen({ children }) {
+  return (
+    <SafeAreaView style={styles.screen}>
+      {children}
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: {
+    paddingTop: Constants.statusBarHeight,
+    flex: 1,
+  },
+});
+
+export default Screen;
+-------------------code----------------------
+
+---
+
+# Important Best Practices
+
+1. Always declare Hooks at the top.
+2. Never conditionally call Hooks.
+3. Always use state when UI must re-render.
+4. Use `flex: 1` for full-screen layouts.
+5. Simulate backend refresh for now, but later replace with API calls.
+6. Keep logic inside the screen, not inside reusable components.
+
+---
+
+# Summary
+
+In this lecture you learned:
+
+* How to implement pull to refresh using `FlatList`
+* How to manage a refreshing boolean state
+* How to simulate refreshing behavior
+* Why `flex: 1` is necessary for full-screen layouts
+* Why Hooks must always be declared at the top
+* How React tracks Hooks by order
+
+You now understand:
+
+State management with multiple Hooks
+Pull-to-refresh implementation
+React Hook rules and reasoning
+Layout correction using flex
+
+Next logical step: connecting refresh to a backend API.
