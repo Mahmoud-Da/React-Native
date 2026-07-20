@@ -3731,3 +3731,251 @@ const styles = StyleSheet.create({
 * Tested the card inside a temporary container
 
 The Card component is now ready to be reused in a listings screen.
+
+
+*** 14- Building the Listing Details Screen ***
+
+## 1. Goal of This Lecture
+
+Build the **Listing Details Screen**, which:
+
+* Displays a large image at the top
+* Shows the listing title and price below the image
+* Uses clean spacing and typography
+* Reuses patterns already seen in the Card component
+
+For now, all data is **hardcoded** to focus only on layout and styling.
+
+---
+
+## 2. Creating the Listing Details Screen
+
+### Step 1: Add a new screen file
+
+Create a new file in the `screens` folder:
+
+-------------------code----------------------
+ListingDetailsScreen.js
+-------------------code----------------------
+
+---
+
+## 3. Basic Screen Structure
+
+### Step 2: Create a functional component with a container
+
+-------------------code----------------------
+import React from 'react';
+import { View, Image, StyleSheet } from 'react-native';
+
+function ListingDetailsScreen() {
+  return (
+    <View>
+      <Image />
+    </View>
+  );
+}
+
+export default ListingDetailsScreen;
+-------------------code----------------------
+
+---
+
+## 4. Displaying the Listing Image
+
+### Step 3: Load a local image
+
+Since this file is in the `screens` folder, go **one level up** to access assets.
+
+-------------------code----------------------
+<Image
+  source={require('../assets/jacket.jpg')}
+  style={styles.image}
+/>
+-------------------code----------------------
+
+### Step 4: Style the image
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  image: {
+    width: '100%',
+    height: 300,
+  },
+});
+-------------------code----------------------
+
+**Best practice**
+
+* Always test early and often after small changes.
+
+---
+
+## 5. Rendering the Screen in App.js
+
+### Step 5: Temporarily render the screen
+
+-------------------code----------------------
+import ListingDetailsScreen from './app/screens/ListingDetailsScreen';
+
+export default function App() {
+  return <ListingDetailsScreen />;
+}
+-------------------code----------------------
+
+This confirms the screen renders correctly.
+
+---
+
+## 6. Adding Title and Price
+
+### Step 6: Use `AppText` for text elements
+
+-------------------code----------------------
+import AppText from '../components/AppText';
+
+<AppText>Red jacket for sale</AppText>
+<AppText>$100</AppText>
+-------------------code----------------------
+
+---
+
+## 7. Adding Padding with a Details Container
+
+### Step 7: Wrap text in a container
+
+-------------------code----------------------
+<View style={styles.detailsContainer}>
+  <AppText style={styles.title}>Red jacket for sale</AppText>
+  <AppText style={styles.price}>$100</AppText>
+</View>
+-------------------code----------------------
+
+### Step 8: Style the container
+
+-------------------code----------------------
+detailsContainer: {
+  padding: 20,
+},
+-------------------code----------------------
+
+Using the same naming as the Card component improves consistency.
+
+---
+
+## 8. Styling the Title
+
+### Step 9: Apply title styles
+
+-------------------code----------------------
+title: {
+  fontSize: 24,
+  fontWeight: '500',
+},
+-------------------code----------------------
+
+This makes the title prominent without being too heavy.
+
+---
+
+## 9. Styling the Price
+
+### Step 10: Import colors
+
+-------------------code----------------------
+import colors from '../config/colors';
+-------------------code----------------------
+
+### Step 11: Apply price styles
+
+-------------------code----------------------
+price: {
+  color: colors.secondary,
+  fontSize: 20,
+  fontWeight: 'bold',
+  marginVertical: 10,
+},
+-------------------code----------------------
+
+**Why use `price` instead of `subtitle`?**
+
+* This is a screen, not a reusable component.
+* Clear, specific naming is preferred here.
+
+---
+
+## 10. Full Final Code
+
+### ListingDetailsScreen.js
+
+-------------------code----------------------
+import React from 'react';
+import { View, Image, StyleSheet } from 'react-native';
+import AppText from '../components/AppText';
+import colors from '../config/colors';
+
+function ListingDetailsScreen() {
+  return (
+    <View>
+      <Image
+        source={require('../assets/jacket.jpg')}
+        style={styles.image}
+      />
+
+      <View style={styles.detailsContainer}>
+        <AppText style={styles.title}>
+          Red jacket for sale
+        </AppText>
+
+        <AppText style={styles.price}>
+          $100
+        </AppText>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  image: {
+    width: '100%',
+    height: 300,
+  },
+  detailsContainer: {
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '500',
+  },
+  price: {
+    color: colors.secondary,
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginVertical: 10,
+  },
+});
+
+export default ListingDetailsScreen;
+-------------------code----------------------
+
+---
+
+## 11. Important Notes & Best Practices
+
+* Build screens incrementally and test frequently
+* Hardcode data when focusing on layout
+* Reuse naming patterns from existing components
+* Use specific prop and style names in screens
+* Keep layout simple before adding navigation or dynamic data
+
+---
+
+## 12. Summary
+
+* Created a new Listing Details Screen
+* Displayed a full-width image at the top
+* Added title and price with proper spacing
+* Reused layout patterns from the Card component
+* Applied clean, readable typography
+
+The screen layout is complete and ready for adding seller information and navigation logic next.
