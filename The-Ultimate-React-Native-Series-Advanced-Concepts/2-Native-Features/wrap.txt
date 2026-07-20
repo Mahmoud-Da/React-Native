@@ -1745,3 +1745,332 @@ Ensures:
 
 This completes the permission handling part.
 Next step is learning how to **select images from the device library**.
+
+*** 6- Accessing the Library ***
+# Selecting an Image from the Device Library in React Native (Expo)
+
+## 1. Introduction
+
+In this lecture, we learn how to:
+
+* Open the device image library
+* Let the user select an image
+* Display the selected image on the screen
+
+This is done using the **Expo Image Picker API** along with React hooks.
+
+---
+
+# 2. Adding a Button to Trigger Image Selection
+
+## Step 1 — Add a Button
+
+We start by adding a button that triggers the image selection.
+
+-------------------code----------------------
+import { Button } from "react-native";
+
+<Button title="Select Image" onPress={selectImage} />
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* `title` → text shown on the button
+* `onPress` → function that runs when user taps the button
+
+---
+
+# 3. Creating the selectImage Function
+
+## Step 2 — Define the Function
+
+-------------------code----------------------
+const selectImage = async () => {
+  
+};
+-------------------code----------------------
+
+This function must be **async** because we will call an async API.
+
+---
+
+# 4. Opening the Image Library
+
+## Step 3 — Use Image Picker
+
+-------------------code----------------------
+import * as ImagePicker from "expo-image-picker";
+
+const selectImage = async () => {
+  const result = await ImagePicker.launchImageLibraryAsync();
+};
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* `launchImageLibraryAsync()` opens the device gallery
+* Returns a result object after user action
+
+---
+
+# 5. Handling Errors with try/catch
+
+## Step 4 — Add Error Handling
+
+-------------------code----------------------
+const selectImage = async () => {
+  try {
+    const result = await ImagePicker.launchImageLibraryAsync();
+  } catch (error) {
+    console.log("Error reading an image", error);
+  }
+};
+-------------------code----------------------
+
+---
+
+## Why this is important
+
+* Prevents app crashes
+* Handles unexpected failures safely
+
+---
+
+# 6. Understanding the Result Object
+
+The result contains useful properties:
+
+### 6.1 canceled
+
+-------------------code----------------------
+result.canceled
+-------------------code----------------------
+
+* `true` → user canceled selection
+* `false` → user selected an image
+
+---
+
+### 6.2 uri
+
+-------------------code----------------------
+result.uri
+-------------------code----------------------
+
+* Path to the selected image
+* Used to display the image
+
+---
+
+# 7. Using useState to Store Image
+
+## Step 5 — Create State Variable
+
+-------------------code----------------------
+import { useState } from "react";
+
+const [imageUri, setImageUri] = useState(null);
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* `imageUri` → stores image path
+* `setImageUri` → updates the value
+
+---
+
+# 8. Saving Selected Image
+
+## Step 6 — Update State
+
+-------------------code----------------------
+const selectImage = async () => {
+  try {
+    const result = await ImagePicker.launchImageLibraryAsync();
+
+    if (!result.canceled) {
+      setImageUri(result.uri);
+    }
+  } catch (error) {
+    console.log("Error reading an image", error);
+  }
+};
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* Only update state if user selects an image
+* Prevents errors when user cancels
+
+---
+
+# 9. Displaying the Image
+
+## Step 7 — Render Image Component
+
+-------------------code----------------------
+import { Image } from "react-native";
+
+<Image source={{ uri: imageUri }} style={{ width: 200, height: 200 }} />
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* `source={{ uri: imageUri }}` → loads image from path
+* `style` → controls image size
+
+---
+
+# 10. Complete Step-by-Step Implementation
+
+## Step 1 — Imports
+
+-------------------code----------------------
+import { useState } from "react";
+import { View, Button, Image } from "react-native";
+import * as ImagePicker from "expo-image-picker";
+-------------------code----------------------
+
+---
+
+## Step 2 — State
+
+-------------------code----------------------
+const [imageUri, setImageUri] = useState(null);
+-------------------code----------------------
+
+---
+
+## Step 3 — Function
+
+-------------------code----------------------
+const selectImage = async () => {
+  try {
+    const result = await ImagePicker.launchImageLibraryAsync();
+
+    if (!result.canceled) {
+      setImageUri(result.uri);
+    }
+  } catch (error) {
+    console.log("Error reading an image", error);
+  }
+};
+-------------------code----------------------
+
+---
+
+## Step 4 — UI
+
+-------------------code----------------------
+<View>
+  <Button title="Select Image" onPress={selectImage} />
+  <Image source={{ uri: imageUri }} style={{ width: 200, height: 200 }} />
+</View>
+-------------------code----------------------
+
+---
+
+# 11. Full Final Code
+
+-------------------code----------------------
+import * as ImagePicker from "expo-image-picker";
+import { useState } from "react";
+import { Button, Image } from "react-native";
+
+export default function App() {
+  const [imageUri, setImageUri] = useState(null);
+
+  const selectImage = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync();
+
+      if (!result.canceled) {
+        setImageUri(result.uri);
+      }
+    } catch (error) {
+      console.log("Error reading an image", error);
+    }
+  };
+
+  return (
+    <Screen>
+      <Button title="Select Image" onPress={selectImage} />
+      {imageUri && (
+        <Image source={{ uri: imageUri }} style={{ width: 200, height: 200 }} />
+      )}
+    </Screen>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 12. Important Notes and Best Practices
+
+## 12.1 Always Check canceled
+
+-------------------code----------------------
+if (!result.canceled)
+-------------------code----------------------
+
+Prevents errors when user cancels.
+
+---
+
+## 12.2 Use try/catch
+
+Always wrap async calls to:
+
+* Avoid crashes
+* Handle unexpected issues
+
+---
+
+## 12.3 Use Conditional Rendering
+
+-------------------code----------------------
+{imageUri && <Image ... />}
+-------------------code----------------------
+
+Prevents rendering empty images.
+
+---
+
+## 12.4 Keep UI Simple for Testing
+
+During development:
+
+* Use fixed width/height
+* Focus on functionality first
+
+---
+
+## 12.5 Permissions Must Be Granted First
+
+Make sure:
+
+* Permission logic is implemented before using image picker
+
+---
+
+# 13. Summary
+
+* A button is used to trigger image selection
+* `launchImageLibraryAsync()` opens the gallery
+* The result contains `canceled` and `uri`
+* `useState` stores the selected image path
+* The `Image` component displays the selected image
+* Error handling is done using try/catch
+* Expo makes working with native features simple and fast
+
+This completes the flow of selecting and displaying an image from the device.
