@@ -3,9 +3,22 @@ import {
   Image,
   StyleSheet
 } from "react-native";
+import * as Yup from "yup";
 import AppButton from "../components/AppButton";
+import AppText from "../components/AppText";
 import AppTextInput from "../components/AppTextInput";
 import Screen from "../components/Screen";
+
+const validationSchema = Yup.object().shape({
+  email: Yup.string()
+    .required()
+    .email()
+    .label("Email"),
+  password: Yup.string()
+    .required()
+    .min(4)
+    .label("Password")
+});
 
 function LoginScreen() {
   return (
@@ -19,9 +32,15 @@ function LoginScreen() {
           email: "",
           password: ""
         }}
+        validationSchema={validationSchema}
         onSubmit={(values) => console.log(values)}
       >
-        {({ handleChange, handleSubmit }) => (
+
+        {({
+          handleChange,
+          handleSubmit,
+          errors
+        }) => (
           <>
             <AppTextInput
               icon="email"
@@ -32,6 +51,9 @@ function LoginScreen() {
               textContentType="emailAddress"
               onChangeText={handleChange("email")}
             />
+            <AppText style={{ color: "red" }}>
+              {errors.email}
+            </AppText>
             <AppTextInput
               icon="lock"
               placeholder="Password"
@@ -41,6 +63,9 @@ function LoginScreen() {
               textContentType="password"
               onChangeText={handleChange("password")}
             />
+            <AppText style={{ color: "red" }}>
+              {errors.password}
+            </AppText>
             <AppButton
               title="Login"
               onPress={handleSubmit}
