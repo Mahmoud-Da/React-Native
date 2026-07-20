@@ -2074,3 +2074,313 @@ Make sure:
 * Expo makes working with native features simple and fast
 
 This completes the flow of selecting and displaying an image from the device.
+
+
+*** 7- Exercises ***
+# Building Image Selection Feature — Exercise Overview and Strategy
+
+## 1. Introduction
+
+This lecture explains the **feature you will build as an exercise** and provides a **step-by-step strategy** to approach it effectively.
+
+The goal is not just to build the feature, but to **learn how to break complex problems into smaller parts**.
+
+---
+
+# 2. Final Feature Overview
+
+You will build an image selection system with the following functionality:
+
+## 2.1 Add Images
+
+* User can select and add images
+
+## 2.2 Delete Images
+
+* Tapping an existing image removes it
+
+## 2.3 Send Images to Server
+
+* When submitting the form:
+
+  * Image URIs are included in the request
+
+## 2.4 Validation
+
+* If no images are selected:
+
+  * Show error message:
+
+-------------------code----------------------
+Please select at least one image
+-------------------code----------------------
+
+---
+
+# 3. Key Development Principle
+
+## 3.1 Break Down the Problem
+
+Instead of building everything at once:
+
+* Divide the feature into **small, manageable parts**
+* Build and test each part independently
+
+This approach:
+
+* Reduces complexity
+* Makes debugging easier
+* Improves code quality
+
+---
+
+# 4. Step-by-Step Implementation Plan
+
+## 4.1 Step 1 — Ignore the Main Form
+
+Do not start with the listing form.
+
+Instead:
+
+* Pretend it does not exist
+* Focus only on the image feature
+
+---
+
+## 4.2 Step 2 — Build ImageInput Component
+
+### Goal
+
+Create a reusable component called:
+
+-------------------code----------------------
+ImageInput
+-------------------code----------------------
+
+### Features
+
+* Select a single image
+* Display the selected image
+* Delete the image when tapped
+
+---
+
+### Example Structure
+
+-------------------code----------------------
+const ImageInput = () => {
+  const [imageUri, setImageUri] = useState(null);
+
+  const selectImage = async () => {
+    // open image picker
+  };
+
+  const handlePress = () => {
+    // delete image
+  };
+
+  return (
+    // show image or placeholder
+  );
+};
+-------------------code----------------------
+
+---
+
+### Behavior
+
+| Action         | Result        |
+| -------------- | ------------- |
+| Tap empty area | Select image  |
+| Image selected | Display image |
+| Tap image      | Delete image  |
+
+---
+
+## 4.3 Step 3 — Test ImageInput in Isolation
+
+Use it directly inside `App.js`:
+
+-------------------code----------------------
+export default function App() {
+  return <ImageInput />;
+}
+-------------------code----------------------
+
+Focus only on:
+
+* Single image selection
+* Display
+* Deletion
+
+Do not add multiple images yet.
+
+---
+
+## 4.4 Step 4 — Build ImageInputList Component
+
+### Goal
+
+Create a component that supports **multiple images**:
+
+-------------------code----------------------
+ImageInputList
+-------------------code----------------------
+
+---
+
+### Responsibilities
+
+* Manage a list of image URIs
+* Allow adding multiple images
+* Display all selected images
+
+---
+
+### Example Structure
+
+-------------------code----------------------
+const ImageInputList = () => {
+  const [imageUris, setImageUris] = useState([]);
+
+  const handleAdd = (uri) => {
+    setImageUris([...imageUris, uri]);
+  };
+
+  const handleRemove = (uri) => {
+    setImageUris(imageUris.filter((u) => u !== uri));
+  };
+
+  return (
+    // render list of ImageInput components
+  );
+};
+-------------------code----------------------
+
+---
+
+## 4.5 Step 5 — Test ImageInputList in Isolation
+
+Again, use it in `App.js`:
+
+-------------------code----------------------
+export default function App() {
+  return <ImageInputList />;
+}
+-------------------code----------------------
+
+Ensure:
+
+* Multiple images can be added
+* Images can be removed individually
+
+---
+
+## 4.6 Step 6 — Integrate with Form
+
+After both components work correctly:
+
+* Add `ImageInputList` to the listing form
+* Connect it to form data
+
+---
+
+## 4.7 Step 7 — Add Validation
+
+Validate that at least one image is selected:
+
+-------------------code----------------------
+if (imageUris.length === 0) {
+  alert("Please select at least one image");
+}
+-------------------code----------------------
+
+---
+
+# 5. Development Strategy
+
+## 5.1 Build in Isolation
+
+Always:
+
+* Build components separately
+* Test them independently
+
+---
+
+## 5.2 Use Incremental Steps
+
+Do not jump to the final solution.
+
+Follow this order:
+
+1. Single image
+2. Multiple images
+3. Form integration
+4. Validation
+
+---
+
+## 5.3 Focus on One Problem at a Time
+
+Example:
+
+* First: Can I select an image?
+* Then: Can I display it?
+* Then: Can I delete it?
+
+---
+
+# 6. Important Notes and Best Practices
+
+## 6.1 Reusable Components
+
+Design components like:
+
+* `ImageInput` (single image)
+* `ImageInputList` (multiple images)
+
+Reusable components:
+
+* Improve code structure
+* Make maintenance easier
+
+---
+
+## 6.2 Avoid Complexity Early
+
+Do not:
+
+* Mix form logic with image logic
+* Build everything at once
+
+---
+
+## 6.3 Think in Layers
+
+* UI Layer → ImageInput
+* Logic Layer → ImageInputList
+* Form Layer → Validation and submission
+
+---
+
+## 6.4 Practice Through Exercises
+
+The instructor emphasizes:
+
+* Exercises are essential
+* Learning happens by doing
+
+---
+
+# 7. Summary
+
+* You will build an image selection system with add, delete, and validation features
+* The feature should be developed step-by-step, not all at once
+* Start with a single image component (`ImageInput`)
+* Then build a multi-image component (`ImageInputList`)
+* Test each component independently before integration
+* Finally, connect everything to the form and add validation
+* Breaking problems into smaller steps is a key development skill
+
+This approach helps you build complex features in a **clear, structured, and maintainable way**.
