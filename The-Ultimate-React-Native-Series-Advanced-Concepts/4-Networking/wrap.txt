@@ -4919,3 +4919,527 @@ In this lecture, you learned how to:
 10. Improve scalability and maintainability
 
 The app architecture is now much cleaner because API-related logic is centralized inside a reusable hook instead of being duplicated across multiple screens.
+
+*** 13- Extending the API Layer ***
+# 1. Overview
+
+In this lecture, the app is extended to support creating and uploading new listings to the backend server.
+
+The main goal is:
+
+* Build an API function for posting listings
+* Upload form data and images
+* Send optional location data
+* Use `multipart/form-data`
+* Prepare the app for real backend integration
+
+This lecture focuses on extending the API layer properly.
+
+---
+
+# 2. Why We Need a New API Function
+
+Previously, the app only fetched listings from the server.
+
+Now we want users to:
+
+* Fill out the listing form
+* Upload images
+* Send data to the backend
+* Create new listings dynamically
+
+Instead of writing API logic inside components, we extend the API layer.
+
+Current API layer:
+
+-------------------code----------------------
+// app/api/listings.js
+
+import client from "./client";
+
+const endpoint = "/listings";
+
+const getListings = () => client.get(endpoint);
+
+export default {
+  getListings,
+};
+-------------------code----------------------
+
+Now we will add:
+
+-------------------code----------------------
+addListing()
+-------------------code----------------------
+
+---
+
+# 3. Understanding multipart/form-data
+
+When uploading images/files, we cannot send plain JSON.
+
+Instead, we use:
+
+-------------------code----------------------txt
+multipart/form-data
+-------------------code----------------------
+
+This special request format allows:
+
+* Text fields
+* Images/files
+* Large uploads
+
+inside the same request.
+
+---
+
+# 4. Creating the addListing Function
+
+Open:
+
+-------------------code----------------------txt
+app/api/listings.js
+-------------------code----------------------
+
+Add a new function:
+
+-------------------code----------------------
+const addListing = (listing) => {
+  
+};
+-------------------code----------------------
+
+The `listing` object contains:
+
+-------------------code----------------------
+{
+  title,
+  price,
+  category,
+  description,
+  images,
+  location
+}
+-------------------code----------------------
+
+---
+
+# 5. Create a FormData Object
+
+## Step 1: Initialize FormData
+
+-------------------code----------------------
+const data = new FormData();
+-------------------code----------------------
+
+`FormData` is built into JavaScript.
+
+It stores key-value pairs for uploads.
+
+---
+
+# 6. Append Basic Fields
+
+## Step 2: Add Title
+
+-------------------code----------------------
+data.append("title", listing.title);
+-------------------code----------------------
+
+---
+
+## Step 3: Add Price
+
+-------------------code----------------------
+data.append("price", listing.price);
+-------------------code----------------------
+
+---
+
+## Step 4: Add Category ID
+
+The server expects:
+
+-------------------code----------------------txt
+categoryId
+-------------------code----------------------
+
+But in the app:
+
+-------------------code----------------------
+listing.category
+-------------------code----------------------
+
+is an object.
+
+So we use:
+
+-------------------code----------------------
+data.append("categoryId", listing.category.value);
+-------------------code----------------------
+
+---
+
+## Step 5: Add Description
+
+-------------------code----------------------
+data.append("description", listing.description);
+-------------------code----------------------
+
+---
+
+# 7. Uploading Images
+
+## Problem
+
+The server expects uploaded image files.
+
+Each image must include:
+
+* name
+* type
+* uri
+
+---
+
+# 8. Loop Through Images
+
+The images array looks like:
+
+-------------------code----------------------
+[
+  "file:///image1.jpg",
+  "file:///image2.jpg"
+]
+-------------------code----------------------
+
+Use `forEach`:
+
+-------------------code----------------------
+listing.images.forEach((image, index) => {
+
+});
+-------------------code----------------------
+
+---
+
+# 9. Append Each Image
+
+Inside the loop:
+
+-------------------code----------------------
+data.append("images", {
+  name: "image" + index,
+  type: "image/jpeg",
+  uri: image,
+});
+-------------------code----------------------
+
+---
+
+## Explanation
+
+### name
+
+Unique file name:
+
+-------------------code----------------------
+name: "image0"
+-------------------code----------------------
+
+---
+
+### type
+
+Tells the server the file type:
+
+-------------------code----------------------
+type: "image/jpeg"
+-------------------code----------------------
+
+---
+
+### uri
+
+Local device image path:
+
+-------------------code----------------------
+uri: image
+-------------------code----------------------
+
+---
+
+# 10. Optional Location Data
+
+Listings may include location data.
+
+Example:
+
+-------------------code----------------------
+{
+  latitude: 35.6,
+  longitude: 139.7
+}
+-------------------code----------------------
+
+---
+
+## Step 1: Check If Location Exists
+
+-------------------code----------------------
+if (listing.location)
+-------------------code----------------------
+
+---
+
+## Step 2: Serialize Location
+
+The server cannot receive a raw object directly.
+
+Use:
+
+-------------------code----------------------
+JSON.stringify()
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+data.append(
+  "location",
+  JSON.stringify(listing.location)
+);
+-------------------code----------------------
+
+---
+
+# 11. Send the POST Request
+
+Now send the request:
+
+-------------------code----------------------
+return client.post(endpoint, data);
+-------------------code----------------------
+
+This automatically:
+
+* sends the request
+* sets `multipart/form-data`
+* uploads files properly
+
+because Axios/API Sauce detects `FormData`.
+
+---
+
+# 12. Export the Function
+
+At the bottom:
+
+-------------------code----------------------
+export default {
+  getListings,
+  addListing,
+};
+-------------------code----------------------
+
+---
+
+# 13. Full Final Code
+
+## app/api/listings.js
+
+-------------------code----------------------
+import client from "./client";
+
+const endpoint = "/listings";
+
+const getListings = () => client.get(endpoint);
+
+const addListing = (listing) => {
+  const data = new FormData();
+
+  data.append("title", listing.title);
+  data.append("price", listing.price);
+  data.append("categoryId", listing.category.value);
+  data.append("description", listing.description);
+
+  listing.images.forEach((image, index) => {
+    data.append("images", {
+      name: "image" + index,
+      type: "image/jpeg",
+      uri: image,
+    });
+  });
+
+  if (listing.location)
+    data.append(
+      "location",
+      JSON.stringify(listing.location)
+    );
+
+  return client.post(endpoint, data);
+};
+
+export default {
+  getListings,
+  addListing,
+};
+-------------------code----------------------
+
+---
+
+# 14. Step-by-Step Flow
+
+## User submits form
+
+↓
+
+## Listing object is created
+
+↓
+
+## FormData object is built
+
+↓
+
+## Text fields appended
+
+↓
+
+## Images appended
+
+↓
+
+## Location serialized and appended
+
+↓
+
+## POST request sent to backend
+
+↓
+
+## Backend stores listing
+
+---
+
+# 15. Important Notes
+
+## Do Not Manually Set Content-Type
+
+Wrong:
+
+-------------------code----------------------
+headers: {
+  "Content-Type": "multipart/form-data"
+}
+-------------------code----------------------
+
+When using `FormData`, Axios/API Sauce handles this automatically.
+
+---
+
+## Always Serialize Objects
+
+Objects like location must use:
+
+-------------------code----------------------
+JSON.stringify()
+-------------------code----------------------
+
+Otherwise the server may reject the request.
+
+---
+
+## Use Unique Image Names
+
+Always generate unique names:
+
+-------------------code----------------------
+name: "image" + index
+-------------------code----------------------
+
+This avoids conflicts on the server.
+
+---
+
+## Keep API Logic Outside Components
+
+Good architecture:
+
+-------------------code----------------------txt
+UI Components
+    ↓
+API Layer
+    ↓
+Backend
+-------------------code----------------------
+
+Components should not know:
+
+* endpoints
+* headers
+* request types
+* upload logic
+
+---
+
+# 16. Best Practices
+
+## Keep Endpoints Centralized
+
+-------------------code----------------------
+const endpoint = "/listings";
+-------------------code----------------------
+
+Avoid hardcoding endpoints repeatedly.
+
+---
+
+## Use Small Focused API Functions
+
+Good:
+
+-------------------code----------------------
+getListings()
+addListing()
+-------------------code----------------------
+
+Each function should do one thing.
+
+---
+
+## Keep Upload Logic Reusable
+
+Later you can easily add:
+
+* updateListing()
+* deleteListing()
+* uploadProfilePhoto()
+
+using the same structure.
+
+---
+
+# 17. Summary
+
+In this lecture, you learned how to:
+
+* Extend the API layer
+* Create an `addListing()` API function
+* Use `FormData`
+* Upload images to the backend
+* Send text fields and files together
+* Serialize location objects
+* Post data using API Sauce
+* Keep API logic separate from UI components
+
+You also learned important backend communication concepts:
+
+* `multipart/form-data`
+* image uploads
+* request body structure
+* API architecture
+* clean separation of concerns
+
+The app is now ready to create and upload real listings to the server.
