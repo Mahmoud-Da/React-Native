@@ -3830,7 +3830,7 @@ with spacing and comments.
 
 ## App Startup
 
--------------------code----------------------text
+-------------------code----------------------
 Component renders
         ↓
 useEffect runs
@@ -3863,3 +3863,480 @@ In this lecture, you learned how to:
 7. Combine loading, error handling, and data rendering in one screen
 
 The app now behaves much more professionally because users receive visual feedback while data is loading.
+
+*** 10- Building a Beautiful Activitiy Indicator ***
+# React Native Lottie Animations Notes
+
+# 1. What is Lottie?
+
+Lottie is an animation library created by Airbnb.
+
+It allows developers to use high-quality animations in mobile apps using JSON files exported from Adobe After Effects.
+
+Instead of creating animations manually in React Native, we can:
+
+* Download ready-made animations
+* Customize them
+* Render them easily in the app
+
+---
+
+# 2. Where to Find Lottie Animations
+
+A popular website for Lottie animations is:
+
+* [LottieFiles](https://lottiefiles.com?utm_source=chatgpt.com)
+
+This website provides:
+
+* Free animations
+* Premium animations
+* Loading animations
+* Success animations
+* Error animations
+* UI animations
+
+---
+
+# 3. Customizing Animations
+
+Inside LottieFiles, you can:
+
+## Change Colors
+
+Example:
+
+* Open animation
+* Select "Edit Layer Colors"
+* Replace colors with your app branding
+
+---
+
+## Modify Animation Properties
+
+You can customize:
+
+* Width
+* Height
+* Speed
+* Duration
+* Frame rate
+
+---
+
+## Export as JSON
+
+After customization:
+
+-------------------code----------------------
+Export as Lottie JSON
+-------------------code----------------------
+
+Then:
+
+1. Download the `.json` file
+2. Add it to your React Native project
+3. Render it using Lottie
+
+---
+
+# 4. Important Compatibility Warning
+
+The lecture mentions an important issue:
+
+## Lottie Version Compatibility
+
+At the time of recording:
+
+* Expo used `lottie-react-native v2`
+* Some animations on LottieFiles were built for `v3`
+
+Using incompatible animations may:
+
+* Crash the app
+* Produce no visible error
+
+---
+
+## Important Note
+
+If your app suddenly crashes after adding an animation:
+
+* The problem may be the animation file
+* Not your React Native code
+
+Always test downloaded animations carefully.
+
+---
+
+# 5. Install Lottie
+
+Install the package:
+
+-------------------code----------------------
+npm install lottie-react-native
+-------------------code----------------------
+
+---
+
+# 6. Organize Animation Files
+
+Inside the `assets` folder:
+
+-------------------code----------------------
+assets/
+  animations/
+    loader.json
+-------------------code----------------------
+
+This keeps animation files organized.
+
+---
+
+# 7. Create a Custom Activity Indicator
+
+Create a new file:
+
+-------------------code----------------------
+components/ActivityIndicator.js
+-------------------code----------------------
+
+---
+
+# 8. Import LottieView
+
+-------------------code----------------------
+import LottieView from "lottie-react-native";
+-------------------code----------------------
+
+`LottieView` is the component used to render animations.
+
+---
+
+# 9. Build the Custom Component
+
+## Step 1: Create Component
+
+-------------------code----------------------
+function ActivityIndicator({ visible = false }) {
+-------------------code----------------------
+
+We pass a `visible` prop to control visibility.
+
+---
+
+## Step 2: Hide Component if Not Visible
+
+-------------------code----------------------
+if (!visible) return null;
+-------------------code----------------------
+
+Explanation:
+
+* `null` means render nothing
+* Prevents unnecessary rendering
+
+---
+
+## Step 3: Render Lottie Animation
+
+-------------------code----------------------
+return (
+  <LottieView
+    autoPlay
+    loop
+    source={require("../assets/animations/loader.json")}
+  />
+);
+-------------------code----------------------
+
+---
+
+# 10. Understanding LottieView Props
+
+## `source`
+
+Specifies animation JSON file.
+
+-------------------code----------------------
+source={require("../assets/animations/loader.json")}
+-------------------code----------------------
+
+---
+
+## `autoPlay`
+
+Automatically starts animation.
+
+-------------------code----------------------
+autoPlay
+-------------------code----------------------
+
+Equivalent to:
+
+-------------------code----------------------
+autoPlay={true}
+-------------------code----------------------
+
+---
+
+## `loop`
+
+Repeats animation continuously.
+
+-------------------code----------------------
+loop
+-------------------code----------------------
+
+---
+
+# 11. Full Custom ActivityIndicator Component
+
+-------------------code----------------------
+import React from "react";
+import LottieView from "lottie-react-native";
+
+function ActivityIndicator({ visible = false }) {
+  if (!visible) return null;
+
+  return (
+    <LottieView
+      autoPlay
+      loop
+      source={require("../assets/animations/loader.json")}
+    />
+  );
+}
+
+export default ActivityIndicator;
+-------------------code----------------------
+
+---
+
+# 12. Replace React Native ActivityIndicator
+
+Before:
+
+-------------------code----------------------
+import { ActivityIndicator } from "react-native";
+-------------------code----------------------
+
+After:
+
+-------------------code----------------------
+import ActivityIndicator from "../components/ActivityIndicator";
+-------------------code----------------------
+
+---
+
+# 13. Use Custom Indicator in ListingsScreen
+
+Replace:
+
+-------------------code----------------------
+<ActivityIndicator animating={loading} size="large" />
+-------------------code----------------------
+
+With:
+
+-------------------code----------------------
+<ActivityIndicator visible={loading} />
+-------------------code----------------------
+
+---
+
+# 14. Updated ListingsScreen Example
+
+-------------------code----------------------
+import React, { useEffect, useState } from "react";
+import { FlatList, StyleSheet } from "react-native";
+
+import listingsApi from "../api/listings";
+import Card from "../components/Card";
+import Screen from "../components/Screen";
+import AppText from "../components/Text";
+import Button from "../components/Button";
+import ActivityIndicator from "../components/ActivityIndicator";
+
+import colors from "../config/colors";
+import routes from "../navigation/routes";
+
+function ListingsScreen({ navigation }) {
+  const [listings, setListings] = useState([]);
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const loadListings = async () => {
+    setLoading(true);
+
+    const response = await listingsApi.getListings();
+
+    setLoading(false);
+
+    if (!response.ok) return setError(true);
+
+    setError(false);
+    setListings(response.data);
+  };
+
+  useEffect(() => {
+    loadListings();
+  }, []);
+
+  return (
+    <Screen style={styles.screen}>
+      {error && (
+        <>
+          <AppText>Couldn't retrieve the listings.</AppText>
+          <Button title="Retry" onPress={loadListings} />
+        </>
+      )}
+
+      <ActivityIndicator visible={loading} />
+
+      <FlatList
+        data={listings}
+        keyExtractor={(listing) => listing.id.toString()}
+        renderItem={({ item }) => (
+          <Card
+            title={item.title}
+            subTitle={"$" + item.price}
+            imageUrl={item.images[0].url}
+            onPress={() =>
+              navigation.navigate(routes.LISTING_DETAILS, item)
+            }
+          />
+        )}
+      />
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: {
+    padding: 20,
+    backgroundColor: colors.light,
+  },
+});
+
+export default ListingsScreen;
+-------------------code----------------------
+
+---
+
+# 15. Why the FlatList Was Temporarily Removed
+
+The lecture temporarily commented out `FlatList` because:
+
+* `LottieView` occupies the screen
+* The list could visually cover the animation
+
+After testing the animation:
+
+* The `FlatList` was restored
+
+---
+
+# 16. Best Practices
+
+## Store Animations in a Separate Folder
+
+Good structure:
+
+-------------------code----------------------
+assets/animations/
+-------------------code----------------------
+
+Keeps project clean and scalable.
+
+---
+
+## Create Reusable Loading Components
+
+Instead of repeating animation logic everywhere:
+
+-------------------code----------------------
+<ActivityIndicator visible={loading} />
+-------------------code----------------------
+
+This improves consistency.
+
+---
+
+## Avoid Hardcoding Visibility
+
+Bad:
+
+-------------------code----------------------
+visible={true}
+-------------------code----------------------
+
+Good:
+
+-------------------code----------------------
+visible={loading}
+-------------------code----------------------
+
+---
+
+## Use Branding Colors
+
+Customize animations to match:
+
+* App theme
+* Brand colors
+* UI style
+
+---
+
+# 17. Advantages of Lottie
+
+## Better User Experience
+
+Lottie animations are:
+
+* Smooth
+* Modern
+* Professional
+
+---
+
+## Lightweight
+
+Animations are stored as JSON files, not videos.
+
+Benefits:
+
+* Smaller app size
+* Better performance
+
+---
+
+## Easy to Customize
+
+You can modify:
+
+* Colors
+* Speed
+* Size
+
+without changing React Native code.
+
+---
+
+# 18. Summary
+
+In this lecture, you learned how to:
+
+1. Use Lottie animations in React Native
+2. Download animations from LottieFiles
+3. Customize animation colors and properties
+4. Install `lottie-react-native`
+5. Create a reusable custom activity indicator
+6. Replace the default React Native spinner
+7. Control visibility using props
+8. Improve loading UI with professional animations
+9. Organize animation files properly
+10. Understand version compatibility issues with Expo and Lottie
+
+The app now has a much more polished and professional loading experience compared to the default React Native spinner.

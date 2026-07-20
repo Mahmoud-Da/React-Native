@@ -1,18 +1,15 @@
 import React, { useEffect, useState } from "react";
-import {
-  FlatList,
-  StyleSheet,
-  ActivityIndicator,
-} from "react-native";
+import { FlatList, StyleSheet } from "react-native";
 
+import listingsApi from "../api/listings";
 import Card from "../components/Card";
-import Button from "../components/Button";
 import Screen from "../components/Screen";
 import AppText from "../components/Text";
+import Button from "../components/Button";
+import ActivityIndicator from "../components/ActivityIndicator";
 
 import colors from "../config/colors";
 import routes from "../navigation/routes";
-import listingsApi from "../api/listings";
 
 function ListingsScreen({ navigation }) {
   const [listings, setListings] = useState([]);
@@ -20,17 +17,14 @@ function ListingsScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
 
   const loadListings = async () => {
-    // Loading logic
     setLoading(true);
 
     const response = await listingsApi.getListings();
 
     setLoading(false);
 
-    // Error handling
     if (!response.ok) return setError(true);
 
-    // Success logic
     setError(false);
     setListings(response.data);
   };
@@ -48,7 +42,7 @@ function ListingsScreen({ navigation }) {
         </>
       )}
 
-      <ActivityIndicator animating={loading} size="large" />
+      <ActivityIndicator visible={loading} />
 
       <FlatList
         data={listings}
