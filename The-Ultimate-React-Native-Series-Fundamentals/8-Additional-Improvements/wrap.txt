@@ -999,3 +999,179 @@ In this lecture, we:
 Key takeaway:
 
 When building screen wrappers, always ensure both the root container and its main content wrapper use `flex: 1` to avoid layout bugs.
+
+
+*** 5- Fixing the Auto Import Issue ***
+# Fixing Auto Import in VS Code (React Native Project)
+
+## 1. Problem Overview
+
+Auto import was not working in VS Code.
+
+Example:
+
+* Typing a component like `AppText`
+* No auto-import suggestions appear
+* IntelliSense does not recognize project files
+
+This usually happens due to:
+
+* Conflicting extensions
+* Missing project configuration
+
+---
+
+# 2. Step 1 – Check Installed Extensions
+
+Before changing project configuration:
+
+1. Open VS Code Extensions panel.
+2. Look for extensions related to:
+
+   * Auto import
+   * JavaScript imports
+   * Path IntelliSense
+3. Uninstall any third-party auto-import extensions.
+
+Why?
+
+* VS Code already supports auto-import natively.
+* Older extensions can conflict with built-in IntelliSense.
+* Especially common if extensions were installed years ago.
+
+Best Practice:
+Only use necessary extensions. Avoid redundant tools.
+
+---
+
+# 3. Step 2 – Add jsconfig.json
+
+If removing extensions does not fix the issue, create a configuration file.
+
+### Create a file in the project root:
+
+-------------------code----------------------
+jsconfig.json
+-------------------code----------------------
+
+Make sure:
+
+* It is in the root directory.
+* The filename is spelled exactly: `jsconfig.json`.
+
+---
+
+# 4. Step 3 – Configure jsconfig.json
+
+Add the following configuration:
+
+-------------------code----------------------
+{
+  "exclude": ["node_modules"]
+}
+-------------------code----------------------
+
+---
+
+# 5. Why This Works
+
+## 5.1 What jsconfig.json Does
+
+* Informs VS Code that this is a structured JavaScript project.
+* Enables better IntelliSense.
+* Improves module resolution.
+* Activates advanced auto-import behavior.
+
+Even if the project is not TypeScript, this file helps VS Code treat it like a structured project.
+
+---
+
+## 5.2 Why Excluding node_modules Is Important
+
+-------------------code----------------------
+"exclude": ["node_modules"]
+-------------------code----------------------
+
+This tells IntelliSense:
+
+* Do not scan the entire `node_modules` directory.
+* Avoid unnecessary indexing.
+* Improve performance.
+* Prevent IntelliSense slowdowns in large projects.
+
+If your project is large and this is not excluded:
+
+* Auto import may become slow.
+* IntelliSense may lag.
+
+---
+
+# 6. Step 4 – Restart VS Code
+
+If auto import still does not work:
+
+1. Close VS Code completely.
+2. Reopen the project.
+3. Try importing a component again.
+
+Restarting refreshes IntelliSense indexing.
+
+---
+
+# 7. Testing the Fix
+
+After applying the fix:
+
+* Type a component name, e.g.:
+
+-------------------code----------------------js
+AppText
+-------------------code----------------------
+
+* VS Code should now:
+
+  * Suggest auto import.
+  * Insert the correct import statement automatically.
+
+Example of expected auto import:
+
+-------------------code----------------------js
+import AppText from "../components/AppText";
+-------------------code----------------------
+
+---
+
+# 8. Full Final jsconfig.json
+
+-------------------code----------------------
+{
+  "exclude": ["node_modules"]
+}
+-------------------code----------------------
+
+Place this file in the project root directory.
+
+---
+
+# 9. Best Practices
+
+1. Avoid installing unnecessary extensions.
+2. Use built-in VS Code features whenever possible.
+3. Always configure large projects properly.
+4. Exclude heavy folders like `node_modules` for performance.
+5. Restart VS Code after configuration changes.
+
+---
+
+# 10. Summary
+
+In this lecture, we fixed auto-import issues in VS Code by:
+
+1. Removing outdated auto-import extensions.
+2. Creating a `jsconfig.json` file.
+3. Excluding the `node_modules` folder.
+4. Restarting VS Code.
+
+Key takeaway:
+
+Proper project configuration is essential for reliable IntelliSense and auto-import functionality in React Native and JavaScript projects.
