@@ -1605,3 +1605,442 @@ Caching means storing successful API responses locally so the app can continue w
 ## Key Takeaway
 
 For most React Native applications, Async Storage is the simplest and most common solution for caching API responses. Secure Store should be used for sensitive data, while SQLite is reserved for applications that require more advanced local data management.
+*** 5- AsyncStorage ***
+# Async Storage in React Native
+
+## 1. What is Async Storage?
+
+Async Storage is a simple persistent storage solution for React Native applications.
+
+It allows you to:
+
+* Save data locally on the device
+* Retrieve data later
+* Keep data available after app restarts
+* Cache API responses
+* Store application settings
+
+### Important Note
+
+Async Storage was originally part of React Native Core.
+
+However:
+
+* It has been deprecated from React Native Core.
+* It is now maintained as a separate community package.
+* At the time of this lecture, Expo was still using the older React Native Core version.
+
+Because Expo changes over time, always check the latest documentation before implementing Async Storage.
+
+---
+
+# 2. Importing Async Storage
+
+At the time of the lecture:
+
+-------------------code----------------------
+import { AsyncStorage } from "react-native";
+-------------------code----------------------
+
+In modern React Native projects, the import is usually:
+
+-------------------code----------------------
+import AsyncStorage from "@react-native-async-storage/async-storage";
+-------------------code----------------------
+
+Always verify the current installation instructions.
+
+---
+
+# 3. Storing Data in Async Storage
+
+## Step 1: Create an Object
+
+-------------------code----------------------
+const person = {
+  id: 1,
+};
+-------------------code----------------------
+
+---
+
+## Step 2: Convert the Object to a String
+
+Async Storage can only store strings.
+
+Before saving an object:
+
+-------------------code----------------------
+JSON.stringify(person);
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+const value = JSON.stringify(person);
+-------------------code----------------------
+
+---
+
+## Step 3: Save the Data
+
+Use:
+
+-------------------code----------------------
+AsyncStorage.setItem(key, value);
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+await AsyncStorage.setItem(
+  "person",
+  JSON.stringify(person)
+);
+-------------------code----------------------
+
+---
+
+# 4. Why Use a Try-Catch Block?
+
+Saving data may fail.
+
+Possible reasons:
+
+* Storage is unavailable
+* Storage is full
+* Device issues
+* Unexpected system errors
+
+Always wrap storage operations in a try-catch block.
+
+Example:
+
+-------------------code----------------------
+try {
+  await AsyncStorage.setItem(
+    "person",
+    JSON.stringify(person)
+  );
+} catch (error) {
+  console.log(error);
+}
+-------------------code----------------------
+
+---
+
+# 5. Reading Data from Async Storage
+
+## Step 1: Retrieve the Stored Value
+
+Use:
+
+-------------------code----------------------
+AsyncStorage.getItem(key);
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+const value = await AsyncStorage.getItem("person");
+-------------------code----------------------
+
+The returned value is:
+
+-------------------code----------------------
+"{"id":1}"
+-------------------code----------------------
+
+which is still a string.
+
+---
+
+## Step 2: Convert the String Back to an Object
+
+Use:
+
+-------------------code----------------------
+JSON.parse(value);
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+const person = JSON.parse(value);
+-------------------code----------------------
+
+Now:
+
+-------------------code----------------------
+{
+  id: 1
+}
+-------------------code----------------------
+
+becomes a JavaScript object again.
+
+---
+
+# 6. Complete Demo Function
+
+The lecture combines storing and retrieving data in a single async function.
+
+-------------------code----------------------
+const demo = async () => {
+  try {
+    await AsyncStorage.setItem(
+      "person",
+      JSON.stringify({
+        id: 1,
+      })
+    );
+
+    const value = await AsyncStorage.getItem("person");
+
+    const person = JSON.parse(value);
+
+    console.log(person);
+  } catch (error) {
+    console.log(error);
+  }
+};
+-------------------code----------------------
+
+---
+
+# 7. Running the Demo
+
+Call the function:
+
+-------------------code----------------------
+demo();
+-------------------code----------------------
+
+Expected output:
+
+-------------------code----------------------
+{
+  id: 1
+}
+-------------------code----------------------
+
+---
+
+# 8. Understanding the Flow
+
+-------------------code----------------------text
+JavaScript Object
+       ↓
+JSON.stringify()
+       ↓
+String
+       ↓
+AsyncStorage.setItem()
+       ↓
+Stored on Device
+       ↓
+AsyncStorage.getItem()
+       ↓
+String
+       ↓
+JSON.parse()
+       ↓
+JavaScript Object
+-------------------code----------------------
+
+---
+
+# 9. Error Logging Best Practice
+
+### For Learning
+
+Using:
+
+-------------------code----------------------
+console.log(error);
+-------------------code----------------------
+
+is acceptable.
+
+### For Production Apps
+
+Use a logging service such as:
+
+* Sentry
+* Crash reporting tools
+* Error monitoring services
+
+This helps track errors occurring on user devices.
+
+Example:
+
+-------------------code----------------------
+catch (error) {
+  Sentry.captureException(error);
+}
+-------------------code----------------------
+
+---
+
+# 10. Common Async Storage Methods
+
+### Save Data
+
+-------------------code----------------------
+await AsyncStorage.setItem(key, value);
+-------------------code----------------------
+
+---
+
+### Read Data
+
+-------------------code----------------------
+await AsyncStorage.getItem(key);
+-------------------code----------------------
+
+---
+
+### Remove Data
+
+-------------------code----------------------
+await AsyncStorage.removeItem(key);
+-------------------code----------------------
+
+---
+
+### Clear All Storage
+
+-------------------code----------------------
+await AsyncStorage.clear();
+-------------------code----------------------
+
+Use carefully because it removes everything stored in Async Storage.
+
+---
+
+# Important Notes & Best Practices
+
+## Always Serialize Objects
+
+Wrong:
+
+-------------------code----------------------
+await AsyncStorage.setItem("person", person);
+-------------------code----------------------
+
+Correct:
+
+-------------------code----------------------
+await AsyncStorage.setItem(
+  "person",
+  JSON.stringify(person)
+);
+-------------------code----------------------
+
+---
+
+## Always Parse Retrieved Objects
+
+Wrong:
+
+-------------------code----------------------
+const person = await AsyncStorage.getItem("person");
+-------------------code----------------------
+
+Correct:
+
+-------------------code----------------------
+const person = JSON.parse(
+  await AsyncStorage.getItem("person")
+);
+-------------------code----------------------
+
+---
+
+## Always Handle Errors
+
+Wrong:
+
+-------------------code----------------------
+await AsyncStorage.setItem("person", value);
+-------------------code----------------------
+
+Correct:
+
+-------------------code----------------------
+try {
+  await AsyncStorage.setItem("person", value);
+} catch (error) {
+  console.log(error);
+}
+-------------------code----------------------
+
+---
+
+## Do Not Store Sensitive Information
+
+Avoid storing:
+
+* Passwords
+* Authentication tokens
+* Credit card information
+
+Use Secure Store instead.
+
+---
+
+# Full Final Code
+
+-------------------code----------------------
+import { AsyncStorage } from "react-native";
+
+const demo = async () => {
+  try {
+    await AsyncStorage.setItem(
+      "person",
+      JSON.stringify({
+        id: 1,
+      })
+    );
+
+    const value = await AsyncStorage.getItem("person");
+
+    const person = JSON.parse(value);
+
+    console.log(person);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+demo();
+-------------------code----------------------
+
+---
+
+# Summary
+
+## What is Async Storage?
+
+Async Storage is a local storage solution for React Native that allows applications to store data on the device.
+
+## Key Concepts
+
+1. Async Storage stores strings.
+2. Use `JSON.stringify()` before saving objects.
+3. Use `JSON.parse()` after retrieving objects.
+4. Storage operations are asynchronous and return promises.
+5. Always use `try-catch` for error handling.
+
+## Main Methods
+
+-------------------code----------------------
+setItem()
+getItem()
+removeItem()
+clear()
+-------------------code----------------------
+
+## Best Practice
+
+For API caching and app settings, Async Storage is usually the simplest and most effective local storage solution. Always serialize objects properly and never store sensitive information in Async Storage.
