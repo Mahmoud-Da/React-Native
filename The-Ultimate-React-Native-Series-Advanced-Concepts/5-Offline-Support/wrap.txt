@@ -5010,3 +5010,505 @@ In this lesson you learned:
 * How to fix image rendering in `ListingDetailsScreen`
 * How to provide a smoother user experience on slow networks
 * How to support fully cached listings and images while offline
+
+*** 11- Caching with Redux ***
+# Offline Support and Caching Without Redux
+
+## 1. Overview
+
+In this lecture, the instructor discusses:
+
+1. Why caching can be implemented without Redux.
+2. Common misconceptions about Redux and offline support.
+3. When Redux is actually useful.
+4. Why simple solutions are often better than complex architectures.
+5. How the caching system built earlier is sufficient for many applications.
+
+---
+
+# 2. The Common Misconception
+
+Many developers believe:
+
+> "If an app needs caching or offline support, it must use Redux."
+
+This is not true.
+
+Redux is a state management library, not a caching library.
+
+While Redux can be used for caching, it is often unnecessary.
+
+---
+
+# 3. What Redux Does
+
+Redux stores application state in a centralized store.
+
+Think of it as:
+
+-------------------code----------------------
+Application
+    |
+    v
+Redux Store
+    |
+    +--> Screen A
+    +--> Screen B
+    +--> Screen C
+-------------------code----------------------
+
+All components can access and update the same shared state.
+
+---
+
+## Example
+
+Without Redux:
+
+-------------------code----------------------
+const [listings, setListings] = useState([]);
+-------------------code----------------------
+
+With Redux:
+
+-------------------code----------------------
+const listings = useSelector(state => state.listings);
+-------------------code----------------------
+
+State is stored globally and shared across the app.
+
+---
+
+# 4. Redux Ecosystem
+
+Redux usually comes with additional tools:
+
+* Actions
+* Action Types
+* Reducers
+* Middleware
+* Redux Thunk
+* Redux Persist
+* Selectors
+
+Example:
+
+-------------------code----------------------
+dispatch(loadListings());
+-------------------code----------------------
+
+Action:
+
+-------------------code----------------------
+{
+  type: "LOAD_LISTINGS"
+}
+-------------------code----------------------
+
+Reducer:
+
+-------------------code----------------------
+function reducer(state, action) {
+  switch (action.type) {
+    case "LOAD_LISTINGS":
+      return {
+        ...state,
+        listings: action.payload,
+      };
+
+    default:
+      return state;
+  }
+}
+-------------------code----------------------
+
+This introduces many additional files and concepts.
+
+---
+
+# 5. Redux Persist
+
+A common Redux plugin is:
+
+-------------------code----------------------
+redux-persist
+-------------------code----------------------
+
+Purpose:
+
+-------------------code----------------------
+Redux Store
+    |
+    v
+Disk Storage
+-------------------code----------------------
+
+When the app restarts:
+
+-------------------code----------------------
+Disk Storage
+    |
+    v
+Redux Store
+-------------------code----------------------
+
+The stored state is restored automatically.
+
+Because of this feature, many developers use Redux for caching.
+
+---
+
+# 6. Why Redux Is Often Overkill
+
+For the marketplace app built in the course:
+
+The caching solution required only:
+
+-------------------code----------------------
+Cache Module
+        +
+API Client
+-------------------code----------------------
+
+Architecture:
+
+-------------------code----------------------
+Server
+   |
+   v
+API Client
+   |
+   +--> Cache
+   |
+   v
+Screens
+-------------------code----------------------
+
+Very simple.
+
+Only a small amount of code was needed.
+
+The instructor implemented caching in less than 10 minutes.
+
+---
+
+# 7. Current Caching Architecture
+
+The application already has:
+
+## Cache Layer
+
+-------------------code----------------------
+cache.store(key, value);
+cache.get(key);
+-------------------code----------------------
+
+## API Client
+
+-------------------code----------------------
+const response = await apiClient.get("/listings");
+-------------------code----------------------
+
+If request succeeds:
+
+-------------------code----------------------
+await cache.store(url, response.data);
+-------------------code----------------------
+
+If request fails:
+
+-------------------code----------------------
+const data = await cache.get(url);
+-------------------code----------------------
+
+Return cached data:
+
+-------------------code----------------------
+return {
+  ok: true,
+  data,
+};
+-------------------code----------------------
+
+That's all that was needed.
+
+No Redux required.
+
+---
+
+# 8. Why Simpler Is Better
+
+The instructor emphasizes:
+
+> Simplicity is the ultimate sophistication.
+
+A simple solution is often:
+
+* Easier to understand
+* Easier to maintain
+* Easier to debug
+* Easier to extend
+
+Instead of introducing:
+
+-------------------code----------------------
+Redux
+Redux Persist
+Reducers
+Actions
+Middleware
+Thunk
+Selectors
+-------------------code----------------------
+
+The app only introduced:
+
+-------------------code----------------------
+Cache Module
+-------------------code----------------------
+
+and
+
+-------------------code----------------------
+API Client Integration
+-------------------code----------------------
+
+Much less complexity.
+
+---
+
+# 9. When Redux Actually Makes Sense
+
+Redux becomes valuable when:
+
+### Multiple Screens Share Data
+
+Example:
+
+-------------------code----------------------
+Home Screen
+Profile Screen
+Settings Screen
+Notifications Screen
+-------------------code----------------------
+
+All use:
+
+-------------------code----------------------
+currentUser
+-------------------code----------------------
+
+If one screen updates the user:
+
+-------------------code----------------------
+user.name = "John";
+-------------------code----------------------
+
+All screens must immediately reflect the change.
+
+Redux helps keep everything synchronized.
+
+---
+
+## Complex Data Flow
+
+Redux is useful when:
+
+-------------------code----------------------
+Component A
+     |
+     v
+Component B
+     |
+     v
+Component C
+-------------------code----------------------
+
+Many components:
+
+* Read the same data
+* Modify the same data
+* Depend on each other
+
+Managing state manually becomes difficult.
+
+Redux provides structure.
+
+---
+
+# 10. When Redux Is NOT Necessary
+
+You probably do NOT need Redux when:
+
+* Small application
+* Medium application
+* Simple API calls
+* Simple caching
+* Few shared states
+* Mostly independent screens
+
+Example:
+
+-------------------code----------------------
+const [listings, setListings] = useState([]);
+-------------------code----------------------
+
+This is perfectly fine.
+
+No need to add Redux.
+
+---
+
+# 11. Important Design Principle
+
+Always ask:
+
+-------------------code----------------------
+Do I actually need this tool?
+-------------------code----------------------
+
+Not:
+
+-------------------code----------------------
+Can this tool solve the problem?
+-------------------code----------------------
+
+Many technologies can solve a problem.
+
+The best solution is often:
+
+-------------------code----------------------
+The simplest solution that meets requirements.
+-------------------code----------------------
+
+---
+
+# 12. Comparison
+
+| Feature              | Cache Layer | Redux     |
+| -------------------- | ----------- | --------- |
+| Offline Listings     | Yes         | Yes       |
+| Cache API Responses  | Yes         | Yes       |
+| Easy to Implement    | Yes         | No        |
+| Minimal Code         | Yes         | No        |
+| Global State Sharing | No          | Yes       |
+| Complex Data Flows   | Limited     | Excellent |
+| Learning Curve       | Low         | High      |
+| Maintenance Cost     | Low         | Higher    |
+
+---
+
+# 13. Key Takeaways
+
+## Use a Cache Layer When
+
+* Storing API responses
+* Supporting offline mode
+* Keeping architecture simple
+* Avoiding unnecessary complexity
+
+---
+
+## Use Redux When
+
+* Multiple screens share state
+* Data changes frequently
+* Components must stay synchronized
+* Application state becomes difficult to manage
+
+---
+
+## Avoid Redux When
+
+* You only need caching
+* Your app is relatively simple
+* Local state is sufficient
+* A lightweight solution already solves the problem
+
+---
+
+# Full Example of the Caching Approach
+
+## cache.js
+
+-------------------code----------------------
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const store = async (key, value) => {
+  const item = {
+    value,
+    timestamp: Date.now(),
+  };
+
+  await AsyncStorage.setItem(
+    key,
+    JSON.stringify(item)
+  );
+};
+
+const get = async (key) => {
+  const item = await AsyncStorage.getItem(key);
+
+  if (!item)
+    return null;
+
+  return JSON.parse(item).value;
+};
+
+export default {
+  store,
+  get,
+};
+-------------------code----------------------
+
+---
+
+## client.js
+
+-------------------code----------------------
+import { create } from "apisauce";
+import cache from "../utility/cache";
+
+const apiClient = create({
+  baseURL: "http://192.168.0.14:9000/api",
+});
+
+const get = apiClient.get;
+
+apiClient.get = async (url, params, axiosConfig) => {
+  const response = await get(
+    url,
+    params,
+    axiosConfig
+  );
+
+  if (response.ok) {
+    cache.store(url, response.data);
+    return response;
+  }
+
+  const data = await cache.get(url);
+
+  return data
+    ? { ok: true, data }
+    : response;
+};
+
+export default apiClient;
+-------------------code----------------------
+
+---
+
+# Summary
+
+This lecture emphasizes that offline support and caching do not automatically require Redux.
+
+The marketplace app achieved offline functionality using only:
+
+1. AsyncStorage
+2. A custom cache layer
+3. API client integration
+
+This approach is simple, easy to understand, and requires very little code.
+
+Redux should be introduced only when your application has complex shared state and complicated data flows. For simple caching and offline support, a lightweight cache layer is often the cleaner and more maintainable solution.
