@@ -83,13 +83,21 @@ const categories = [
 function ListingEditScreen() {
   const location = useLocation();
 
+  const [uploadVisible, setUploadVisible] = useState(false);
+  const [progress, setProgress] = useState(0);
+
   const handleSubmit = async (listing) => {
+    setProgress(0);
+    setUploadVisible(true);
+
     const result = await listingsApi.addListing(
       { ...listing, location },
       (progress) => {
-        console.log(progress);
+        setProgress(progress);
       }
     );
+
+    setUploadVisible(false);
 
     if (!result.ok)
       return alert("Could not save the listing");
@@ -99,6 +107,11 @@ function ListingEditScreen() {
 
   return (
     <Screen style={styles.container}>
+      <UploadScreen
+        progress={progress}
+        visible={uploadVisible}
+      />
+
       <Form
         initialValues={{
           title: "",
