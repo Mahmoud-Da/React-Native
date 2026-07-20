@@ -4663,7 +4663,7 @@ So navigation logic stays outside the component.
 
 # 18. Final Navigation Structure
 
--------------------code----------------------text
+-------------------code----------------------
 NavigationContainer
 │
 ├── AppNavigator (Tabs)
@@ -4701,3 +4701,454 @@ Main concepts learned:
 6. Global screen options
 
 Your app navigation is now structured like a professional production app.
+
+
+*** 18- Refactoring Routes ***
+# 1. Overview of the Lecture
+
+This lecture focuses on improving navigation code quality by removing hardcoded route names.
+
+Instead of writing route names manually everywhere:
+
+-------------------code----------------------
+navigation.navigate("ListingDetails")
+-------------------code----------------------
+
+we store all routes in a single file.
+
+This approach makes the app:
+
+* Easier to maintain
+* Safer
+* Cleaner
+* Less error-prone
+
+---
+
+# 2. The Problem with Hardcoded Route Names
+
+## Example
+
+-------------------code----------------------
+navigation.navigate("ListingDetails")
+-------------------code----------------------
+
+Problems:
+
+### 1. Typos Cause Bugs
+
+Example:
+
+-------------------code----------------------
+navigation.navigate("ListingDetials")
+-------------------code----------------------
+
+The app breaks silently.
+
+---
+
+### 2. Difficult Refactoring
+
+If tomorrow you rename:
+
+-------------------code----------------------
+ListingDetails → ProductDetails
+-------------------code----------------------
+
+You must manually update every occurrence.
+
+This becomes difficult in large apps.
+
+---
+
+# 3. The Solution — Centralized Routes File
+
+Create one file that stores all route names.
+
+Example:
+
+-------------------code----------------------
+routes.LISTING_DETAILS
+-------------------code----------------------
+
+Benefits:
+
+* Single source of truth
+* Easier maintenance
+* Better autocomplete
+* Easier refactoring
+* Fewer bugs
+
+---
+
+# 4. Step 1 — Create routes.js
+
+Create a new file:
+
+-------------------code----------------------
+app/navigation/routes.js
+-------------------code----------------------
+
+---
+
+# 5. Step 2 — Export Route Constants
+
+-------------------code----------------------
+const routes = Object.freeze({
+  LISTING_DETAILS: "ListingDetails",
+});
+
+export default routes;
+-------------------code----------------------
+
+---
+
+# 6. Understanding Object.freeze()
+
+## Purpose
+
+Prevents accidental modification.
+
+Without freeze:
+
+-------------------code----------------------
+routes.LISTING_DETAILS = "SomethingElse";
+-------------------code----------------------
+
+This could break navigation.
+
+---
+
+## With freeze
+
+-------------------code----------------------
+Object.freeze()
+-------------------code----------------------
+
+The object becomes immutable.
+
+---
+
+# 7. Why Use UPPERCASE?
+
+Example:
+
+-------------------code----------------------
+LISTING_DETAILS
+-------------------code----------------------
+
+UPPERCASE indicates:
+
+* Constant value
+* Should not change during runtime
+
+This is a common JavaScript convention.
+
+---
+
+# 8. Step 3 — Import Routes
+
+Inside `ListingsScreen.js`:
+
+-------------------code----------------------
+import routes from "../navigation/routes";
+-------------------code----------------------
+
+---
+
+# 9. Step 4 — Replace Hardcoded Values
+
+---
+
+## Before
+
+-------------------code----------------------
+navigation.navigate("ListingDetails", item);
+-------------------code----------------------
+
+---
+
+## After
+
+-------------------code----------------------
+navigation.navigate(routes.LISTING_DETAILS, item);
+-------------------code----------------------
+
+---
+
+# 10. How Navigation Works Now
+
+Instead of:
+
+-------------------code----------------------
+"ListingDetails"
+-------------------code----------------------
+
+we use:
+
+-------------------code----------------------
+routes.LISTING_DETAILS
+-------------------code----------------------
+
+Now all route names come from one centralized object.
+
+---
+
+# 11. Refactor Other Routes
+
+You should move all route names into `routes.js`.
+
+Example:
+
+-------------------code----------------------
+const routes = Object.freeze({
+  ACCOUNT: "Account",
+  FEED: "Feed",
+  LISTING_DETAILS: "ListingDetails",
+  LISTING_EDIT: "ListingEdit",
+  LOGIN: "Login",
+  MESSAGES: "Messages",
+  REGISTER: "Register",
+});
+-------------------code----------------------
+
+---
+
+# 12. Recommended Route Naming Convention
+
+Use:
+
+-------------------code----------------------
+UPPERCASE_WITH_UNDERSCORES
+-------------------code----------------------
+
+Examples:
+
+-------------------code----------------------
+LOGIN
+REGISTER
+LISTING_DETAILS
+MY_MESSAGES
+-------------------code----------------------
+
+This improves readability.
+
+---
+
+# 13. Full Final Code
+
+---
+
+# 13.1 routes.js
+
+-------------------code----------------------
+const routes = Object.freeze({
+  ACCOUNT: "Account",
+  FEED: "Feed",
+  LISTING_DETAILS: "ListingDetails",
+  LISTING_EDIT: "ListingEdit",
+  LOGIN: "Login",
+  MESSAGES: "Messages",
+  REGISTER: "Register",
+  WELCOME: "Welcome",
+});
+
+export default routes;
+-------------------code----------------------
+
+---
+
+# 13.2 ListingsScreen.js
+
+---
+
+## Import Routes
+
+-------------------code----------------------
+import routes from "../navigation/routes";
+-------------------code----------------------
+
+---
+
+## Updated Navigation
+
+-------------------code----------------------
+<Card
+  title={item.title}
+  subTitle={"$" + item.price}
+  image={item.image}
+  onPress={() =>
+    navigation.navigate(routes.LISTING_DETAILS, item)
+  }
+/>
+-------------------code----------------------
+
+---
+
+# 13.3 FeedNavigator.js
+
+-------------------code----------------------
+import React from "react";
+import { createStackNavigator } from "@react-navigation/stack";
+
+import ListingsScreen from "../screens/ListingsScreen";
+import ListingDetailsScreen from "../screens/ListingDetailsScreen";
+import routes from "./routes";
+
+const Stack = createStackNavigator();
+
+const FeedNavigator = () => (
+  <Stack.Navigator
+    mode="modal"
+    screenOptions={{
+      headerShown: false,
+    }}
+  >
+    <Stack.Screen
+      name={routes.FEED}
+      component={ListingsScreen}
+    />
+
+    <Stack.Screen
+      name={routes.LISTING_DETAILS}
+      component={ListingDetailsScreen}
+    />
+  </Stack.Navigator>
+);
+
+export default FeedNavigator;
+-------------------code----------------------
+
+---
+
+# 14. Why This Pattern Is Important
+
+This is a professional architecture pattern used in real-world apps.
+
+Large apps may contain:
+
+* 20 screens
+* 50 screens
+* 100+ screens
+
+Hardcoded strings become extremely difficult to manage.
+
+Centralized routes solve this problem.
+
+---
+
+# 15. Best Practices
+
+## Always Centralize Route Names
+
+Never repeat route strings throughout the app.
+
+---
+
+## Use Object.freeze()
+
+Protects route constants from accidental changes.
+
+---
+
+## Use Consistent Naming
+
+Good:
+
+-------------------code----------------------
+LISTING_DETAILS
+-------------------code----------------------
+
+Avoid:
+
+-------------------code----------------------
+listingDetails
+ListingDetailsRoute
+detailsPage
+-------------------code----------------------
+
+---
+
+## Import Routes Everywhere
+
+Use:
+
+-------------------code----------------------
+routes.SOME_ROUTE
+-------------------code----------------------
+
+instead of raw strings.
+
+---
+
+# 16. Common Mistakes
+
+## Mistake 1 — Typo in Route Name
+
+-------------------code----------------------
+"ListingDetials"
+-------------------code----------------------
+
+Centralized routes prevent this.
+
+---
+
+## Mistake 2 — Renaming Routes Manually
+
+Without centralized routes:
+
+* Search entire project
+* Risk missing occurrences
+
+With centralized routes:
+
+* Change one value only
+
+---
+
+## Mistake 3 — Not Freezing Object
+
+Without freeze:
+
+* Routes may be overwritten accidentally
+
+---
+
+# 17. Final Project Navigation Structure
+
+-------------------code----------------------
+app
+│
+├── navigation
+│   ├── AppNavigator.js
+│   ├── AuthNavigator.js
+│   ├── FeedNavigator.js
+│   ├── AccountNavigator.js
+│   ├── NewListingButton.js
+│   └── routes.js
+-------------------code----------------------
+
+---
+
+# 18. Summary
+
+In this lecture you learned:
+
+* Why hardcoded routes are problematic
+* How to centralize route names
+* How to use `Object.freeze()`
+* How to refactor navigation using constants
+
+Main concepts:
+
+1. Centralized route management
+2. Route constants
+3. Immutable route objects
+4. Cleaner navigation architecture
+
+This pattern makes your React Native app:
+
+* Easier to scale
+* Easier to maintain
+* Safer against bugs
+* More professional structurally
