@@ -23,6 +23,7 @@ export default function App() {
       {imageUri && (
         <Image source={{ uri: imageUri }} style={{ width: 200, height: 200 }} />
       )}
+      <ImageInput imageUri={imageUri} />;
     </Screen>
   );
 }
