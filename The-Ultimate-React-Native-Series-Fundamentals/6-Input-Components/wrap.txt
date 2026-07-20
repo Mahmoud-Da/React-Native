@@ -3236,3 +3236,462 @@ Closing picker
 Showing selected item inside picker
 
 This completes the item rendering part of the custom picker component.
+
+*** 10- Handling Selections ***
+# React Native Custom Picker – Handling Item Selection
+
+## 1. Overview
+
+In this lecture, we implemented **item selection functionality** in the custom `AppPicker` component.
+
+We followed the same pattern used in other input components like:
+
+* TextInput
+* Switch
+
+This pattern is called the **controlled component pattern**.
+
+The parent component:
+
+* Stores the selected value in state
+* Passes it to the picker
+* Receives updates when selection changes
+
+---
+
+# 2. Step 1 – Store Selected Item in Parent (App.js)
+
+The parent component should own the state.
+
+## 2.1 Create state variable
+
+-------------------code----------------------
+const [category, setCategory] = useState();
+-------------------code----------------------
+
+This stores the selected category.
+
+---
+
+## 2.2 Pass new props to AppPicker
+
+We add two props:
+
+* `selectedItem` → current selected item
+* `onSelectItem` → function called when user selects
+
+-------------------code----------------------
+<AppPicker
+  placeholder="Category"
+  items={categories}
+  selectedItem={category}
+  onSelectItem={(item) => setCategory(item)}
+/>
+-------------------code----------------------
+
+This is the standard controlled input pattern.
+
+---
+
+# 3. Step 2 – Receive Props in AppPicker
+
+Now update AppPicker component.
+
+## 3.1 Add new props
+
+-------------------code----------------------
+function AppPicker({
+  icon,
+  items,
+  placeholder,
+  selectedItem,
+  onSelectItem
+})
+-------------------code----------------------
+
+---
+
+# 4. Step 3 – Show Selected Item Instead of Placeholder
+
+Previously we always showed placeholder.
+
+Old code:
+
+-------------------code----------------------
+<AppText style={styles.text}>
+  {placeholder}
+</AppText>
+-------------------code----------------------
+
+---
+
+## Replace with:
+
+-------------------code----------------------
+<AppText style={styles.text}>
+  {selectedItem ? selectedItem.label : placeholder}
+</AppText>
+-------------------code----------------------
+
+Logic:
+
+If selectedItem exists → show label
+
+Else → show placeholder
+
+---
+
+# 5. Step 4 – Handle Item Press
+
+Previously:
+
+-------------------code----------------------
+onPress={() => console.log(item)}
+-------------------code----------------------
+
+Replace with:
+
+-------------------code----------------------
+onPress={() => {
+  setModalVisible(false);
+  onSelectItem(item);
+}}
+-------------------code----------------------
+
+Two actions happen:
+
+1. Close modal
+2. Notify parent
+
+This updates the state in App.js
+
+React automatically re-renders UI
+
+---
+
+# 6. Step 5 – Test Initialization (Optional Default Value)
+
+You can initialize default selection.
+
+In App.js:
+
+-------------------code----------------------
+const [category, setCategory] = useState(categories[0]);
+-------------------code----------------------
+
+Result:
+
+Picker shows Furniture immediately
+
+---
+
+# 7. How Data Flows
+
+Flow diagram:
+
+User taps item
+
+↓
+
+AppPicker calls:
+
+-------------------code----------------------
+onSelectItem(item)
+-------------------code----------------------
+
+↓
+
+Parent updates state:
+
+-------------------code----------------------
+setCategory(item)
+-------------------code----------------------
+
+↓
+
+React re-renders
+
+↓
+
+Picker shows new value
+
+This is core React architecture.
+
+---
+
+# 8. Full Final Code
+
+---
+
+# App.js
+
+-------------------code----------------------
+import { useState } from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+
+import Screen from "./app/components/Screen";
+import AppPicker from "./app/components/AppPicker";
+import AppTextInput from "./app/components/AppTextInput";
+
+export default function App() {
+
+  const categories = [
+    { label: "Furniture", value: 1 },
+    { label: "Clothing", value: 2 },
+    { label: "Cameras", value: 3 },
+  ];
+
+  const [category, setCategory] = useState();
+
+  return (
+
+    <GestureHandlerRootView style={{ flex: 1 }}>
+
+      <Screen>
+
+        <AppPicker
+          placeholder="Category"
+          items={categories}
+          icon="apps"
+          selectedItem={category}
+          onSelectItem={(item) => setCategory(item)}
+        />
+
+        <AppTextInput
+          placeholder="Email"
+          icon="email"
+        />
+
+      </Screen>
+
+    </GestureHandlerRootView>
+
+  );
+
+}
+-------------------code----------------------
+
+---
+
+# AppPicker.js
+
+-------------------code----------------------
+import { useState } from "react";
+
+import {
+  Button,
+  FlatList,
+  Modal,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
+
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+
+import colors from "../config/colors";
+import AppText from "./AppText";
+import PickerItem from "./PickerItem";
+import Screen from "./Screen";
+
+function AppPicker({
+  icon,
+  items,
+  placeholder,
+  selectedItem,
+  onSelectItem
+}) {
+
+  const [modalVisible, setModalVisible] = useState(false);
+
+  return (
+    <>
+      <TouchableWithoutFeedback
+        onPress={() => setModalVisible(true)}
+      >
+        <View style={styles.container}>
+          {icon && (
+            <MaterialCommunityIcons
+              name={icon}
+              size={20}
+              color={colors.medium}
+              style={styles.icon}
+            />
+          )}
+
+          <AppText style={styles.text}>
+
+            {selectedItem
+              ? selectedItem.label
+              : placeholder}
+
+          </AppText>
+
+          <MaterialCommunityIcons
+            name="chevron-down"
+            size={20}
+            color={colors.medium}
+          />
+
+        </View>
+
+      </TouchableWithoutFeedback>
+
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+      >
+
+        <Screen>
+          <Button
+            title="Close"
+            onPress={() => setModalVisible(false)}
+          />
+          <FlatList
+            data={items}
+            keyExtractor={(item) =>
+              item.value.toString()
+            }
+            renderItem={({ item }) => (
+              <PickerItem
+                label={item.label}
+                onPress={() => {
+                  setModalVisible(false);
+                  onSelectItem(item);
+                }}
+              />
+            )}
+          />
+        </Screen>
+      </Modal>
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+
+  container: {
+    backgroundColor: colors.light,
+    borderRadius: 25,
+    flexDirection: "row",
+    width: "100%",
+    padding: 15,
+    marginVertical: 10,
+    alignItems: "center",
+  },
+
+  text: {
+    flex: 1,
+  },
+
+  icon: {
+    marginRight: 10,
+  },
+
+});
+
+export default AppPicker;
+-------------------code----------------------
+
+---
+
+# 9. Best Practices
+
+## Important Pattern: Controlled Component
+
+Always:
+
+Parent owns state
+
+Child receives:
+
+-------------------code----------------------
+selectedItem
+onSelectItem
+-------------------code----------------------
+
+Never store selected value inside picker permanently.
+
+This makes component reusable.
+
+---
+
+## Close modal after selection
+
+Always do:
+
+-------------------code----------------------
+setModalVisible(false);
+-------------------code----------------------
+
+Better UX.
+
+---
+
+## Use object not just value
+
+Store full object:
+
+Correct:
+
+-------------------code----------------------
+{ label: "Furniture", value: 1 }
+-------------------code----------------------
+
+Not just:
+
+-------------------code----------------------
+1
+-------------------code----------------------
+
+More flexible.
+
+---
+
+# 10. Summary
+
+What we achieved:
+
+Picker now supports full selection functionality
+
+Key concepts learned:
+
+Controlled component pattern
+
+selectedItem prop
+
+onSelectItem event
+
+State management in parent
+
+Modal interaction
+
+React data flow
+
+Final result:
+
+Picker opens modal
+
+User selects item
+
+Modal closes
+
+Selected item appears in picker
+
+State updates correctly
+
+---
+
+# Next Step (Future Lecture)
+
+Improvements may include:
+
+Better styling
+
+Highlight selected item
+
+Replace close button with icon
+
+Add scrolling optimization
+
+---
