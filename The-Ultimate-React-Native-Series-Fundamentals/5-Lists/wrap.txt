@@ -4051,3 +4051,452 @@ How to apply reusable components
 How to design scalable UI
 
 ---
+
+*** 14- Building the Listings Screen ***
+# Building the Listings Screen in React Native – Clean Structured Notes
+
+This lecture explains how to build a **Listings Screen** that displays products using:
+
+* Screen component
+* FlatList
+* Card component
+* Local data (temporary)
+* Proper styling
+
+---
+
+# 1. Goal of the Listings Screen
+
+We want to build a screen that shows:
+
+A scrollable list of cards like:
+
+* Image
+* Title
+* Price
+
+Example:
+
+-------------------code----------------------
+[Card]
+ Image
+ Red Jacket
+ $100
+
+[Card]
+ Image
+ Couch
+ $1000
+-------------------code----------------------
+
+---
+
+# 2. Step 1 – Create ListingsScreen File
+
+Create file:
+
+-------------------code----------------------
+app/screens/ListingsScreen.js
+-------------------code----------------------
+
+Create basic component:
+
+-------------------code----------------------
+import React from "react";
+import Screen from "../components/Screen";
+
+function ListingsScreen() {
+  return (
+    <Screen>
+    </Screen>
+
+  );
+
+}
+
+export default ListingsScreen;
+-------------------code----------------------
+
+---
+
+# 3. Step 2 – Import FlatList
+
+Import from correct package:
+
+Correct:
+
+-------------------code----------------------
+import { FlatList } from "react-native";
+-------------------code----------------------
+
+Wrong:
+
+-------------------code----------------------
+react-native-gesture-handler
+-------------------code----------------------
+
+Always use React Native FlatList unless needed otherwise.
+
+---
+
+# 4. Step 3 – Create Temporary Listings Data
+
+Create outside component:
+
+Important for performance.
+
+-------------------code----------------------
+const listings = [
+
+  {
+    id: 1,
+    title: "Red jacket for sale",
+    price: 100,
+    image: require("../assets/jacket.jpg"),
+  },
+
+  {
+    id: 2,
+    title: "Couch in great condition",
+    price: 1000,
+    image: require("../assets/couch.jpg"),
+  },
+
+];
+-------------------code----------------------
+
+Future:
+
+This data will come from backend API.
+
+---
+
+# 5. Step 4 – Render FlatList
+
+Inside Screen:
+
+-------------------code----------------------
+<FlatList
+  data={listings}
+/>
+-------------------code----------------------
+
+---
+
+# 6. Step 5 – Add keyExtractor
+
+FlatList requires unique key as STRING.
+
+Important.
+
+Correct:
+
+-------------------code----------------------
+keyExtractor={(listing) => listing.id.toString()}
+-------------------code----------------------
+
+Why toString()?
+
+Because FlatList expects string.
+
+---
+
+# 7. Step 6 – Render Card Component
+
+Import Card:
+
+-------------------code----------------------
+import Card from "../components/Card";
+-------------------code----------------------
+
+Add renderItem:
+
+-------------------code----------------------
+renderItem={({ item }) => (
+  <Card
+    title={item.title}
+    subtitle={"$" + item.price}
+    image={item.image}
+  />
+)}
+-------------------code----------------------
+
+---
+
+# 8. Step 7 – Render ListingsScreen in App.js
+
+Example:
+
+-------------------code----------------------
+import ListingsScreen from "./app/screens/ListingsScreen";
+
+export default function App() {
+  return <ListingsScreen />;
+}
+-------------------code----------------------
+
+---
+
+# 9. Step 8 – Add Screen Styling
+
+Import:
+
+-------------------code----------------------
+import { StyleSheet } from "react-native";
+import colors from "../config/colors";
+-------------------code----------------------
+
+Create styles:
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  screen: {
+    padding: 20,
+    backgroundColor: colors.light,
+  },
+});
+-------------------code----------------------
+
+Apply:
+
+-------------------code----------------------
+<Screen style={styles.screen}>
+-------------------code----------------------
+
+---
+
+# 10. Step 9 – Fix Screen Component Padding Problem
+
+Problem:
+
+Padding does not work directly on SafeAreaView.
+
+Solution:
+
+Modify Screen component.
+
+---
+
+# 11. Update Screen.js
+
+Before:
+
+-------------------code----------------------
+<SafeAreaView style={styles.screen}>
+  {children}
+</SafeAreaView>
+-------------------code----------------------
+
+---
+
+After:
+
+-------------------code----------------------
+<SafeAreaView style={[styles.screen, style]}>
+  <View style={style}>
+    {children}
+  </View>
+</SafeAreaView>
+-------------------code----------------------
+
+---
+
+Now padding works correctly.
+
+---
+
+# 12. Why This Fix Works
+
+SafeAreaView:
+Handles safe area only.
+View inside:
+Handles padding and layout.
+
+Correct structure:
+-------------------code----------------------
+SafeAreaView
+   View (padding)
+      Content
+-------------------code----------------------
+
+---
+
+# 13. Best Practices
+
+---
+
+# Best Practice 1
+
+Always convert ID to string
+
+Correct:
+
+-------------------code----------------------
+id.toString()
+-------------------code----------------------
+
+---
+
+# Best Practice 2
+
+Keep data outside component
+
+Bad:
+
+-------------------code----------------------
+function Screen(){
+ const data=[]
+}
+-------------------code----------------------
+
+Good:
+
+-------------------code----------------------
+const data=[]
+
+function Screen(){}
+-------------------code----------------------
+
+---
+
+# Best Practice 3
+
+Use temporary local data before backend
+
+Then replace later.
+
+---
+
+# Best Practice 4
+
+Always import FlatList from react-native
+
+Not gesture-handler.
+
+---
+
+# Best Practice 5
+
+Use reusable Card component
+
+Keeps code clean.
+
+---
+
+# 14. Full Final Code
+
+---
+
+# ListingsScreen.js
+
+-------------------code----------------------
+import React from "react";
+import { FlatList, StyleSheet } from "react-native";
+import Screen from "../components/Screen";
+import Card from "../components/Card";
+import colors from "../config/colors";
+
+
+const listings = [
+  {
+    id: 1,
+    title: "Red jacket for sale",
+    price: 100,
+    image: require("../assets/jacket.jpg"),
+  },
+  {
+    id: 2,
+    title: "Couch in great condition",
+    price: 1000,
+    image: require("../assets/couch.jpg"),
+  },
+];
+
+function ListingsScreen() {
+  return (
+    <Screen style={styles.screen}>
+      <FlatList
+        data={listings}
+        keyExtractor={(listing) => listing.id.toString()}
+        renderItem={({ item }) => (
+
+          <Card
+            title={item.title}
+            subtitle={"$" + item.price}
+            image={item.image}
+          />
+        )}
+      />
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: {
+    padding: 20,
+    backgroundColor: colors.light,
+  },
+});
+
+
+export default ListingsScreen;
+-------------------code----------------------
+
+---
+
+# Screen.js Final Version
+
+-------------------code----------------------
+import { SafeAreaView, StyleSheet, View } from "react-native";
+import Constants from "expo-constants";
+
+function Screen({ children, style }) {
+  return (
+    <SafeAreaView style={[styles.screen, style]}>
+      <View style={style}>
+        {children}
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: {
+    paddingTop: Constants.statusBarHeight,
+    flex: 1,
+  },
+});
+
+export default Screen;
+-------------------code----------------------
+
+App.js
+-------------------code----------------------
+
+-------------------code----------------------
+---
+
+# 15. Final Result
+
+Listings screen now has:
+Scrollable cards
+Images
+Titles
+Prices
+Padding
+Professional layout
+
+---
+
+# 16. Summary
+
+In this lecture you learned:
+How to create Listings Screen
+How to use FlatList
+How to render Card component
+How to structure listing data
+How to fix Screen padding problem
+How to style screens correctly
+How to prepare for backend integration
+
+---

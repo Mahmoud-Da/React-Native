@@ -1,8 +1,8 @@
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import AccountScreen from "./app/screens/AccountScreen.js";
+import ListingsScreen from "./app/screens/ListingsScreen.js";
 
 export default function App() {
   return (<GestureHandlerRootView style={{ flex: 1 }}>
-    <AccountScreen />
+    <ListingsScreen />
   </GestureHandlerRootView>)
 }
