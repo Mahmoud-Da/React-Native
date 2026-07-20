@@ -2527,3 +2527,491 @@ Removes all stored data.
 ## Key Takeaway
 
 Whenever you work with caching or offline functionality, inspecting Async Storage should be part of your debugging workflow. It allows you to verify stored data, remove corrupted cache entries, and quickly diagnose problems without modifying application code.
+
+*** 7- The Cache Layer ***
+# Caching Listings with a Custom Cache Layer
+
+## 1. Why We Need Caching
+
+Mobile devices are not always connected to the internet. If users lose connectivity, we still want them to be able to access previously loaded data.
+
+Example:
+
+* User opens the app while online.
+* Listings are downloaded from the server.
+* Listings are saved locally.
+* User goes offline.
+* App loads listings from local storage instead of the server.
+
+This provides a much better user experience.
+
+---
+
+# 2. Available Storage Options
+
+Earlier, three storage solutions were discussed:
+
+### 1. AsyncStorage
+
+* Stores key-value pairs
+* Values are stored as strings
+* Good for caching data
+* Simple to use
+
+### 2. Secure Store
+
+* For sensitive data
+* Small storage capacity
+* Not suitable for large listing data
+
+### 3. SQLite
+
+* Local database
+* Useful for relational data and SQL queries
+* More complex than necessary for this use case
+
+For storing listings:
+
+**AsyncStorage is the best choice.**
+
+---
+
+# 3. Why Not Use AsyncStorage Directly?
+
+At first, it may seem okay to do this:
+
+-------------------code----------------------
+await AsyncStorage.setItem(
+  "listings",
+  JSON.stringify(listings)
+);
+-------------------code----------------------
+
+and later:
+
+-------------------code----------------------
+const data = await AsyncStorage.getItem("listings");
+
+const listings = JSON.parse(data);
+-------------------code----------------------
+
+The problem is that this logic would be repeated everywhere.
+
+---
+
+## Problems with Direct Usage
+
+### Repeated Serialization
+
+Every time:
+
+-------------------code----------------------
+JSON.stringify(...)
+-------------------code----------------------
+
+and
+
+-------------------code----------------------
+JSON.parse(...)
+-------------------code----------------------
+
+must be written manually.
+
+---
+
+### No Expiration Support
+
+Cached data could become old.
+
+Example:
+
+* Listings cached yesterday
+* User opens app today
+* Data may no longer be valid
+
+AsyncStorage does not automatically handle expiration.
+
+---
+
+### Hard to Maintain
+
+If caching logic changes later:
+
+* New expiration rules
+* New storage format
+* Different storage mechanism
+
+You would have to update many files.
+
+---
+
+# 4. Solution: Create a Cache Layer
+
+Instead of accessing AsyncStorage directly:
+
+-------------------code----------------------
+Application
+      |
+      V
+ Cache Layer
+      |
+      V
+ AsyncStorage
+-------------------code----------------------
+
+The cache layer becomes responsible for:
+
+* Saving data
+* Loading data
+* Serialization
+* Deserialization
+* Expiration checks
+* Cleanup
+
+---
+
+# 5. Responsibilities of the Cache Layer
+
+### Save Data
+
+Instead of:
+
+-------------------code----------------------
+JSON.stringify(data);
+-------------------code----------------------
+
+The cache layer handles it automatically.
+
+Example:
+
+-------------------code----------------------
+cache.store("listings", listings);
+-------------------code----------------------
+
+---
+
+### Retrieve Data
+
+Instead of:
+
+-------------------code----------------------
+JSON.parse(data);
+-------------------code----------------------
+
+The cache layer returns a JavaScript object directly.
+
+Example:
+
+-------------------code----------------------
+const listings = await cache.get("listings");
+-------------------code----------------------
+
+---
+
+### Add Timestamp
+
+When saving:
+
+-------------------code----------------------
+{
+  value: listings,
+  timestamp: Date.now()
+}
+-------------------code----------------------
+
+This allows the cache layer to determine how old the data is.
+
+---
+
+### Check Expiration
+
+Example:
+
+-------------------code----------------------
+Current Time
+      -
+Saved Time
+      =
+Age of Cache
+-------------------code----------------------
+
+If cache age exceeds a predefined limit:
+
+-------------------code----------------------
+if (isExpired)
+-------------------code----------------------
+
+the cache layer can ignore it.
+
+---
+
+### Automatic Cleanup
+
+Expired data can be removed:
+
+-------------------code----------------------
+AsyncStorage.removeItem(key);
+-------------------code----------------------
+
+This helps:
+
+* Reduce storage usage
+* Prevent stale data accumulation
+
+---
+
+# 6. Benefits of a Cache Layer
+
+### Cleaner Application Code
+
+Instead of:
+
+-------------------code----------------------
+const value = await AsyncStorage.getItem("listings");
+
+const listings = JSON.parse(value);
+-------------------code----------------------
+
+You simply write:
+
+-------------------code----------------------
+const listings = await cache.get("listings");
+-------------------code----------------------
+
+---
+
+### Easier Maintenance
+
+If cache behavior changes:
+
+Only one file needs modification.
+
+-------------------code----------------------
+cache.js
+-------------------code----------------------
+
+instead of:
+
+-------------------code----------------------
+ListingsScreen.js
+ProfileScreen.js
+MessagesScreen.js
+SettingsScreen.js
+...
+-------------------code----------------------
+
+---
+
+### Encapsulation
+
+Implementation details stay hidden.
+
+Application code only knows:
+
+-------------------code----------------------
+cache.store(...)
+cache.get(...)
+-------------------code----------------------
+
+and nothing else.
+
+---
+
+# 7. Expected Cache API Design
+
+The lecture introduces the idea of creating a reusable cache module.
+
+Example usage:
+
+### Store Data
+
+-------------------code----------------------
+await cache.store("listings", listings);
+-------------------code----------------------
+
+### Read Data
+
+-------------------code----------------------
+const listings = await cache.get("listings");
+-------------------code----------------------
+
+Internally the cache layer handles:
+
+-------------------code----------------------
+JSON.stringify(...)
+JSON.parse(...)
+timestamps
+expiration checks
+cleanup
+-------------------code----------------------
+
+---
+
+# Important Notes & Best Practices
+
+### Use AsyncStorage for Cached Data
+
+Good for:
+
+* Listings
+* Settings
+* User preferences
+* Non-sensitive API responses
+
+---
+
+### Do Not Store Sensitive Data
+
+Avoid storing:
+
+* Passwords
+* Tokens
+* Banking information
+
+Use Secure Store instead.
+
+---
+
+### Hide Storage Behind an Abstraction
+
+Avoid:
+
+-------------------code----------------------
+AsyncStorage.getItem(...)
+AsyncStorage.setItem(...)
+-------------------code----------------------
+
+throughout the application.
+
+Prefer:
+
+-------------------code----------------------
+cache.get(...)
+cache.store(...)
+-------------------code----------------------
+
+---
+
+### Keep Cache Logic in One Place
+
+Benefits:
+
+* Easier debugging
+* Easier maintenance
+* Cleaner codebase
+
+---
+
+### Support Expiration
+
+Always consider:
+
+-------------------code----------------------
+How long should cached data remain valid?
+-------------------code----------------------
+
+Old cached data can lead to incorrect UI and outdated information.
+
+---
+
+# Full Conceptual Example
+
+-------------------code----------------------
+// cache.js
+
+const cache = {
+  store: async (key, value) => {
+    const item = {
+      value,
+      timestamp: Date.now(),
+    };
+
+    // save to AsyncStorage
+  },
+
+  get: async (key) => {
+    // read from AsyncStorage
+
+    // check expiration
+
+    // return data
+  },
+};
+
+export default cache;
+-------------------code----------------------
+
+Usage:
+
+-------------------code----------------------
+import cache from "./cache";
+
+// Save
+await cache.store("listings", listings);
+
+// Read
+const listings = await cache.get("listings");
+-------------------code----------------------
+
+---
+
+# Summary
+
+## What Problem Are We Solving?
+
+We want listings to remain available when the device is offline.
+
+---
+
+## Why Use AsyncStorage?
+
+Because:
+
+* Listings are not sensitive
+* We only need simple key-value storage
+* No relational queries are required
+
+---
+
+## Why Create a Cache Layer?
+
+To avoid repeatedly writing:
+
+-------------------code----------------------
+JSON.stringify(...)
+JSON.parse(...)
+-------------------code----------------------
+
+and to centralize:
+
+* Storage logic
+* Expiration handling
+* Cleanup logic
+
+---
+
+## Responsibilities of the Cache Layer
+
+1. Save data
+2. Load data
+3. Serialize objects
+4. Deserialize objects
+5. Add timestamps
+6. Check expiration
+7. Remove expired entries
+
+---
+
+## Final Architecture
+
+-------------------code----------------------
+React Components
+        |
+        V
+     Cache Layer
+        |
+        V
+    AsyncStorage
+-------------------code----------------------
+
+This approach keeps the application clean, maintainable, and ready for offline support.
