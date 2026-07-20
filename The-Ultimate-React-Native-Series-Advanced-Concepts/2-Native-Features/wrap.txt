@@ -552,3 +552,875 @@ The next lesson focuses on **how to request and manage user permissions** when a
 * Bare React Native projects require additional native configuration.
 * Expo provides well-documented APIs with examples and detailed references.
 * Applications must request **user permission** before accessing sensitive device information such as photos or location.
+
+*** 4- Requesting Permissions ***
+# Requesting User Permission in React Native (Expo Image Picker)
+
+## 1. Introduction
+
+In this lecture, the goal is to **request permission from the user to access device features**, specifically the photo library using Expo Image Picker.
+
+Instead of integrating this directly into the full app, the instructor temporarily **focuses on the feature in isolation** to understand how permissions work.
+
+---
+
+# 2. Starting Point
+
+## 2.1 Basic App Structure
+
+The current app simply renders a `Screen` component.
+
+### Code
+
+-------------------code----------------------
+import Screen from "./app/components/Screen";
+
+export default function App() {
+  return <Screen></Screen>;
+}
+-------------------code----------------------
+
+At this stage:
+
+* No permission logic is implemented yet
+* The app only renders the UI
+
+---
+
+# 3. Using useEffect Instead of componentDidMount
+
+## 3.1 Why useEffect
+
+In class components, we use:
+
+-------------------code----------------------
+componentDidMount()
+-------------------code----------------------
+
+In function components, we use:
+
+-------------------code----------------------
+useEffect()
+-------------------code----------------------
+
+a core concept in React, and once you understand it, a lot of things will become clearer.
+
+---
+
+# 1. What is a Component in React?
+
+A **component** is simply a piece of UI.
+
+Example:
+
+* A button
+* A screen
+* A form
+
+In React, there are **two main types of components**:
+
+1. Class Components (old way)
+2. Function Components (modern way)
+
+---
+
+# 2. Class Components (Old Way)
+
+## 2.1 What is a Class Component?
+
+A class component is written using JavaScript classes.
+
+### Example
+
+-------------------code----------------------
+import React, { Component } from "react";
+import { Text } from "react-native";
+
+class MyComponent extends Component {
+  render() {
+    return <Text>Hello World</Text>;
+  }
+}
+
+export default MyComponent;
+-------------------code----------------------
+
+---
+
+## 2.2 Lifecycle Methods
+
+Class components have something called **lifecycle methods**.
+
+These are special methods that run at different times.
+
+One of the most important ones:
+
+### componentDidMount
+
+-------------------code----------------------
+componentDidMount() {
+  console.log("Component mounted");
+}
+-------------------code----------------------
+
+---
+
+## 2.3 What does componentDidMount mean?
+
+It runs:
+
+* **After the component appears on the screen for the first time**
+
+Think of it like:
+
+"When the screen loads, run this code once"
+
+---
+
+## 2.4 Real Example
+
+-------------------code----------------------
+componentDidMount() {
+  fetchData();
+}
+-------------------code----------------------
+
+Use cases:
+
+* API calls
+* Asking permissions
+* Initial setup
+
+---
+
+# 3. Function Components (Modern Way)
+
+Today, React uses **function components** instead.
+
+### Example
+
+-------------------code----------------------
+function MyComponent() {
+  return <Text>Hello World</Text>;
+}
+-------------------code----------------------
+
+Simpler and cleaner.
+
+---
+
+# 4. Problem: No Lifecycle Methods in Functions
+
+Function components **do NOT have**:
+
+* componentDidMount
+* componentDidUpdate
+* componentWillUnmount
+
+So how do we do the same things?
+
+---
+
+# 5. Solution: useEffect Hook
+
+React introduced something called **Hooks**.
+
+The most important one here is:
+
+### useEffect
+
+---
+
+# 6. Basic useEffect
+
+-------------------code----------------------
+import { useEffect } from "react";
+
+useEffect(() => {
+  console.log("This runs after render");
+});
+-------------------code----------------------
+
+But this runs **every time the component renders**.
+
+---
+
+# 7. Making useEffect behave like componentDidMount
+
+## 7.1 The Trick: Dependency Array
+
+-------------------code----------------------
+useEffect(() => {
+  console.log("Runs only once");
+}, []);
+-------------------code----------------------
+
+---
+
+## 7.2 Why does this work?
+
+The second argument:
+
+-------------------code----------------------
+[]
+-------------------code----------------------
+
+is called the **dependency array**.
+
+Meaning:
+
+* "Run this only when dependencies change"
+
+But:
+
+* There are no dependencies
+
+So:
+
+* It runs **only once**
+
+---
+
+# 8. Side-by-Side Comparison
+
+## Class Component
+
+-------------------code----------------------
+componentDidMount() {
+  console.log("Runs once");
+}
+-------------------code----------------------
+
+## Function Component
+
+-------------------code----------------------
+useEffect(() => {
+  console.log("Runs once");
+}, []);
+-------------------code----------------------
+
+They do the **same thing**.
+
+---
+
+# 9. Simple Mental Model
+
+Think like this:
+
+* Class → componentDidMount → run once
+* Function → useEffect + [] → run once
+
+---
+
+# 10. Why We Use This for Permissions
+
+In your app, you wrote:
+
+-------------------code----------------------
+useEffect(() => {
+  requestPermission();
+}, []);
+-------------------code----------------------
+
+This means:
+
+* When the screen loads for the first time
+* Ask the user for permission
+* Do not ask again on every render
+
+---
+
+# 11. What Happens Without [] (Important)
+
+If you write:
+
+-------------------code----------------------
+useEffect(() => {
+  requestPermission();
+});
+-------------------code----------------------
+
+This will:
+
+* Run every time the component re-renders
+* Keep asking permission again and again
+
+This is wrong behavior.
+
+---
+
+# 12. Summary
+
+## Class Component
+
+* Uses classes
+* Has lifecycle methods
+* componentDidMount runs once after first render
+
+## Function Component
+
+* Uses functions
+* Uses hooks instead of lifecycle methods
+* useEffect replaces lifecycle methods
+
+## Key Rule
+
+-------------------code----------------------
+useEffect(() => {
+  // run once
+}, []);
+-------------------code----------------------
+
+= same as:
+
+-------------------code----------------------
+componentDidMount()
+-------------------code----------------------
+
+---
+
+
+---
+
+# 1. What Are Hooks (Very Simple)
+
+Think of **hooks** like:
+
+> Tools that give superpowers to function components
+
+Before hooks:
+
+* Function components were “dumb” (just UI)
+* Only class components had logic (state, lifecycle)
+
+After hooks:
+
+* Function components can do everything
+
+---
+
+## Simple Definition
+
+Hooks let you:
+
+* Store data (state)
+* Run code at the right time (like on load)
+
+---
+
+# 2. Most Important Hooks
+
+You only need to understand these two for now:
+
+1. `useState` → store and change data
+2. `useEffect` → run code (like on start)
+
+---
+
+# 3. What is useState (Core Idea)
+
+## Very Simple Idea
+
+`useState` = a variable that can change and update the screen
+
+---
+
+## Normal JavaScript Variable (Problem)
+
+-------------------code----------------------
+let count = 0;
+
+count = 1;
+-------------------code----------------------
+
+Problem:
+
+* React does NOT update the UI
+
+---
+
+## useState Solution
+
+-------------------code----------------------
+import { useState } from "react";
+
+const [count, setCount] = useState(0);
+-------------------code----------------------
+
+Now:
+
+* `count` = value
+* `setCount` = function to change it
+
+---
+
+# 4. Real Example (Super Simple)
+
+-------------------code----------------------
+import { useState } from "react";
+import { Button, Text, View } from "react-native";
+
+export default function App() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <View>
+      <Text>{count}</Text>
+
+      <Button
+        title="Increase"
+        onPress={() => setCount(count + 1)}
+      />
+    </View>
+  );
+}
+-------------------code----------------------
+
+---
+
+## What Happens Here
+
+1. App starts → count = 0
+2. You press button
+3. `setCount(1)` runs
+4. React updates screen
+5. Now shows 1
+
+---
+
+# 5. Easy Analogy
+
+Think of `useState` like:
+
+* `count` = current value
+* `setCount` = remote control to change it
+
+---
+
+# 6. Rule You Must Remember
+
+Never do this:
+
+-------------------code----------------------
+count = 5;
+-------------------code----------------------
+
+Always do this:
+
+-------------------code----------------------
+setCount(5);
+-------------------code----------------------
+
+---
+
+# 7. What is useEffect (Simple Again)
+
+## Very Simple Idea
+
+`useEffect` = run code at a specific time
+
+---
+
+## Example: Run once when app starts
+
+-------------------code----------------------
+import { useEffect } from "react";
+
+useEffect(() => {
+  console.log("App started");
+}, []);
+-------------------code----------------------
+
+---
+
+## In Your Case (Permission)
+
+-------------------code----------------------
+useEffect(() => {
+  requestPermission();
+}, []);
+-------------------code----------------------
+
+Meaning:
+
+* When screen opens → ask permission
+
+---
+
+# 8. Simple Comparison
+
+| Thing     | What it does                   |
+| --------- | ------------------------------ |
+| useState  | stores and updates data        |
+| useEffect | runs code (on start or change) |
+
+---
+
+# 9. Real Life Analogy
+
+Think of your app like a game:
+
+## useState
+
+* Player health
+* Score
+* Level
+
+These change → screen updates
+
+## useEffect
+
+* Start game
+* Load data
+* Ask permission
+
+These run at specific times
+
+---
+
+# 10. How They Work Together
+
+Example:
+
+-------------------code----------------------
+const [name, setName] = useState("");
+
+useEffect(() => {
+  console.log("Component loaded");
+}, []);
+-------------------code----------------------
+
+* `useState` → stores data
+* `useEffect` → runs logic
+
+---
+
+# 11. Why Hooks Are Important
+
+Without hooks:
+
+* You must use class components (more complex)
+
+With hooks:
+
+* Code is shorter
+* Easier to read
+* More modern
+
+---
+
+# 12. Super Short Summary
+
+* Hooks = tools for function components
+* `useState` = store and update data
+* `useEffect` = run code at the right time
+* `[]` in useEffect = run only once
+
+---
+
+---
+
+## 3.2 Basic useEffect Behavior
+
+-------------------code----------------------
+useEffect(() => {
+  // code here runs on every render
+});
+-------------------code----------------------
+
+Problem:
+
+* This runs **every time the component re-renders**
+* We do NOT want to request permission repeatedly
+
+---
+
+## 3.3 Run Only Once (Important Concept)
+
+To run the effect only once:
+
+-------------------code----------------------
+useEffect(() => {
+  // runs only once
+}, []);
+-------------------code----------------------
+
+Explanation:
+
+* The second parameter is a **dependency array**
+* An empty array means:
+
+  * No dependencies
+  * Runs only on first render
+* Equivalent to `componentDidMount`
+
+---
+
+# 4. Importing Expo Image Picker
+
+To access permission methods:
+
+-------------------code----------------------
+import * as ImagePicker from "expo-image-picker";
+-------------------code----------------------
+
+This gives access to multiple methods including:
+
+* Requesting permissions
+* Opening camera
+* Accessing media library
+
+---
+
+# 5. Requesting Permission
+
+## 5.1 The Permission Method
+
+We use:
+
+-------------------code----------------------
+ImagePicker.requestCameraRollPermissionsAsync()
+-------------------code----------------------
+
+This is an **async function** that returns a result object.
+
+---
+
+## 5.2 Problem with Async in useEffect
+
+Incorrect approach:
+
+-------------------code----------------------
+useEffect(async () => {
+  const result = await ImagePicker.requestCameraRollPermissionsAsync();
+}, []);
+-------------------code----------------------
+
+Problem:
+
+* `useEffect` cannot accept an async function
+* Async functions return a Promise
+* `useEffect` expects a cleanup function, not a Promise
+
+---
+
+# 6. Correct Solution: Separate Async Function
+
+## 6.1 Step 1 — Create Async Function
+
+-------------------code----------------------
+const requestPermission = async () => {
+  const result = await ImagePicker.requestCameraRollPermissionsAsync();
+};
+-------------------code----------------------
+
+---
+
+## 6.2 Step 2 — Call Function Inside useEffect
+
+-------------------code----------------------
+useEffect(() => {
+  requestPermission();
+}, []);
+-------------------code----------------------
+
+Important:
+
+* Do NOT use `await` inside `useEffect`
+* Do NOT make `useEffect` async
+
+---
+
+# 7. Handling the Permission Response
+
+## 7.1 Response Object
+
+The result contains properties such as:
+
+* `granted` (boolean)
+* `status`
+* `canAskAgain`
+* `expires`
+
+---
+
+## 7.2 Using Object Destructuring
+
+Instead of:
+
+-------------------code----------------------
+const result = await ImagePicker.requestCameraRollPermissionsAsync();
+
+if (!result.granted) {
+  alert("Permission required");
+}
+-------------------code----------------------
+
+Use:
+
+-------------------code----------------------
+const { granted } = await ImagePicker.requestCameraRollPermissionsAsync();
+
+if (!granted) {
+  alert("You need to enable permission to access the library.");
+}
+-------------------code----------------------
+
+Cleaner and more readable.
+
+---
+
+# 8. Full Step-by-Step Implementation
+
+## Step 1 — Import Dependencies
+
+-------------------code----------------------
+import { useEffect } from "react";
+import * as ImagePicker from "expo-image-picker";
+import Screen from "./app/components/Screen";
+-------------------code----------------------
+
+---
+
+## Step 2 — Create Permission Function
+
+-------------------code----------------------
+const requestPermission = async () => {
+  const { granted } = await ImagePicker.requestCameraRollPermissionsAsync();
+
+  if (!granted) {
+    alert("You need to enable permission to access the library.");
+  }
+};
+-------------------code----------------------
+
+---
+
+## Step 3 — Call It Once Using useEffect
+
+-------------------code----------------------
+useEffect(() => {
+  requestPermission();
+}, []);
+-------------------code----------------------
+
+---
+
+## Step 4 — Render App
+
+-------------------code----------------------
+return <Screen />;
+-------------------code----------------------
+
+---
+
+# 9. Full Final Code
+
+-------------------code----------------------
+import { useEffect } from "react";
+import * as ImagePicker from "expo-image-picker";
+import Screen from "./app/components/Screen";
+
+export default function App() {
+  const requestPermission = async () => {
+    const { granted } = await ImagePicker.requestCameraRollPermissionsAsync();
+
+    if (!granted) {
+      alert("You need to enable permission to access the library.");
+    }
+  };
+
+  useEffect(() => {
+    requestPermission();
+  }, []);
+
+  return <Screen />;
+}
+-------------------code----------------------
+
+---
+
+# 10. How Permission Behavior Works
+
+## First Run
+
+* App asks for permission
+* User sees system dialog
+* User chooses Allow or Deny
+
+## After First Decision
+
+* Device remembers the choice
+* No dialog appears again
+* Permission result is returned immediately
+
+---
+
+## If Permission Is Denied
+
+* App should show a message
+* User must manually enable permission in device settings
+
+Example (iPhone):
+
+* Settings → App → Photos → Enable access
+
+---
+
+# 11. Important Notes and Best Practices
+
+## 11.1 Never Make useEffect Async
+
+Incorrect:
+
+-------------------code----------------------
+useEffect(async () => {})
+-------------------code----------------------
+
+Correct:
+
+* Use a separate async function
+
+---
+
+## 11.2 Always Use Dependency Array
+
+-------------------code----------------------
+useEffect(() => {}, []);
+-------------------code----------------------
+
+Prevents repeated execution.
+
+---
+
+## 11.3 Handle Permission Denial Gracefully
+
+* Always check `granted`
+* Show clear message to the user
+* Do not crash or block the app
+
+---
+
+## 11.4 Keep Logic Clean
+
+* Use destructuring for cleaner code
+* Separate logic into functions
+
+---
+
+## 12. Summary
+
+* Permissions are required to access sensitive device features
+* `useEffect` is used to run code when the component mounts
+* An empty dependency array ensures the effect runs only once
+* Async functions cannot be used directly inside `useEffect`
+* The correct approach is to define an async function and call it inside `useEffect`
+* The permission result includes a `granted` boolean
+* If permission is denied, the app should notify the user
+* Once permission is decided, the system remembers it and does not prompt again
+
+This pattern is essential and will be reused for other features such as:
+
+* Camera access
+* Location services
+* File system access
