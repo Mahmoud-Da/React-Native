@@ -1244,3 +1244,364 @@ In this lecture:
   * Improve overall user experience
 
 The next step is implementing data caching so the application can continue working even when internet access is unavailable.
+
+*** 4- Caching ***
+# Offline Support in React Native – Caching Data
+
+## 1. Why Caching Matters
+
+When an app retrieves data from a server, it may be useful to store that data locally on the device.
+
+Benefits:
+
+* Users can still access previously loaded data when offline.
+* Reduces unnecessary network requests.
+* Improves app responsiveness and user experience.
+* Helps build offline-capable applications.
+
+Example:
+
+-------------------code----------------------
+Online:
+Server → App → Display Listings
+
+Offline:
+Local Cache → App → Display Listings
+-------------------code----------------------
+
+---
+
+# 2. Caching Storage Options
+
+The lecture introduces three common storage solutions.
+
+## Option 1: Async Storage
+
+### What It Is
+
+Async Storage is similar to Local Storage in web browsers.
+
+It stores:
+
+-------------------code----------------------
+key -> value
+-------------------code----------------------
+
+where values are stored as strings.
+
+### Characteristics
+
+* Stores key-value pairs
+* Data persists between app restarts
+* Data is not encrypted
+* Suitable for caching API responses
+* Default storage limit is approximately 6 MB
+
+### Good For
+
+* API response caching
+* User preferences
+* App settings
+* Small datasets
+
+### Not Good For
+
+* Passwords
+* Authentication tokens
+* Sensitive personal information
+
+### Example
+
+-------------------code----------------------
+await AsyncStorage.setItem("listings", JSON.stringify(listings));
+
+const data = await AsyncStorage.getItem("listings");
+
+const listings = JSON.parse(data);
+-------------------code----------------------
+
+---
+
+# 3. Option 2: Secure Store
+
+## What It Is
+
+Secure Store is provided by Expo and is designed for storing sensitive data securely.
+
+### Characteristics
+
+* Data is encrypted
+* Works in Expo projects
+* Available in managed and bare workflows
+* Storage limit is approximately 2 MB
+
+### Good For
+
+* Access tokens
+* Refresh tokens
+* Sensitive credentials
+* Authentication information
+
+### Not Good For
+
+* Large API response datasets
+* Image caches
+* Large collections of records
+
+### Example
+
+-------------------code----------------------
+import * as SecureStore from "expo-secure-store";
+
+await SecureStore.setItemAsync("token", token);
+
+const token = await SecureStore.getItemAsync("token");
+-------------------code----------------------
+
+---
+
+# 4. Option 3: SQLite
+
+## What It Is
+
+SQLite is a lightweight relational database that runs directly on the device.
+
+Instead of simple key-value pairs, it allows:
+
+* Tables
+* Relationships
+* SQL queries
+
+### Characteristics
+
+* Full database support
+* Query data using SQL
+* Suitable for complex offline applications
+
+### Good For
+
+* Large datasets
+* Complex searches
+* Filtering
+* Relational data
+
+### Example
+
+-------------------code----------------------
+SELECT * FROM listings
+WHERE price > 100;
+-------------------code----------------------
+
+### Example Use Cases
+
+* Messaging apps
+* Inventory systems
+* Offline business applications
+* Large data-driven apps
+
+---
+
+# 5. Storage Comparison
+
+| Feature                 | Async Storage | Secure Store | SQLite      |
+| ----------------------- | ------------- | ------------ | ----------- |
+| Key-Value Storage       | Yes           | Yes          | No          |
+| Encrypted               | No            | Yes          | Depends     |
+| Supports SQL Queries    | No            | No           | Yes         |
+| Good for API Cache      | Yes           | No           | Yes         |
+| Good for Sensitive Data | No            | Yes          | Sometimes   |
+| Storage Limit           | ~6 MB         | ~2 MB        | Much Larger |
+| Complexity              | Low           | Low          | Medium      |
+
+---
+
+# 6. Data Persistence
+
+All three solutions share an important characteristic.
+
+Data remains available after:
+
+* Closing the app
+* Reopening the app
+* Device restarts
+
+Example:
+
+-------------------code----------------------
+User opens app
+↓
+Data saved locally
+↓
+App closes
+↓
+App opens again
+↓
+Data still exists
+-------------------code----------------------
+
+---
+
+# 7. Important Limitation
+
+Local storage data is removed when the application is uninstalled.
+
+-------------------code----------------------
+App Installed
+    ↓
+Data Saved
+    ↓
+User Uninstalls App
+    ↓
+All Local Data Removed
+-------------------code----------------------
+
+This applies to:
+
+* Async Storage
+* Secure Store
+* SQLite
+
+---
+
+# 8. Choosing the Right Storage
+
+### Use Async Storage When
+
+* Caching API responses
+* Storing app settings
+* Saving small non-sensitive data
+
+### Use Secure Store When
+
+* Saving tokens
+* Saving passwords
+* Storing sensitive information
+
+### Use SQLite When
+
+* Working with large datasets
+* Performing searches and filtering
+* Building advanced offline apps
+
+---
+
+# Important Notes & Best Practices
+
+### Do Not Store Sensitive Data in Async Storage
+
+Bad:
+
+-------------------code----------------------
+await AsyncStorage.setItem("password", password);
+-------------------code----------------------
+
+Good:
+
+-------------------code----------------------
+await SecureStore.setItemAsync("token", token);
+-------------------code----------------------
+
+---
+
+### Keep Cached Data Small
+
+Mobile devices have limited storage.
+
+Avoid:
+
+-------------------code----------------------
+// Thousands of records
+// Large image collections
+-------------------code----------------------
+
+Prefer:
+
+-------------------code----------------------
+// Essential API responses
+// User preferences
+// Small datasets
+-------------------code----------------------
+
+---
+
+### Choose the Simplest Solution
+
+Do not automatically use SQLite.
+
+Ask:
+
+* How much data do I have?
+* Is the data sensitive?
+* Do I need SQL queries?
+
+Many applications only need Async Storage.
+
+---
+
+# Full Concept Overview
+
+-------------------code----------------------
+Server
+   ↓
+API Response
+   ↓
+Choose Storage
+
+1. Async Storage
+   - Key/Value
+   - Not encrypted
+   - API caching
+
+2. Secure Store
+   - Encrypted
+   - Sensitive data
+
+3. SQLite
+   - Database
+   - SQL queries
+   - Large datasets
+
+   ↓
+Stored Locally
+
+Available:
+- Offline
+- After app restart
+
+Not Available:
+- After app uninstall
+-------------------code----------------------
+
+---
+
+# Summary
+
+## What is Caching?
+
+Caching means storing successful API responses locally so the app can continue working when internet access is unavailable.
+
+## Storage Options
+
+### Async Storage
+
+* Key-value storage
+* Similar to browser local storage
+* Not encrypted
+* Around 6 MB limit
+* Best for API response caching
+
+### Secure Store
+
+* Encrypted storage
+* Around 2 MB limit
+* Best for tokens and sensitive information
+
+### SQLite
+
+* Full local database
+* Supports SQL queries
+* Best for large or complex datasets
+
+## Key Takeaway
+
+For most React Native applications, Async Storage is the simplest and most common solution for caching API responses. Secure Store should be used for sensitive data, while SQLite is reserved for applications that require more advanced local data management.
