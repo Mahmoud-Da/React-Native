@@ -1855,3 +1855,402 @@ To select from a custom list in Expo, the best solution is to build your own cus
 This approach avoids ejecting Expo and gives full control over design and behavior.
 ---
 
+*** 7- Building a Custom Picker ***
+# Building Custom Picker Component (Part 1: UI Only) – Clean Structured Notes
+
+## 1. Goal of This Lesson
+
+In this lesson, you build a custom picker component called:
+
+AppPicker
+
+Focus of this video:
+
+Only the look and feel (UI)
+
+NOT selecting items yet
+
+Selection logic will be implemented in the next lesson.
+
+The custom picker will look identical to AppTextInput for consistent design.
+
+---
+
+## 2. Why Create AppPicker Component
+
+Even though Picker existed in React Native Core:
+
+It is deprecated
+
+Not ideal for Expo
+
+You need a custom component
+
+Using prefix App helps distinguish your components from React Native components.
+
+Example naming:
+
+AppPicker
+AppTextInput
+AppButton
+
+---
+
+## 3. Step 1: Create New Component File
+
+Create file:
+
+components/AppPicker.js
+
+Basic component structure:
+
+-------------------code----------------------
+import React from "react";
+import { View, StyleSheet } from "react-native";
+
+function AppPicker() {
+  return <View></View>;
+}
+
+export default AppPicker;
+-------------------code----------------------
+
+---
+
+## 4. Step 2: Copy Base Design from AppTextInput
+
+To save time:
+
+Copy structure from AppTextInput
+
+Because both components share same design:
+
+Background color
+Border radius
+Icon
+Padding
+
+Example base structure:
+
+-------------------code----------------------
+<View style={styles.container}>
+</View>
+-------------------code----------------------
+
+---
+
+## 5. Step 3: Replace TextInput with AppText
+
+Remove:
+
+TextInput
+
+Replace with:
+
+AppText
+
+Import AppText:
+
+-------------------code----------------------
+import AppText from "./AppText";
+-------------------code----------------------
+
+Render placeholder text:
+
+-------------------code----------------------
+<AppText>{placeholder}</AppText>
+-------------------code----------------------
+
+---
+
+## 6. Step 4: Add Placeholder Prop
+
+Picker must display:
+
+Placeholder when nothing selected
+
+Add prop:
+
+-------------------code----------------------
+function AppPicker({ placeholder }) { ... }
+-------------------code----------------------
+
+Render:
+
+-------------------code----------------------
+<AppText>{placeholder}</AppText>
+-------------------code----------------------
+
+---
+
+## 7. Step 5: Test Component in App.js
+
+Import components:
+
+-------------------code----------------------
+import AppPicker from "./components/AppPicker";
+import AppTextInput from "./components/AppTextInput";
+-------------------code----------------------
+
+Use them:
+
+-------------------code----------------------
+<AppPicker placeholder="Category" />
+
+<AppTextInput placeholder="Email" />
+-------------------code----------------------
+
+Result:
+
+Both components look identical.
+
+---
+
+## 8. Step 6: Add Left Icon
+
+Picker supports icon like TextInput.
+
+Example:
+
+-------------------code----------------------
+<AppPicker
+  placeholder="Category"
+  icon="apps"
+/>
+
+<AppTextInput
+  placeholder="Email"
+  icon="email"
+/>
+-------------------code----------------------
+
+---
+
+## 9. Step 7: Add Chevron Icon (Right Side Arrow)
+
+Picker needs dropdown arrow.
+
+Add icon:
+
+-------------------code----------------------
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+-------------------code----------------------
+
+Render chevron:
+
+-------------------code----------------------
+<MaterialCommunityIcons
+  name="chevron-down"
+  size={20}
+  color={colors.medium}
+/>
+-------------------code----------------------
+
+Place it after text.
+
+---
+
+## 10. Step 8: Use flex: 1 to Push Chevron to Right
+
+Important layout step.
+
+Make text expand:
+
+styles:
+
+-------------------code----------------------
+text: {
+  flex: 1,
+}
+-------------------code----------------------
+
+Apply style:
+
+-------------------code----------------------
+<AppText style={styles.text}>
+  {placeholder}
+</AppText>
+-------------------code----------------------
+
+This pushes chevron to far right.
+
+Final layout:
+
+[Icon]   Category              [Chevron]
+
+---
+
+## 11. Final Component Structure
+
+Layout structure:
+
+Container (row)
+
+Left icon
+
+Text (placeholder)
+
+Chevron icon
+
+---
+
+## 12. Full Final Code – AppPicker.js
+
+-------------------code----------------------
+import React from "react";
+import { View, StyleSheet } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+
+import AppText from "./AppText";
+import colors from "../config/colors";
+
+function AppPicker({ icon, placeholder }) {
+  return (
+    <View style={styles.container}>
+      
+      {icon && (
+        <MaterialCommunityIcons
+          name={icon}
+          size={20}
+          color={colors.medium}
+          style={styles.icon}
+        />
+      )}
+
+      <AppText style={styles.text}>
+        {placeholder}
+      </AppText>
+
+      <MaterialCommunityIcons
+        name="chevron-down"
+        size={20}
+        color={colors.medium}
+      />
+
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+
+  container: {
+    backgroundColor: colors.light,
+    borderRadius: 25,
+    flexDirection: "row",
+    width: "100%",
+    padding: 15,
+    marginVertical: 10,
+    alignItems: "center",
+  },
+
+  text: {
+    flex: 1,
+  },
+
+  icon: {
+    marginRight: 10,
+  },
+
+});
+
+export default AppPicker;
+-------------------code----------------------
+
+---
+
+## 13. Example Usage – App.js
+
+-------------------code----------------------
+import AppTextInput from "./app/components/AppTextInput.js";
+import AppPicker from "./app/components/AppPicker.js";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
+
+export default function App() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AppPicker
+        placeholder="Category"
+        icon="apps"
+      />
+
+      <AppTextInput
+        placeholder="Email"
+        icon="email"
+      />
+    </GestureHandlerRootView>)
+
+}
+--------code----------------------
+
+---
+
+## 14. Current Limitations
+
+Picker currently:
+
+Shows placeholder
+
+Shows icon
+
+Shows chevron
+
+BUT:
+
+Cannot select items yet
+
+Selection functionality will be added in next lesson.
+
+---
+
+## 15. Best Practices
+
+Reuse existing component designs to maintain consistency.
+
+Use flex: 1 for layout control.
+
+Use placeholder for empty state.
+
+Keep components reusable.
+
+Separate UI and logic.
+
+---
+
+## 16. Visual Structure Diagram
+
+Layout:
+
+Left Icon | Text (flex:1) | Chevron
+
+Example:
+
+[apps icon] Category        ▼
+
+---
+
+## 17. Summary
+
+In this lesson you built the UI of a custom picker component.
+
+You created AppPicker component.
+
+You reused AppTextInput design.
+
+You added:
+
+Placeholder
+Left icon
+Chevron icon
+
+You used flex: 1 to position elements correctly.
+
+This component currently handles only UI.
+
+Next lesson will implement:
+
+Selection logic
+Modal
+List of options
+
+This is foundation for building production-level picker components in React Native apps.
