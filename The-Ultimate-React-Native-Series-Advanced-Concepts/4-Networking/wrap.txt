@@ -5973,3 +5973,426 @@ You also learned important architectural concepts:
 * incremental feature development
 
 The app can now successfully upload real listings with images and location data to the backend server.
+
+
+*** 15- Tracking Upload Progress ***
+# 1. Tracking Upload Progress in React Native
+
+When uploading files or large data to a server, it is useful to show upload progress to the user.
+
+In this lecture, the app tracks listing upload progress using:
+
+* Axios configuration inside API Sauce
+* `onUploadProgress`
+* Callback functions
+* React-style event communication
+
+---
+
+# 2. Goal
+
+We want to:
+
+1. Upload a listing to the server
+2. Track how much of the upload is completed
+3. Send progress updates from the API layer to the UI layer
+4. Later display a progress bar
+
+---
+
+# 3. Add Upload Progress Tracking in API Layer
+
+File:
+
+-------------------code----------------------
+api/listings.js
+-------------------code----------------------
+
+Previously we had:
+
+-------------------code----------------------
+return client.post(endpoint, data);
+-------------------code----------------------
+
+Now we add a third argument.
+
+---
+
+## Step 1: Add Axios Configuration Object
+
+-------------------code----------------------
+return client.post(endpoint, data, {
+  onUploadProgress: (progress) => {
+    console.log(progress);
+  },
+});
+-------------------code----------------------
+
+---
+
+# 4. Understanding `onUploadProgress`
+
+`onUploadProgress` is called repeatedly while the request uploads.
+
+The callback receives a `progress` object.
+
+Example properties:
+
+-------------------code----------------------
+progress.loaded
+progress.total
+-------------------code----------------------
+
+* `loaded` → uploaded bytes
+* `total` → total bytes
+
+---
+
+# 5. Calculate Upload Percentage
+
+## Step 2: Calculate Progress
+
+-------------------code----------------------
+progress.loaded / progress.total
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+0.5
+-------------------code----------------------
+
+This means:
+
+-------------------code----------------------txt
+50% uploaded
+-------------------code----------------------
+
+---
+
+## Why Keep It Between 0 and 1?
+
+Many progress bar components expect values like:
+
+-------------------code----------------------txt
+0 → empty
+1 → complete
+-------------------code----------------------
+
+So we do NOT multiply by 100.
+
+---
+
+# 6. Problem With Current Implementation
+
+Currently:
+
+-------------------code----------------------
+console.log(progress);
+-------------------code----------------------
+
+exists inside the API layer.
+
+But eventually:
+
+* UI components need this value
+* We need to display progress visually
+
+So the UI must receive progress updates.
+
+---
+
+# 7. Solution: Use a Callback Function
+
+This follows the same communication pattern used in React components.
+
+---
+
+## React Analogy
+
+Parent component:
+
+-------------------code----------------------
+<Child onSomethingHappened={handleSomething} />
+-------------------code----------------------
+
+Child component:
+
+-------------------code----------------------
+props.onSomethingHappened();
+-------------------code----------------------
+
+This is called:
+
+-------------------code----------------------txt
+Raising an event
+-------------------code----------------------
+
+---
+
+# 8. Pass a Callback From UI Layer
+
+File:
+
+-------------------code----------------------
+ListingEditScreen.js
+-------------------code----------------------
+
+---
+
+## Previous Code
+
+-------------------code----------------------
+await listingsApi.addListing(listing);
+-------------------code----------------------
+
+---
+
+## Step 3: Pass Upload Callback
+
+-------------------code----------------------
+await listingsApi.addListing(listing, (progress) => {
+  console.log(progress);
+});
+-------------------code----------------------
+
+Now the UI layer receives upload updates.
+
+---
+
+# 9. Update API Function Signature
+
+File:
+
+-------------------code----------------------
+api/listings.js
+-------------------code----------------------
+
+---
+
+## Step 4: Accept Callback Parameter
+
+-------------------code----------------------
+const addListing = (listing, onUploadProgress) => {
+-------------------code----------------------
+
+Now the API function can receive a callback.
+
+---
+
+# 10. Trigger Callback During Upload
+
+Replace:
+
+-------------------code----------------------
+console.log(progress);
+-------------------code----------------------
+
+with:
+
+-------------------code----------------------
+onUploadProgress(progress.loaded / progress.total);
+-------------------code----------------------
+
+---
+
+# 11. Final Upload Flow
+
+-------------------code----------------------txt
+UI Layer
+   ↓
+Pass callback function
+   ↓
+API Layer uploads data
+   ↓
+onUploadProgress fires repeatedly
+   ↓
+API layer calls callback
+   ↓
+UI receives live progress updates
+-------------------code----------------------
+
+---
+
+# 12. Full Final Code
+
+## `api/listings.js`
+
+-------------------code----------------------
+import client from "./client";
+
+const endpoint = "/listings";
+
+const getListings = () => client.get(endpoint);
+
+const addListing = (listing, onUploadProgress) => {
+  const data = new FormData();
+
+  data.append("title", listing.title);
+  data.append("price", listing.price);
+  data.append("categoryId", listing.category.value);
+  data.append("description", listing.description);
+
+  listing.images.forEach((image, index) => {
+    data.append("images", {
+      name: "image" + index,
+      type: "image/jpeg",
+      uri: image,
+    });
+  });
+
+  if (listing.location)
+    data.append("location", JSON.stringify(listing.location));
+
+  return client.post(endpoint, data, {
+    onUploadProgress: (progress) =>
+      onUploadProgress(progress.loaded / progress.total),
+  });
+};
+
+export default {
+  getListings,
+  addListing,
+};
+-------------------code----------------------
+
+---
+
+## `ListingEditScreen.js`
+
+-------------------code----------------------
+const handleSubmit = async (listing) => {
+  const result = await listingsApi.addListing(
+    { ...listing, location },
+    (progress) => {
+      console.log(progress);
+    }
+  );
+
+  if (!result.ok)
+    return alert("Could not save the listing");
+
+  alert("Success");
+};
+-------------------code----------------------
+
+---
+
+# 13. Important Notes
+
+## Fast Refresh Limitation
+
+Changes inside API files may NOT trigger Fast Refresh.
+
+You may need:
+
+-------------------code----------------------txt
+Manual Reload
+-------------------code----------------------
+
+to test upload progress changes.
+
+---
+
+## Separation of Concerns
+
+Good architecture:
+
+### UI Layer
+
+Responsible for:
+
+* Displaying progress
+* Showing animations
+* Handling user interaction
+
+### API Layer
+
+Responsible for:
+
+* Uploading data
+* HTTP requests
+* Progress tracking
+
+---
+
+## Why Callbacks Are Useful
+
+Callbacks allow:
+
+* Loose coupling
+* Reusable API layer
+* UI updates without direct dependency
+
+This is a common React pattern.
+
+---
+
+# 14. Best Practices
+
+## Keep API Logic Out of Components
+
+Bad:
+
+-------------------code----------------------
+axios.post(...)
+-------------------code----------------------
+
+inside components.
+
+Good:
+
+-------------------code----------------------
+listingsApi.addListing(...)
+-------------------code----------------------
+
+---
+
+## Keep Progress Values Normalized
+
+Prefer:
+
+-------------------code----------------------
+0 → 1
+-------------------code----------------------
+
+instead of:
+
+-------------------code----------------------
+0 → 100
+-------------------code----------------------
+
+because many UI libraries expect normalized values.
+
+---
+
+## Use Meaningful Callback Names
+
+Good:
+
+-------------------code----------------------
+onUploadProgress
+-------------------code----------------------
+
+This clearly explains the purpose.
+
+---
+
+# 15. Summary
+
+In this lecture:
+
+* Added upload progress tracking using `onUploadProgress`
+* Learned how Axios reports upload progress
+* Calculated upload percentage
+* Passed progress updates from API layer to UI layer
+* Used callback functions to communicate between layers
+* Prepared the app for adding a progress bar
+
+Main concept:
+
+-------------------code----------------------txt
+API Layer → sends progress updates → UI Layer
+-------------------code----------------------
+
+This creates a clean and scalable architecture for uploads in React Native.
