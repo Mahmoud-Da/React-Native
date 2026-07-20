@@ -1,4 +1,4 @@
-import { View } from "react-native";
+import { View, Text } from "react-native";
 
 export default function App() {
   return (
@@ -7,35 +7,22 @@ export default function App() {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
+        padding: 20,
       }}
     >
-      <View
+      <Text
         style={{
-          backgroundColor: "dodgerblue",
-          width: 100,
-          height: 100,
-          padding: 20,
-          paddingHorizontal: 10,
-          paddingLeft: 30,
+          fontSize: 30,
+          fontStyle: "italic",
+          fontWeight: "600",
+          color: "tomato",
+          textTransform: "capitalize",
+          textAlign: "center",
+          lineHeight: 30,
         }}
       >
-        <View
-          style={{
-            backgroundColor: "gold",
-            width: 50,
-            height: 50,
-          }}
-        />
-      </View>
-
-      <View
-        style={{
-          backgroundColor: "tomato",
-          width: 100,
-          height: 100,
-          margin: 20,
-        }}
-      />
+        I love React Native. This is my first React Native app and I am learning text styling.
+      </Text>
     </View>
   );
 }

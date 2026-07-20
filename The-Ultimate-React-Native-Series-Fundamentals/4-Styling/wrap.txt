@@ -1018,3 +1018,388 @@ This lecture covered:
 * Property override behavior.
 
 Next Topic: Styling Text in React Native.
+
+
+*** 5- Styling Text ***
+### Lecture Notes: Styling Text in React Native
+
+---
+
+## 1. Overview
+
+React Native provides a `Text` component for displaying and styling text. Text styling allows developers to control font appearance, spacing, alignment, and decoration.
+
+Important Concept:
+
+* Text styling properties apply only to the `Text` component.
+* Unlike CSS in web development, React Native does not support style inheritance across components.
+
+---
+
+# Part 1: Basic Text Setup
+
+---
+
+## 2. Creating a Container with Text
+
+### Step 1: Add a Text Component
+
+#### Code
+
+-------------------code----------------------
+import { View, Text } from "react-native";
+
+export default function App() {
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <Text>I love React Native</Text>
+    </View>
+  );
+}
+-------------------code----------------------
+
+### Result
+
+* Displays simple text centered on the screen.
+* Default font size appears small.
+
+---
+
+# Part 2: Text Styling Properties
+
+---
+
+## 3. Font Size
+
+### Concept
+
+Controls the size of text.
+
+---
+
+### Step 2: Increase Font Size
+
+#### Code
+
+-------------------code----------------------
+<Text style={{ fontSize: 30 }}>
+  I love React Native
+</Text>
+-------------------code----------------------
+
+---
+
+## 4. Font Family
+
+### Concept
+
+Defines the typeface used for text.
+
+Important Notes:
+
+* iOS and Android support different system fonts.
+* Platform detection is typically required in production apps.
+* Custom fonts can be used (e.g., via Expo custom fonts).
+
+---
+
+### Step 3: Example Font Family
+
+#### iOS Example
+
+-------------------code----------------------
+fontFamily: "Courier"
+-------------------code----------------------
+
+#### Android Example
+
+-------------------code----------------------
+fontFamily: "Roboto"
+-------------------code----------------------
+
+For compatibility, this lecture uses default fonts.
+
+---
+
+## 5. Font Style
+
+### Concept
+
+Controls text slant.
+
+Available values:
+
+* `"normal"`
+* `"italic"`
+
+---
+
+### Step 4: Apply Italic Style
+
+#### Code
+
+-------------------code----------------------
+fontStyle: "italic"
+-------------------code----------------------
+
+---
+
+## 6. Font Weight
+
+### Concept
+
+Controls text thickness.
+
+Available values:
+
+* `"normal"`
+* `"bold"`
+* Numeric values (must be strings)
+
+Important Rule:
+Numeric values must be passed as strings.
+
+---
+
+### Step 5: Apply Font Weight
+
+#### Code
+
+-------------------code----------------------
+fontWeight: "600"
+-------------------code----------------------
+
+---
+
+## 7. Text Color
+
+### Concept
+
+Controls the color of the text.
+
+---
+
+### Step 6: Change Text Color
+
+#### Code
+
+-------------------code----------------------
+color: "tomato"
+-------------------code----------------------
+
+---
+
+## 8. Text Transform
+
+### Concept
+
+Controls capitalization.
+
+Available values:
+
+* `"uppercase"`
+* `"lowercase"`
+* `"capitalize"`
+
+---
+
+### Step 7: Capitalize Text
+
+#### Code
+
+-------------------code----------------------
+textTransform: "capitalize"
+-------------------code----------------------
+
+---
+
+## 9. Text Decoration
+
+### Concept
+
+Adds visual decoration such as underline or strikethrough.
+
+Available values:
+
+* `"underline"`
+* `"line-through"`
+
+---
+
+### Step 8: Apply Underline
+
+#### Code
+
+-------------------code----------------------
+textDecorationLine: "underline"
+-------------------code----------------------
+
+---
+
+# Part 3: Working with Multiple Lines
+
+---
+
+## 10. Adding Multi-Line Text
+
+### Step 9: Add Longer Text Content
+
+#### Code
+
+-------------------code----------------------
+<Text>
+  I love React Native. This is my first React Native app and I am learning text styling.
+</Text>
+-------------------code----------------------
+
+---
+
+## 11. Text Alignment
+
+### Concept
+
+Controls horizontal alignment of text.
+
+Available values:
+
+* `"left"`
+* `"right"`
+* `"center"`
+* `"justify"`
+
+---
+
+### Step 10: Align Text
+
+#### Code
+
+-------------------code----------------------
+textAlign: "center"
+-------------------code----------------------
+
+---
+
+## 12. Line Height
+
+### Concept
+
+Controls spacing between lines of text.
+
+---
+
+### Step 11: Adjust Line Height
+
+#### Code
+
+-------------------code----------------------
+lineHeight: 30
+-------------------code----------------------
+
+---
+
+# Part 4: Full Text Styling Example
+
+---
+
+## Step 12: Combine All Text Styles
+
+#### Code
+
+-------------------code----------------------
+import { View, Text } from "react-native";
+
+export default function App() {
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        padding: 20,
+      }}
+    >
+      <Text
+        style={{
+          fontSize: 30,
+          fontStyle: "italic",
+          fontWeight: "600",
+          color: "tomato",
+          textTransform: "capitalize",
+          textAlign: "center",
+          lineHeight: 30,
+        }}
+      >
+        I love React Native. This is my first React Native app and I am learning text styling.
+      </Text>
+    </View>
+  );
+}
+-------------------code----------------------
+
+---
+
+# Part 5: Important React Native Concept
+
+---
+
+## 13. No Style Inheritance
+
+### Explanation
+
+In web CSS:
+
+* Text styles can be applied to parent elements and inherited by children.
+
+In React Native:
+
+* Style inheritance does not exist for components like `View`.
+* Text styling must be applied directly to the `Text` component.
+
+---
+
+### Example (Invalid Styling on View)
+
+#### Code
+
+-------------------code----------------------
+<View style={{ fontSize: 30 }}>
+  <Text>Hello</Text>
+</View>
+-------------------code----------------------
+
+### Result
+
+* No font size change occurs.
+* `fontSize` is not supported on `View`.
+
+---
+
+# 14. Ensuring Consistent Text Styling
+
+Since style inheritance is not available:
+
+* Developers typically create reusable styled text components.
+* Centralized styling improves consistency across screens.
+
+---
+
+# Summary
+
+This lecture covered:
+
+* Using the `Text` component.
+* Controlling font size and family.
+* Applying font style and weight.
+* Changing text color.
+* Transforming text capitalization.
+* Adding text decoration.
+* Aligning text and controlling line spacing.
+* Understanding the absence of style inheritance in React Native.
+
+Next Topic: Creating Reusable Text Components for Consistent Styling.
