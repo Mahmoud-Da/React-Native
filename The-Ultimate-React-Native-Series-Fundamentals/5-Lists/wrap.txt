@@ -134,3 +134,275 @@ Lists are one of the most important patterns in mobile development.
 * Mastering lists is essential for building real-world mobile apps
 
 This marks the beginning of building scalable, professional app structures using lists.
+
+
+*** 2- FlatList ***
+
+---
+
+# Building the Messages Screen with FlatList
+
+## 1. Goal of This Screen
+
+The goal of this lesson is to build a **Messages Screen** that displays a list of messages using React Native’s `FlatList` component.
+
+This is the first real example of rendering **dynamic lists of data** in the app.
+
+---
+
+## 2. Why Use FlatList
+
+`FlatList` is the standard way to render lists in React Native because it is:
+
+1. Fully cross-platform (iOS and Android)
+2. Optimized for performance
+3. Able to render large datasets efficiently
+4. Supports advanced features such as:
+
+   * Headers and footers
+   * Item separators
+   * Pull-to-refresh
+   * Infinite scrolling
+
+---
+
+## 3. Creating the Messages Screen
+
+### Step 1: Create the Screen File
+
+Create a new file inside the `screens` folder:
+
+-------------------code----------------------
+MessagesScreen.js
+-------------------code----------------------
+
+Then create a function component.
+
+-------------------code----------------------
+import React from "react";
+import { View, FlatList } from "react-native";
+
+function MessagesScreen() {
+  return (
+    <View>
+      <FlatList />
+    </View>
+  );
+}
+
+export default MessagesScreen;
+-------------------code----------------------
+
+---
+
+## 4. Preparing Temporary Data
+
+Since the app is not yet connected to a backend, we use **hard-coded data** as a temporary solution.
+
+### Step 2: Create a Messages Array
+
+Each message object contains:
+
+* `id` (unique identifier)
+* `title`
+* `description`
+* `image` (user avatar)
+
+-------------------code----------------------
+const messages = [
+  {
+    id: 1,
+    title: "t1",
+    description: "d1",
+    image: require("../assets/mosh.jpg"),
+  },
+  {
+    id: 2,
+    title: "t2",
+    description: "d2",
+    image: require("../assets/mosh.jpg"),
+  },
+];
+-------------------code----------------------
+
+Important:
+
+* `require()` is required for static assets
+* The relative path goes one level up from `screens`
+
+---
+
+## 5. Configuring FlatList
+
+`FlatList` requires **three essential props**.
+
+---
+
+### 5.1 data Prop
+
+This tells FlatList what data to render.
+
+-------------------code----------------------
+data={messages}
+-------------------code----------------------
+
+---
+
+### 5.2 keyExtractor Prop
+
+Each item in a list must have a **unique key**.
+
+FlatList requires keys to be **strings**, so we convert `id` to a string.
+
+-------------------code----------------------
+keyExtractor={(message) => message.id.toString()}
+-------------------code----------------------
+
+---
+
+### 5.3 renderItem Prop
+
+This function tells FlatList **how to render each item**.
+
+The parameter is an object that includes:
+
+* `item`
+* `index`
+* `separators`
+
+We destructure `item` directly.
+
+-------------------code----------------------
+renderItem={({ item }) => (
+  <ListItem
+    title={item.title}
+    subtitle={item.description}
+    image={item.image}
+  />
+)}
+-------------------code----------------------
+
+---
+
+## 6. Reusing the ListItem Component
+
+Instead of building UI inline, we reuse the existing **ListItem** component.
+
+### Step 3: Import ListItem
+
+-------------------code----------------------
+import ListItem from "../components/ListItem";
+-------------------code----------------------
+
+This keeps the code:
+
+* Clean
+* Reusable
+* Easy to maintain
+
+---
+
+## 7. Testing the Screen
+
+### Step 4: Render MessagesScreen in App.js
+
+-------------------code----------------------
+import MessagesScreen from "./screens/MessagesScreen";
+
+export default function App() {
+  return <MessagesScreen />;
+}
+-------------------code----------------------
+
+After saving:
+
+* The list renders correctly
+* The UI is basic and not styled yet
+* Improvements will come in later lessons
+
+---
+
+## 8. Known Issue: Safe Area
+
+### Problem
+
+The list is not inside a **safe area**, so:
+
+* Content may be hidden behind the status bar
+* Notches on iPhones may overlap content
+
+### Solution
+
+This will be fixed in the next lesson using a Safe Area wrapper.
+
+---
+
+## 9. Best Practices Highlighted
+
+* Use `FlatList` instead of `ScrollView` for lists
+* Always provide a stable `keyExtractor`
+* Convert numeric IDs to strings
+* Use reusable components (`ListItem`)
+* Keep temporary mock data simple
+* Avoid styling too early; focus on structure first
+
+---
+
+## 10. Full Final Code (MessagesScreen)
+
+-------------------code----------------------
+import React from "react";
+import { View, FlatList } from "react-native";
+import ListItem from "../components/ListItem";
+
+const messages = [
+  {
+    id: 1,
+    title: "t1",
+    description: "d1",
+    image: require("../assets/mosh.jpg"),
+  },
+  {
+    id: 2,
+    title: "t2",
+    description: "d2",
+    image: require("../assets/mosh.jpg"),
+  },
+];
+
+function MessagesScreen() {
+  return (
+    <View>
+      <FlatList
+        data={messages}
+        keyExtractor={(message) => message.id.toString()}
+        renderItem={({ item }) => (
+          <ListItem
+            title={item.title}
+            subtitle={item.description}
+            image={item.image}
+          />
+        )}
+      />
+    </View>
+  );
+}
+
+export default MessagesScreen;
+-------------------code----------------------
+
+---
+
+## 11. Summary
+
+* `FlatList` is the core tool for rendering lists in React Native
+* MessagesScreen uses temporary mock data
+* Three required FlatList props were introduced:
+
+  1. `data`
+  2. `keyExtractor`
+  3. `renderItem`
+* The `ListItem` component was reused for clean UI
+* The safe area issue was identified and deferred to the next lesson
+
+This screen forms the foundation for more advanced list features coming next.
