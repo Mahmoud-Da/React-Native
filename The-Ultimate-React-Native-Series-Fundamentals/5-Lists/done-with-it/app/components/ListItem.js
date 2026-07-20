@@ -8,7 +8,7 @@ function ListItem({
   title,
   subtitle,
   image,
-  ImageComponent,
+  iconComponent,
   onPress,
   renderRightActions
 }) {
@@ -22,7 +22,7 @@ function ListItem({
 
         <View style={styles.container}>
 
-          {ImageComponent}
+          {iconComponent}
 
           {image && (
             <Image
@@ -58,6 +58,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     padding: 15,
+    backgroundColor: colors.white,
   },
 
   detailsContainer: {
