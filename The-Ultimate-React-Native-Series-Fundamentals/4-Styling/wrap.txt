@@ -53,3 +53,309 @@ By the end of this section, you should be able to:
 #### 4. Summary
 
 This section advances the application from functional to visually refined by focusing on styling, reusable components, and cross-platform design considerations.
+
+*** 2- Borders ***
+### Lecture Notes: Borders and Basic Styling in React Native
+
+---
+
+## 1. Cleaning Up the App Component
+
+### Concept
+
+* A parent `View` is used as a container.
+* The container:
+
+  * Fills the entire screen using `flex: 1`.
+  * Centers all child components using:
+
+    * `justifyContent: "center"` (vertical alignment)
+    * `alignItems: "center"` (horizontal alignment)
+
+### Step 1: Create a Centered Container
+
+#### Code
+
+-------------------code----------------------
+import { View } from "react-native";
+
+export default function App() {
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+    </View>
+  );
+}
+-------------------code----------------------
+
+---
+
+## 2. Using Inline Styles (For Demonstration Only)
+
+### Concept
+
+* Inline styles are used here to keep all code visible in one place.
+* In real applications, it is better to use the `StyleSheet` API for:
+
+  * Better performance
+  * Cleaner code
+  * Easier maintenance
+
+---
+
+## 3. Creating a Styled Box
+
+### Goal
+
+Add a new `View` element styled as a blue square.
+
+### Step 2: Add a Box with Background Color and Size
+
+#### Code
+
+-------------------code----------------------
+import { View } from "react-native";
+
+export default function App() {
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <View
+        style={{
+          backgroundColor: "dodgerblue",
+          width: 100,
+          height: 100,
+        }}
+      />
+    </View>
+  );
+}
+-------------------code----------------------
+
+### Result
+
+* Displays a blue square centered on the screen.
+
+---
+
+## 4. Adding Border Styles
+
+### Concept
+
+React Native allows customization of borders using:
+
+* `borderWidth`
+* `borderColor`
+* `borderRadius`
+
+---
+
+### Step 3: Add Border Width and Color
+
+#### Code
+
+-------------------code----------------------
+<View
+  style={{
+    backgroundColor: "dodgerblue",
+    width: 100,
+    height: 100,
+    borderWidth: 10,
+    borderColor: "royalblue",
+  }}
+/>
+-------------------code----------------------
+
+### Result
+
+* A blue box with a thick royal blue border.
+
+---
+
+### Step 4: Add Rounded Corners
+
+#### Code
+
+-------------------code----------------------
+<View
+  style={{
+    backgroundColor: "dodgerblue",
+    width: 100,
+    height: 100,
+    borderWidth: 10,
+    borderColor: "royalblue",
+    borderRadius: 10,
+  }}
+/>
+-------------------code----------------------
+
+### Result
+
+* The box now has rounded corners.
+
+---
+
+## 5. Customizing Individual Borders
+
+### Concept
+
+Borders can be customized individually for each side:
+
+* `borderTopWidth`
+* `borderTopLeftRadius`
+* `borderTopRightRadius`
+* `borderBottomLeftRadius`
+* `borderBottomRightRadius`
+
+---
+
+### Step 5: Make the Top Border Thicker
+
+#### Code
+
+-------------------code----------------------
+<View
+  style={{
+    backgroundColor: "dodgerblue",
+    width: 100,
+    height: 100,
+    borderWidth: 10,
+    borderColor: "royalblue",
+    borderRadius: 10,
+    borderTopWidth: 20,
+  }}
+/>
+-------------------code----------------------
+
+### Result
+
+* The top border becomes thicker than the other sides.
+
+---
+
+### Step 6: Modify Only One Corner Radius
+
+#### Code
+
+-------------------code----------------------
+<View
+  style={{
+    backgroundColor: "dodgerblue",
+    width: 100,
+    height: 100,
+    borderWidth: 10,
+    borderColor: "royalblue",
+    borderTopWidth: 20,
+    borderTopLeftRadius: 50,
+  }}
+/>
+-------------------code----------------------
+
+### Result
+
+* The top-left corner becomes heavily rounded.
+* Each corner can be styled independently.
+
+---
+
+## 6. Creating a Perfect Circle
+
+### Concept
+
+To create a circle:
+
+* `borderRadius` must be at least half of width and height.
+* If width and height are 100, radius must be at least 50.
+
+---
+
+### Step 7: Convert Box into Circle
+
+#### Code
+
+-------------------code----------------------
+<View
+  style={{
+    backgroundColor: "dodgerblue",
+    width: 100,
+    height: 100,
+    borderWidth: 10,
+    borderColor: "royalblue",
+    borderRadius: 50,
+  }}
+/>
+-------------------code----------------------
+
+### Result
+
+* The square becomes a perfect circle.
+
+---
+
+## 7. Important Notes
+
+### Independent Pixels
+
+* React Native uses independent pixels instead of device pixels.
+* Ensures consistent appearance across different screen densities.
+
+### Best Practice Reminder
+
+* Inline styles are used only for learning.
+* Production apps should use `StyleSheet.create()`.
+
+---
+
+# Full Final Code
+
+-------------------code----------------------
+import { View } from "react-native";
+
+export default function App() {
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <View
+        style={{
+          backgroundColor: "dodgerblue",
+          width: 100,
+          height: 100,
+          borderWidth: 10,
+          borderColor: "royalblue",
+          borderRadius: 50,
+        }}
+      />
+    </View>
+  );
+}
+-------------------code----------------------
+
+---
+
+## Summary
+
+This lecture introduced:
+
+* Centering content using Flexbox.
+* Using inline styles for demonstration.
+* Creating UI elements with background color and size.
+* Applying border styling and customization.
+* Creating circles using border radius.
+* Understanding independent pixels in React Native.
+
+Next Topic: Implementing Shadows in React Native Styling.
