@@ -3375,3 +3375,430 @@ Key points:
 Result:
 
 Typing **`rnfc` + Enter** instantly generates a complete React Native function component, significantly improving development speed and consistency.
+
+
+*** 10- Revisiting Components Names ***
+# Naming React Native Components Properly
+
+## 1. Introduction
+
+When building React Native applications, choosing clear and consistent **component names** is important for:
+
+* Code readability
+* Avoiding naming conflicts
+* Maintaining a clean project structure
+
+Earlier in the course, components were prefixed with **`App`** (for example: `AppText`, `AppButton`). This approach helps beginners avoid mistakes, but it is not always necessary.
+
+This lecture explains a cleaner naming strategy and how to safely rename components.
+
+---
+
+# 2. Why `App` Prefix Is Often Used
+
+Many developers prefix components with **`App`** to prevent conflicts with built-in React Native components.
+
+Example:
+
+-------------------code----------------------
+AppText
+AppButton
+AppTextInput
+-------------------code----------------------
+
+This prevents accidental imports like:
+
+-------------------code----------------------
+import { TextInput } from "react-native";
+-------------------code----------------------
+
+instead of:
+
+-------------------code----------------------
+import AppTextInput from "../components/AppTextInput";
+-------------------code----------------------
+
+For beginners, these mistakes are common and can cause confusing errors.
+
+---
+
+# 3. Why the Instructor Avoids the `App` Prefix
+
+The instructor prefers **short and clean component names**.
+
+Reason:
+
+Modern programming uses **namespaces and modules**, meaning files can contain components with the same name without conflicts as long as they are imported from different locations.
+
+Example:
+
+Two components can exist with the same name:
+
+-------------------code----------------------
+import { TextInput } from "react-native";
+-------------------code----------------------
+
+and
+
+-------------------code----------------------
+import TextInput from "../components/TextInput";
+-------------------code----------------------
+
+Because they come from **different modules**, JavaScript can distinguish them.
+
+Cleaner naming improves readability.
+
+Example comparison:
+
+Less clean:
+
+-------------------code----------------------
+AppForm
+AppFormField
+AppFormPicker
+-------------------code----------------------
+
+Cleaner:
+
+-------------------code----------------------
+Form
+FormField
+FormPicker
+-------------------code----------------------
+
+---
+
+# 4. Renaming a Component File
+
+Suppose we previously had this file:
+
+-------------------code----------------------
+AppText.js
+-------------------code----------------------
+
+We rename it to:
+
+-------------------code----------------------
+Text.js
+-------------------code----------------------
+
+### Step
+
+In VS Code:
+
+1. Select the file
+2. Press **Enter**
+3. Remove the `App` prefix
+
+Example:
+
+-------------------code----------------------
+AppButton.js → Button.js
+-------------------code----------------------
+
+VS Code will usually update import paths automatically.
+
+---
+
+# 5. Updating Component Imports
+
+If another file imports the renamed component, the import must be updated.
+
+Example before renaming:
+
+-------------------code----------------------
+import AppTextInput from "../components/AppTextInput";
+-------------------code----------------------
+
+After renaming:
+
+-------------------code----------------------
+import TextInput from "../components/TextInput";
+-------------------code----------------------
+
+VS Code often helps update these automatically.
+
+---
+
+# 6. Important Exception: Avoiding Infinite Loops
+
+Some components **wrap React Native core components**.
+
+Example:
+
+Custom component:
+
+-------------------code----------------------
+TextInput.js
+-------------------code----------------------
+
+Inside this file we import React Native's `TextInput`.
+
+Example:
+
+-------------------code----------------------
+import { TextInput } from "react-native";
+-------------------code----------------------
+
+If our custom component also has the same name (`TextInput`), it can cause confusion or circular references.
+
+To avoid this, we keep a different internal name.
+
+Example:
+
+-------------------code----------------------
+import React from "react";
+import { TextInput } from "react-native";
+
+function AppTextInput(props) {
+  return <TextInput {...props} />;
+}
+
+export default AppTextInput;
+-------------------code----------------------
+
+Here:
+
+* File name: `TextInput.js`
+* Component name: `AppTextInput`
+
+This prevents naming conflicts inside the file.
+
+---
+
+# 7. Renaming Components Using VS Code
+
+VS Code provides a safe way to rename variables and components.
+
+### Step
+
+Place the cursor on the component name.
+
+Press:
+
+-------------------code----------------------
+F2
+-------------------code----------------------
+
+Rename the component everywhere it is used.
+
+Example:
+
+Before:
+
+-------------------code----------------------
+<AppTextInput />
+-------------------code----------------------
+
+After renaming:
+
+-------------------code----------------------
+<TextInput />
+-------------------code----------------------
+
+VS Code updates all references automatically.
+
+---
+
+# 8. Final Project Naming Structure
+
+After renaming, the project becomes cleaner.
+
+### Forms Folder
+
+Before:
+
+-------------------code----------------------
+AppForm
+AppFormField
+AppFormPicker
+-------------------code----------------------
+
+After:
+
+-------------------code----------------------
+Form
+FormField
+FormPicker
+-------------------code----------------------
+
+---
+
+### Components Folder
+
+Before:
+
+-------------------code----------------------
+AppButton
+AppPicker
+AppText
+AppTextInput
+-------------------code----------------------
+
+After:
+
+-------------------code----------------------
+Button
+Picker
+Text
+TextInput
+-------------------code----------------------
+
+These shorter names improve readability.
+
+---
+
+# 9. Best Practices for Naming Components
+
+## 1. Prefer short and descriptive names
+
+Good:
+
+-------------------code----------------------
+Button
+FormField
+TextInput
+-------------------code----------------------
+
+Avoid unnecessary prefixes.
+
+---
+
+## 2. Keep naming consistent
+
+Example pattern:
+
+-------------------code----------------------
+components/
+  Button.js
+  Text.js
+  Picker.js
+-------------------code----------------------
+
+and
+
+-------------------code----------------------
+forms/
+  Form.js
+  FormField.js
+  FormPicker.js
+-------------------code----------------------
+
+---
+
+## 3. Avoid naming conflicts with React Native components
+
+If your component wraps a built-in component, consider using a different internal name.
+
+Example:
+
+-------------------code----------------------
+function AppTextInput() {}
+-------------------code----------------------
+
+---
+
+## 4. Use VS Code refactoring tools
+
+Always rename using:
+
+-------------------code----------------------
+F2
+-------------------code----------------------
+
+instead of manually editing every reference.
+
+---
+
+## 5. Keep file names aligned with component purpose
+
+Example:
+
+-------------------code----------------------
+TextInput.js → Text input component
+Button.js → Button component
+-------------------code----------------------
+
+---
+
+# 10. Example: Clean Component Naming
+
+### File
+
+-------------------code----------------------
+TextInput.js
+-------------------code----------------------
+
+### Code
+
+-------------------code----------------------
+import React from "react";
+import { TextInput } from "react-native";
+
+function AppTextInput(props) {
+  return <TextInput {...props} />;
+}
+
+export default AppTextInput;
+-------------------code----------------------
+
+---
+
+# 11. Full Final Example Code
+
+Example of a clean component file after applying naming improvements.
+
+-------------------code----------------------
+import React from "react";
+import { TextInput } from "react-native";
+
+function AppTextInput(props) {
+  return <TextInput {...props} />;
+}
+
+export default AppTextInput;
+-------------------code----------------------
+
+Example usage:
+
+-------------------code----------------------
+import React from "react";
+import TextInput from "../components/TextInput";
+
+function FormField() {
+  return <TextInput placeholder="Enter text" />;
+}
+
+export default FormField;
+-------------------code----------------------
+
+---
+
+# 12. Summary
+
+Component naming should be **clear, simple, and consistent**.
+
+Key points:
+
+1. Beginners often prefix components with `App` to avoid confusion.
+2. Experienced developers usually prefer **shorter names**.
+3. JavaScript modules prevent naming conflicts through imports.
+4. Use **VS Code's rename feature (`F2`)** to safely update components.
+5. If wrapping a React Native component, avoid identical naming inside the file.
+6. Clean naming structures make large projects easier to maintain.
+
+Final recommendation:
+
+Use **short, descriptive component names** like:
+
+-------------------code----------------------
+Button
+Text
+Picker
+TextInput
+Form
+FormField
+FormPicker
+-------------------code----------------------
+
+This keeps the codebase cleaner and easier to work with.
