@@ -4285,3 +4285,335 @@ const imageUris = values[name];
 * Followed reusable and clean architecture
 
 This component completes the integration of image selection into form handling and prepares it for use inside a full form such as a listing editor.
+
+*** 13- Improving ListingEditScreen ***
+# Adding Image Support to ListingEditScreen (Formik + Validation)
+
+## 1. Introduction
+
+In this lecture, we integrate the image picker into the form:
+
+* Add **images field** to validation
+* Connect **FormImagePicker**
+* Update **initial values**
+* Ensure proper validation behavior
+
+---
+
+# 2. Updating Validation Schema
+
+## 2.1 Add images Field
+
+We extend the schema with a new field:
+
+-------------------code----------------------
+images: Yup.array().min(1, "Please select at least one image."),
+-------------------code----------------------
+
+---
+
+## 2.2 Full Updated Schema
+
+-------------------code----------------------
+const validationSchema = Yup.object().shape({
+  title: Yup.string().required().min(1).label("Title"),
+  price: Yup.number().required().min(1).max(10000).label("Price"),
+  description: Yup.string().label("Description"),
+  category: Yup.object().required().nullable().label("Category"),
+  images: Yup.array().min(1, "Please select at least one image."),
+});
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* `Yup.array()` → defines an array field
+* `.min(1)` → requires at least one image
+* Custom error message improves UX
+
+---
+
+## Important Note
+
+* No need for `.required()`
+* Because images will always be initialized as an empty array
+
+---
+
+# 3. Updating Initial Values
+
+## Step 1 — Add images to Form
+
+-------------------code----------------------
+initialValues={{
+  title: "",
+  price: "",
+  description: "",
+  category: null,
+  images: [],
+}}
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* Ensures field is always defined
+* Matches validation logic
+
+---
+
+# 4. Adding FormImagePicker
+
+## Step 2 — Import Component
+
+-------------------code----------------------
+import FormImagePicker from "../components/forms/FormImagePicker";
+-------------------code----------------------
+
+---
+
+## Step 3 — Add to Form
+
+Place it at the top:
+
+-------------------code----------------------
+<FormImagePicker name="images" />
+-------------------code----------------------
+
+---
+
+## Updated Form Layout
+
+-------------------code----------------------
+<Form>
+  <FormImagePicker name="images" />
+
+  <FormField name="title" />
+  <FormField name="price" />
+  <Picker name="category" />
+  <FormField name="description" />
+
+  <SubmitButton title="Post" />
+</Form>
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* `name="images"` links component to Formik field
+* Uses previously built FormImagePicker logic
+
+---
+
+# 5. Testing Behavior
+
+## 5.1 Initial State
+
+* No images selected
+* Error message appears:
+
+-------------------code----------------------text
+Please select at least one image.
+-------------------code----------------------
+
+---
+
+## 5.2 After Adding Image
+
+* Error disappears automatically
+
+---
+
+## 5.3 After Removing Image
+
+* Error reappears
+
+---
+
+## Key Insight
+
+Formik automatically:
+
+* Validates on change
+* Updates UI
+
+---
+
+# 6. Cleaning Up App.js
+
+## Step 4 — Simplify Entry Point
+
+-------------------code----------------------
+import ListingEditScreen from "./app/screens/ListingEditScreen";
+
+export default function App() {
+  return <ListingEditScreen />;
+}
+-------------------code----------------------
+
+---
+
+## Explanation
+
+* Remove old testing code
+* Use real screen
+
+---
+
+# 7. Full Final Code
+
+## ListingEditScreen.js
+
+-------------------code----------------------
+import React from "react";
+import { StyleSheet } from "react-native";
+import * as Yup from "yup";
+
+import {
+  Form,
+  FormField,
+  FormPicker as Picker,
+  SubmitButton,
+  FormImagePicker,
+} from "../components/forms";
+
+import CategoryPickerItem from "../components/CategoryPickerItem";
+import Screen from "../components/Screen";
+
+const validationSchema = Yup.object().shape({
+  title: Yup.string().required().min(1).label("Title"),
+  price: Yup.number().required().min(1).max(10000).label("Price"),
+  description: Yup.string().label("Description"),
+  category: Yup.object().required().nullable().label("Category"),
+  images: Yup.array().min(1, "Please select at least one image."),
+});
+
+const categories = [
+  { backgroundColor: "#fc5c65", icon: "floor-lamp", label: "Furniture", value: 1 },
+  { backgroundColor: "#fd9644", icon: "car", label: "Cars", value: 2 },
+  { backgroundColor: "#fed330", icon: "camera", label: "Cameras", value: 3 },
+  { backgroundColor: "#26de81", icon: "cards", label: "Games", value: 4 },
+  { backgroundColor: "#2bcbba", icon: "shoe-heel", label: "Clothing", value: 5 },
+  { backgroundColor: "#45aaf2", icon: "basketball", label: "Sports", value: 6 },
+  { backgroundColor: "#4b7bec", icon: "headphones", label: "Movies & Music", value: 7 },
+  { backgroundColor: "#a55eea", icon: "book-open-variant", label: "Books", value: 8 },
+  { backgroundColor: "#778ca3", icon: "application", label: "Other", value: 9 },
+];
+
+function ListingEditScreen() {
+  return (
+    <Screen style={styles.container}>
+      <Form
+        initialValues={{
+          title: "",
+          price: "",
+          description: "",
+          category: null,
+          images: [],
+        }}
+        onSubmit={(values) => console.log(values)}
+        validationSchema={validationSchema}
+      >
+        <FormImagePicker name="images" />
+
+        <FormField maxLength={255} name="title" placeholder="Title" />
+
+        <FormField
+          keyboardType="numeric"
+          maxLength={8}
+          name="price"
+          placeholder="Price"
+          width={120}
+        />
+
+        <Picker
+          items={categories}
+          name="category"
+          numberOfColumns={3}
+          PickerItemComponent={CategoryPickerItem}
+          placeholder="Category"
+          width="50%"
+        />
+
+        <FormField
+          maxLength={255}
+          multiline
+          name="description"
+          numberOfLines={3}
+          placeholder="Description"
+        />
+
+        <SubmitButton title="Post" />
+      </Form>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 10,
+  },
+});
+
+export default ListingEditScreen;
+-------------------code----------------------
+
+---
+
+# 8. Important Notes and Best Practices
+
+## 8.1 Always Initialize Arrays
+
+-------------------code----------------------
+images: []
+-------------------code----------------------
+
+Avoid undefined or null issues
+
+---
+
+## 8.2 Use Custom Error Messages
+
+Better UX:
+
+-------------------code----------------------
+.min(1, "Please select at least one image.")
+-------------------code----------------------
+
+---
+
+## 8.3 Keep Form Consistent
+
+All fields should:
+
+* Have `name`
+* Be controlled by Formik
+
+---
+
+## 8.4 Place Image Picker First
+
+* Matches real app UX
+* Users upload images first
+
+---
+
+## 8.5 Avoid Hardcoding Data
+
+* Categories should come from API later
+
+---
+
+# 9. Summary
+
+* Added `images` field to validation schema
+* Used `Yup.array().min(1)` for validation
+* Initialized images as empty array
+* Integrated `FormImagePicker` into form
+* Connected everything via Formik
+* Achieved dynamic validation behavior
+
+Now your form fully supports image uploading with validation and is ready for backend integration.
