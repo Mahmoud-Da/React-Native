@@ -1021,3 +1021,655 @@ This backend will now power your React Native application.
 
 NOTE:
 Use docker for Backend in case need to run it to avoid the mismatch node version
+
+*** 3- Calling APIs Using ApiSauce ***
+# 1. Overview of the Lecture
+
+This lecture introduces **API communication** in React Native using the library:
+
+-------------------code----------------------
+apisauce
+-------------------code----------------------
+
+`apisauce` is:
+
+* A wrapper around Axios
+* Simpler to use
+* Provides standardized error handling
+* Makes API calls cleaner
+
+The lecture also introduces the beginning of an API layer architecture.
+
+---
+
+# 2. What is apisauce?
+
+`apisauce` is a library built on top of Axios.
+
+It simplifies:
+
+* API requests
+* Error handling
+* Response processing
+
+---
+
+# 3. Why Use apisauce Instead of Axios Directly?
+
+The instructor prefers `apisauce` because:
+
+---
+
+## 3.1 Promises Always Resolve
+
+With Axios:
+
+-------------------code----------------------
+try {
+  const response = await axios.get(...);
+} catch (error) {
+  // handle error
+}
+-------------------code----------------------
+
+With apisauce:
+
+-------------------code----------------------
+const response = await api.get("/listings");
+
+if (!response.ok) {
+  console.log(response.problem);
+}
+-------------------code----------------------
+
+No `try-catch` needed.
+
+---
+
+## 3.2 Standardized Errors
+
+apisauce provides consistent error types such as:
+
+-------------------code----------------------
+CLIENT_ERROR
+SERVER_ERROR
+CONNECTION_ERROR
+TIMEOUT_ERROR
+NETWORK_ERROR
+-------------------code----------------------
+
+This makes debugging easier.
+
+---
+
+## 3.3 Cleaner API Layer
+
+apisauce encourages organized API architecture.
+
+---
+
+# 4. Install apisauce
+
+Install the package:
+
+-------------------code----------------------
+npm install apisauce
+-------------------code----------------------
+
+Lecture version:
+
+-------------------code----------------------
+apisauce v1.1.1
+-------------------code----------------------
+
+---
+
+# 5. Create API Folder Structure
+
+Inside the `app` folder:
+
+-------------------code----------------------
+app/
+│
+├── api/
+│   └── client.js
+-------------------code----------------------
+
+Purpose:
+
+* Centralize all backend communication
+* Keep project organized
+
+---
+
+# 6. Create client.js
+
+File:
+
+-------------------code----------------------
+app/api/client.js
+-------------------code----------------------
+
+This file creates a reusable API client.
+
+---
+
+# 7. Import create Function
+
+-------------------code----------------------
+import { create } from "apisauce";
+-------------------code----------------------
+
+`create()` builds an API client object.
+
+---
+
+# 8. Create API Client
+
+-------------------code----------------------
+const apiClient = create({
+  baseURL: "http://192.168.0.14:9000/api",
+});
+-------------------code----------------------
+
+Important:
+
+* `baseURL` uses capital `URL`
+* Wrong spelling breaks the app
+
+Correct:
+
+-------------------code----------------------
+baseURL
+-------------------code----------------------
+
+Wrong:
+
+-------------------code----------------------
+baseUrl
+-------------------code----------------------
+
+---
+
+# 9. Do NOT Use localhost
+
+Wrong:
+
+-------------------code----------------------
+http://localhost:9000/api
+-------------------code----------------------
+
+Correct:
+
+-------------------code----------------------
+http://192.168.x.x:9000/api
+-------------------code----------------------
+
+Reason:
+
+* Android emulator/device cannot access your computer using localhost
+
+---
+
+# 10. Full client.js File
+
+-------------------code----------------------
+import { create } from "apisauce";
+
+const apiClient = create({
+  baseURL: "http://192.168.0.14:9000/api",
+});
+
+export default apiClient;
+-------------------code----------------------
+
+---
+
+# 11. Using the API Client
+
+Example request:
+
+-------------------code----------------------
+const response = await apiClient.get("/listings");
+-------------------code----------------------
+
+This sends:
+
+-------------------code----------------------
+GET http://192.168.0.14:9000/api/listings
+-------------------code----------------------
+
+---
+
+# 12. Response Object
+
+apisauce returns a response object.
+
+Example:
+
+-------------------code----------------------
+const response = await apiClient.get("/listings");
+-------------------code----------------------
+
+---
+
+## Important Properties
+
+| Property         | Purpose                   |
+| ---------------- | ------------------------- |
+| response.ok      | True if request succeeded |
+| response.data    | Response data             |
+| response.problem | Error type                |
+
+---
+
+# 13. Handling Success
+
+-------------------code----------------------
+if (response.ok) {
+  console.log(response.data);
+}
+-------------------code----------------------
+
+---
+
+# 14. Handling Errors
+
+-------------------code----------------------
+if (!response.ok) {
+  console.log(response.problem);
+}
+-------------------code----------------------
+
+No try-catch required.
+
+---
+
+# 15. Common Error Types
+
+---
+
+## CLIENT_ERROR
+
+Problem with request.
+
+Examples:
+
+* 400
+* 404
+
+---
+
+## SERVER_ERROR
+
+Backend server issue.
+
+Examples:
+
+* 500
+
+---
+
+## CONNECTION_ERROR
+
+Cannot connect to backend.
+
+Usually:
+
+* Wrong IP
+* Backend not running
+
+---
+
+## TIMEOUT_ERROR
+
+Server took too long to respond.
+
+---
+
+## NETWORK_ERROR
+
+General network issue.
+
+---
+
+# 16. Example Full API Call
+
+-------------------code----------------------
+const getListings = async () => {
+  const response = await apiClient.get("/listings");
+
+  if (!response.ok) {
+    console.log(response.problem);
+    return;
+  }
+
+  console.log(response.data);
+};
+-------------------code----------------------
+
+---
+
+# 17. Why Create a Central API Client?
+
+Benefits:
+
+---
+
+## Reusability
+
+Use same client everywhere.
+
+---
+
+## Cleaner Code
+
+Avoid repeating:
+
+-------------------code----------------------
+http://192.168.x.x:9000/api
+-------------------code----------------------
+
+---
+
+## Easier Maintenance
+
+Change base URL in one place.
+
+---
+
+## Better Organization
+
+All API logic inside:
+
+-------------------code----------------------
+app/api/
+-------------------code----------------------
+
+---
+
+# 18. Recommended API Folder Structure
+
+Future structure:
+
+-------------------code----------------------
+app/
+│
+├── api/
+│   ├── client.js
+│   ├── listings.js
+│   ├── auth.js
+│   └── users.js
+-------------------code----------------------
+
+---
+
+# 19. API Layer Concept
+
+Instead of calling APIs directly inside screens:
+
+Bad:
+
+-------------------code----------------------
+const response = await apiClient.get("/listings");
+-------------------code----------------------
+
+inside every screen.
+
+Better:
+
+-------------------code----------------------
+listingsApi.getListings();
+-------------------code----------------------
+
+This creates a clean abstraction layer.
+
+---
+
+# 20. Example Future API Module
+
+Example:
+
+-------------------code----------------------
+import client from "./client";
+
+const endpoint = "/listings";
+
+const getListings = () => client.get(endpoint);
+
+export default {
+  getListings,
+};
+-------------------code----------------------
+
+---
+
+# 21. Backend Connection Flow
+
+---
+
+## React Native App
+
+Calls:
+
+-------------------code----------------------
+apiClient.get()
+-------------------code----------------------
+
+↓
+
+---
+
+## apisauce
+
+Handles request + errors
+
+↓
+
+---
+
+## Node Backend
+
+Returns response
+
+---
+
+# 22. Common Beginner Mistakes
+
+---
+
+## Mistake 1 — Using localhost
+
+Wrong:
+
+-------------------code----------------------
+localhost
+-------------------code----------------------
+
+Correct:
+
+-------------------code----------------------
+192.168.x.x
+-------------------code----------------------
+
+---
+
+## Mistake 2 — Wrong baseURL Property
+
+Wrong:
+
+-------------------code----------------------
+baseUrl
+-------------------code----------------------
+
+Correct:
+
+-------------------code----------------------
+baseURL
+-------------------code----------------------
+
+---
+
+## Mistake 3 — Forgetting to Export Client
+
+Always:
+
+-------------------code----------------------
+export default apiClient;
+-------------------code----------------------
+
+---
+
+## Mistake 4 — Backend Not Running
+
+Start backend first:
+
+-------------------code----------------------
+node index.js
+-------------------code----------------------
+
+---
+
+# 23. Step-by-Step Setup
+
+---
+
+## Step 1
+
+Install apisauce
+
+-------------------code----------------------
+npm install apisauce
+-------------------code----------------------
+
+---
+
+## Step 2
+
+Create folder:
+
+-------------------code----------------------
+app/api
+-------------------code----------------------
+
+---
+
+## Step 3
+
+Create:
+
+-------------------code----------------------
+client.js
+-------------------code----------------------
+
+---
+
+## Step 4
+
+Import create
+
+-------------------code----------------------
+import { create } from "apisauce";
+-------------------code----------------------
+
+---
+
+## Step 5
+
+Create API client
+
+-------------------code----------------------
+const apiClient = create({
+  baseURL: "http://192.168.0.14:9000/api",
+});
+-------------------code----------------------
+
+---
+
+## Step 6
+
+Export client
+
+-------------------code----------------------
+export default apiClient;
+-------------------code----------------------
+
+---
+
+# 24. Full Final Code
+
+## app/api/client.js
+
+-------------------code----------------------
+import { create } from "apisauce";
+
+const apiClient = create({
+  baseURL: "http://192.168.0.14:9000/api",
+});
+
+export default apiClient;
+-------------------code----------------------
+
+---
+
+# 25. Best Practices
+
+---
+
+## Keep API Code Separate
+
+Use dedicated API folder.
+
+---
+
+## Avoid Hardcoding URLs Everywhere
+
+Centralize base URL.
+
+---
+
+## Use API Modules
+
+Example:
+
+-------------------code----------------------
+listings.js
+auth.js
+-------------------code----------------------
+
+---
+
+## Always Check response.ok
+
+Never assume success.
+
+---
+
+## Log response.problem
+
+Helpful for debugging.
+
+---
+
+# 26. Summary
+
+In this lecture you learned:
+
+* What apisauce is
+* Why it is useful
+* How to install it
+* How to create an API client
+* How to configure baseURL
+* Why localhost does not work
+* How to make API calls
+* How to handle errors cleanly
+* The idea of an API layer architecture
+
+Main concepts:
+
+* apisauce
+* Axios wrapper
+* API client
+* Standardized errors
+* Centralized backend communication
+* Cleaner React Native architecture
