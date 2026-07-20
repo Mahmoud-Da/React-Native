@@ -1,8 +1,5 @@
 import { Formik } from "formik";
-import {
-  Image,
-  StyleSheet
-} from "react-native";
+import { Image, StyleSheet } from "react-native";
 import * as Yup from "yup";
 import AppButton from "../components/AppButton";
 import AppTextInput from "../components/AppTextInput";
@@ -38,7 +35,9 @@ function LoginScreen() {
         {({
           handleChange,
           handleSubmit,
-          errors
+          setFieldTouched,
+          errors,
+          touched
         }) => (
           <>
             <AppTextInput
@@ -49,8 +48,12 @@ function LoginScreen() {
               keyboardType="email-address"
               textContentType="emailAddress"
               onChangeText={handleChange("email")}
+              onBlur={() => setFieldTouched("email")}
             />
-            <ErrorMessage error={errors.email} />
+            <ErrorMessage
+              error={errors.email}
+              visible={touched.email}
+            />
             <AppTextInput
               icon="lock"
               placeholder="Password"
@@ -59,8 +62,12 @@ function LoginScreen() {
               secureTextEntry
               textContentType="password"
               onChangeText={handleChange("password")}
+              onBlur={() => setFieldTouched("password")}
             />
-            <ErrorMessage error={errors.password} />
+            <ErrorMessage
+              error={errors.password}
+              visible={touched.password}
+            />
             <AppButton
               title="Login"
               onPress={handleSubmit}
