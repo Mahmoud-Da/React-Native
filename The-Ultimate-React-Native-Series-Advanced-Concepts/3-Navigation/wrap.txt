@@ -3454,3 +3454,351 @@ Flow learned:
 Next step:
 
 * Add **Stack Navigator inside tabs** to support detailed navigation
+
+*** 15- Building FeedNavigator ***
+# 1. Overview of the Lecture
+
+This lecture completes the **Listings navigation flow** by:
+
+* Creating a **Feed Stack Navigator**
+* Enabling navigation from **Card → ListingDetails**
+* Passing data between screens
+* Customizing screen transitions (modal)
+
+---
+
+# 2. Problem Before This Step
+
+Current issue:
+
+* Tabs work correctly
+* But tapping a listing does **nothing**
+
+Reason:
+
+* No **Stack Navigator inside the Feed tab**
+* Card component is **not clickable**
+
+---
+
+# 3. Step 1 – Create FeedNavigator
+
+Create a new file:
+
+-------------------code----------------------
+app/navigation/FeedNavigator.js
+-------------------code----------------------
+
+---
+
+## 3.1 Setup Stack Navigator
+
+-------------------code----------------------
+import React from "react";
+import { createStackNavigator } from "@react-navigation/stack";
+
+import ListingsScreen from "../screens/ListingsScreen";
+import ListingDetailsScreen from "../screens/ListingDetailsScreen";
+
+const Stack = createStackNavigator();
+-------------------code----------------------
+
+---
+
+## 3.2 Define Screens
+
+-------------------code----------------------
+const FeedNavigator = () => (
+  <Stack.Navigator>
+    <Stack.Screen name="Listings" component={ListingsScreen} />
+    <Stack.Screen name="ListingDetails" component={ListingDetailsScreen} />
+  </Stack.Navigator>
+);
+
+export default FeedNavigator;
+-------------------code----------------------
+
+---
+
+# 4. Step 2 – Use FeedNavigator in Tabs
+
+Update `AppNavigator.js`:
+
+-------------------code----------------------
+import FeedNavigator from "./FeedNavigator";
+-------------------code----------------------
+
+---
+
+### Replace ListingsScreen:
+
+-------------------code----------------------
+<Tab.Screen name="Feed" component={FeedNavigator} />
+-------------------code----------------------
+
+---
+
+# 5. Step 3 – Make Card Clickable
+
+Update `Card.js`:
+
+---
+
+## 5.1 Add onPress Prop
+
+-------------------code----------------------
+function Card({ title, subTitle, image, onPress }) {
+-------------------code----------------------
+
+---
+
+## 5.2 Wrap with Touchable
+
+-------------------code----------------------
+import { TouchableWithoutFeedback } from "react-native";
+-------------------code----------------------
+
+-------------------code----------------------
+<TouchableWithoutFeedback onPress={onPress}>
+  <View style={styles.card}>
+    <Image style={styles.image} source={image} />
+    <View style={styles.detailsContainer}>
+      <Text style={styles.title} numberOfLines={1}>
+        {title}
+      </Text>
+      <Text style={styles.subTitle} numberOfLines={2}>
+        {subTitle}
+      </Text>
+    </View>
+  </View>
+</TouchableWithoutFeedback>
+-------------------code----------------------
+
+---
+
+# 6. Step 4 – Navigate from ListingsScreen
+
+Update `ListingsScreen.js`:
+
+-------------------code----------------------
+function ListingsScreen({ navigation }) {
+-------------------code----------------------
+
+---
+
+## Add onPress:
+
+-------------------code----------------------
+<Card
+  title={item.title}
+  subTitle={"$" + item.price}
+  image={item.image}
+  onPress={() =>
+    navigation.navigate("ListingDetails", item)
+  }
+/>
+-------------------code----------------------
+
+---
+
+# 7. Step 5 – Receive Data in ListingDetailsScreen
+
+Update `ListingDetailsScreen.js`:
+
+-------------------code----------------------
+const ListingDetailsScreen = ({ route }) => {
+  const listing = route.params;
+
+  return (
+    <Screen>
+      <Image source={listing.image} />
+      <Text>{listing.title}</Text>
+      <Text>${listing.price}</Text>
+    </Screen>
+  );
+};
+-------------------code----------------------
+
+---
+
+# 8. Step 6 – Modal Transition (Optional Enhancement)
+
+In `FeedNavigator.js`:
+
+-------------------code----------------------
+<Stack.Navigator mode="modal">
+-------------------code----------------------
+
+---
+
+### Effect:
+
+* Screen slides from **bottom**
+* Looks like a modal
+
+---
+
+# 9. Step 7 – Hide Header in Details Screen
+
+-------------------code----------------------
+<Stack.Screen
+  name="ListingDetails"
+  component={ListingDetailsScreen}
+  options={{ headerShown: false }}
+/>
+-------------------code----------------------
+
+---
+
+# 10. Final Behavior
+
+* Tap a listing → opens details screen
+* Correct data is displayed
+* Modal animation from bottom
+* Pull down to dismiss (iOS behavior)
+
+---
+
+# 11. Full Final Code
+
+---
+
+## 11.1 FeedNavigator.js
+
+-------------------code----------------------
+import React from "react";
+import { createStackNavigator } from "@react-navigation/stack";
+
+import ListingsScreen from "../screens/ListingsScreen";
+import ListingDetailsScreen from "../screens/ListingDetailsScreen";
+
+const Stack = createStackNavigator();
+
+const FeedNavigator = () => (
+  <Stack.Navigator mode="modal">
+    <Stack.Screen name="Listings" component={ListingsScreen} />
+    <Stack.Screen
+      name="ListingDetails"
+      component={ListingDetailsScreen}
+      options={{ headerShown: false }}
+    />
+  </Stack.Navigator>
+);
+
+export default FeedNavigator;
+-------------------code----------------------
+
+---
+
+## 11.2 AppNavigator.js
+
+-------------------code----------------------
+import React from "react";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+
+import FeedNavigator from "./FeedNavigator";
+import ListingEditScreen from "../screens/ListingEditScreen";
+import AccountScreen from "../screens/AccountScreen";
+
+const Tab = createBottomTabNavigator();
+
+const AppNavigator = () => (
+  <Tab.Navigator>
+    <Tab.Screen name="Feed" component={FeedNavigator} />
+    <Tab.Screen name="ListingEdit" component={ListingEditScreen} />
+    <Tab.Screen name="Account" component={AccountScreen} />
+  </Tab.Navigator>
+);
+
+export default AppNavigator;
+-------------------code----------------------
+
+---
+
+## 11.3 Card.js
+
+-------------------code----------------------
+import React from "react";
+import { View, StyleSheet, Image, TouchableWithoutFeedback } from "react-native";
+
+import Text from "./Text";
+import colors from "../config/colors";
+
+function Card({ title, subTitle, image, onPress }) {
+  return (
+    <TouchableWithoutFeedback onPress={onPress}>
+      <View style={styles.card}>
+        <Image style={styles.image} source={image} />
+        <View style={styles.detailsContainer}>
+          <Text style={styles.title} numberOfLines={1}>
+            {title}
+          </Text>
+          <Text style={styles.subTitle} numberOfLines={2}>
+            {subTitle}
+          </Text>
+        </View>
+      </View>
+    </TouchableWithoutFeedback>
+  );
+}
+-------------------code----------------------
+
+---
+
+## 11.4 ListingsScreen.js (Updated Part)
+
+-------------------code----------------------
+function ListingsScreen({ navigation }) {
+  return (
+    <Screen style={styles.screen}>
+      <FlatList
+        data={listings}
+        keyExtractor={(listing) => listing.id.toString()}
+        renderItem={({ item }) => (
+          <Card
+            title={item.title}
+            subTitle={"$" + item.price}
+            image={item.image}
+            onPress={() =>
+              navigation.navigate("ListingDetails", item)
+            }
+          />
+        )}
+      />
+    </Screen>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 12. Important Notes & Best Practices
+
+* Always use **Stack inside Tab** for detail navigation
+* Pass full object via `navigation.navigate`
+* Keep components reusable (Card should not handle navigation)
+* Use meaningful route names
+* Hide header for modal-style screens
+* Prefer `TouchableOpacity` for visual feedback (optional improvement)
+
+---
+
+# 13. Summary
+
+This lecture connects everything:
+
+* Created **Feed Stack Navigator**
+* Made cards clickable
+* Implemented navigation to details screen
+* Passed and displayed dynamic data
+* Added modal-style transition
+
+Flow:
+
+1. Create FeedNavigator
+2. Replace tab screen
+3. Add onPress to Card
+4. Navigate with params
+5. Read params in details screen
+
+This is the **core pattern for list → detail navigation** in real apps.
