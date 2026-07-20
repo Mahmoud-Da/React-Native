@@ -1,0 +1,274 @@
+*** 1- Introduction ***
+# 1. Overview of the Lecture
+
+This section introduces **navigation in mobile apps**, focusing on making the app more interactive and functional.
+
+Key idea:
+Move from a static UI to a **multi-screen app** where users can:
+
+* Switch between screens using tabs
+* Open detailed views from list items (cards)
+* Interact with gestures (e.g., pull-down)
+
+---
+
+# 2. What is Navigation?
+
+Navigation allows users to move between different parts (screens) of an app.
+
+### Common navigation patterns:
+
+1. **Tab Navigation (Bottom Tabs)**
+   Switch between main sections of the app.
+
+2. **Stack Navigation**
+   Move forward to a new screen (e.g., details) and go back.
+
+3. **Gesture-based Navigation**
+   Interactions like swipe or pull-down.
+
+---
+
+# 3. Step 1 – Setting Up Navigation
+
+Install required libraries (React Native example using React Navigation):
+
+-------------------code----------------------
+npm install @react-navigation/native
+npm install react-native-screens react-native-safe-area-context
+npm install @react-navigation/bottom-tabs
+npm install @react-navigation/stack
+-------------------code----------------------
+
+---
+
+# 4. Step 2 – Create Navigation Container
+
+The navigation container wraps the entire app.
+
+-------------------code----------------------
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      {/* Navigators go here */}
+    </NavigationContainer>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 5. Step 3 – Implement Bottom Tab Navigation
+
+This creates tabs at the bottom of the screen.
+
+-------------------code----------------------
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+
+const Tab = createBottomTabNavigator();
+
+function FeedScreen() {
+  return null;
+}
+
+function SettingsScreen() {
+  return null;
+}
+
+function Tabs() {
+  return (
+    <Tab.Navigator>
+      <Tab.Screen name="Feed" component={FeedScreen} />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
+    </Tab.Navigator>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 6. Step 4 – Implement Stack Navigation (Details Screen)
+
+Used when tapping a card to open details.
+
+-------------------code----------------------
+import { createStackNavigator } from "@react-navigation/stack";
+
+const Stack = createStackNavigator();
+
+function ListingsScreen({ navigation }) {
+  return (
+    // Example card press
+    <Button
+      title="Go to Details"
+      onPress={() => navigation.navigate("Details")}
+    />
+  );
+}
+
+function ListingDetailsScreen() {
+  return null;
+}
+
+function FeedNavigator() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="Listings" component={ListingsScreen} />
+      <Stack.Screen name="Details" component={ListingDetailsScreen} />
+    </Stack.Navigator>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 7. Step 5 – Combine Tabs with Stack
+
+Each tab can have its own stack.
+
+-------------------code----------------------
+function Tabs() {
+  return (
+    <Tab.Navigator>
+      <Tab.Screen name="Feed" component={FeedNavigator} />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
+    </Tab.Navigator>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 8. Step 6 – Adding Gesture Interaction
+
+Example: Pull-down interaction using ScrollView.
+
+-------------------code----------------------
+import { ScrollView, RefreshControl } from "react-native";
+import React, { useState } from "react";
+
+function ListingsScreen() {
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    // simulate reload
+    setTimeout(() => setRefreshing(false), 2000);
+  };
+
+  return (
+    <ScrollView
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
+      {/* Content */}
+    </ScrollView>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 9. Full Final Code
+
+-------------------code----------------------
+import React, { useState } from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createStackNavigator } from "@react-navigation/stack";
+import { Button, ScrollView, RefreshControl, Text } from "react-native";
+
+const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+
+function ListingsScreen({ navigation }) {
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => setRefreshing(false), 2000);
+  };
+
+  return (
+    <ScrollView
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
+      <Button
+        title="Go to Details"
+        onPress={() => navigation.navigate("Details")}
+      />
+    </ScrollView>
+  );
+}
+
+function ListingDetailsScreen() {
+  return <Text>Details Screen</Text>;
+}
+
+function SettingsScreen() {
+  return <Text>Settings Screen</Text>;
+}
+
+function FeedNavigator() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="Listings" component={ListingsScreen} />
+      <Stack.Screen name="Details" component={ListingDetailsScreen} />
+    </Stack.Navigator>
+  );
+}
+
+function Tabs() {
+  return (
+    <Tab.Navigator>
+      <Tab.Screen name="Feed" component={FeedNavigator} />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
+    </Tab.Navigator>
+  );
+}
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Tabs />
+    </NavigationContainer>
+  );
+}
+-------------------code----------------------
+
+---
+
+# 10. Important Notes & Best Practices
+
+* Keep navigation structure **modular** (separate navigators per feature).
+* Use **stack inside tabs**, not the opposite.
+* Name routes clearly (e.g., `ListingDetails` instead of `Screen2`).
+* Avoid deeply nested navigators unless necessary.
+* Pass only required data between screens.
+* Use gestures (like pull-to-refresh) to improve UX.
+
+---
+
+# 11. Summary
+
+* Navigation transforms your app from static to interactive.
+* Bottom tabs allow switching between main sections.
+* Stack navigation enables moving to detail screens.
+* These can be combined for scalable app structure.
+* Gesture interactions enhance user experience.
+
+Core flow learned:
+
+1. Setup navigation
+2. Add tabs
+3. Add stack for details
+4. Combine everything
+5. Add interactions
+
+This is the foundation for building real-world mobile apps.
