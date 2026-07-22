@@ -6411,3 +6411,623 @@ if (!isReady)
 # 18. Summary
 
 This lecture refactors the authentication system by moving token retrieval and JWT decoding out of `App.js` and into the authentication storage module. A new `getUser()` function encapsulates the process of reading the stored token, decoding it, and returning the authenticated user, while returning `null` if no token exists. As a result, `App.js` becomes simpler and more focused, requesting only the current user instead of dealing with authentication implementation details. This refactoring follows key software engineering principles such as Separation of Concerns, Single Responsibility Principle, and Encapsulation, making the codebase cleaner, easier to maintain, and easier to extend in the future.
+
+*** 13- Creating a Custom Hook ***
+# Authentication - Refactoring with a Custom `useAuth` Hook
+
+## 1. Why Refactor?
+
+The authentication flow works, but there is a design problem.
+
+### Before
+
+Every screen that needs authentication must:
+
+* Import `useContext`
+* Import `AuthContext`
+* Import `authStorage`
+* Import `jwt-decode`
+* Know how login/logout works
+
+This spreads authentication logic across many screens.
+
+Example:
+
+```jsx
+import { useContext } from "react";
+import AuthContext from "../auth/context";
+
+const { user, setUser } = useContext(AuthContext);
+```
+
+The **LoginScreen** also:
+
+* Decodes the JWT
+* Saves the token
+* Updates the current user
+
+This is business logic and does not belong inside UI components.
+
+---
+
+# 2. Better Solution: Create a Custom Hook
+
+Instead of every screen knowing authentication details, create one custom hook.
+
+```
+auth/
+    context.js
+    storage.js
+    useAuth.js
+```
+
+The hook becomes the only place responsible for:
+
+* Getting the current user
+* Logging in
+* Logging out
+
+Every screen simply calls:
+
+```jsx
+const { user, login, logout } = useAuth();
+```
+
+Much cleaner.
+
+---
+
+# 3. Create `useAuth.js`
+
+Inside the `auth` folder create:
+
+```jsx
+// auth/useAuth.js
+
+import { useContext } from "react";
+import jwtDecode from "jwt-decode";
+
+import AuthContext from "./context";
+import authStorage from "./storage";
+
+export default function useAuth() {
+  const { user, setUser } = useContext(AuthContext);
+
+  const login = (authToken) => {
+    const user = jwtDecode(authToken);
+
+    setUser(user);
+
+    authStorage.storeToken(authToken);
+  };
+
+  const logout = () => {
+    setUser(null);
+
+    authStorage.removeToken();
+  };
+
+  return {
+    user,
+    login,
+    logout,
+  };
+}
+```
+
+---
+
+# 4. How `useAuth` Works
+
+## Step 1
+
+Read the current authentication context.
+
+```jsx
+const { user, setUser } = useContext(AuthContext);
+```
+
+Now the hook can access and update the logged-in user.
+
+---
+
+## Step 2
+
+Implement `login()`.
+
+```jsx
+const login = (authToken) => {
+```
+
+Receive the JWT.
+
+---
+
+Decode it.
+
+```jsx
+const user = jwtDecode(authToken);
+```
+
+---
+
+Update React Context.
+
+```jsx
+setUser(user);
+```
+
+---
+
+Save the token securely.
+
+```jsx
+authStorage.storeToken(authToken);
+```
+
+Now the user stays logged in after restarting the app.
+
+---
+
+## Step 3
+
+Implement `logout()`.
+
+```jsx
+const logout = () => {
+```
+
+Clear the current user.
+
+```jsx
+setUser(null);
+```
+
+Remove the stored token.
+
+```jsx
+authStorage.removeToken();
+```
+
+Done.
+
+---
+
+## Step 4
+
+Expose everything.
+
+```jsx
+return {
+    user,
+    login,
+    logout,
+};
+```
+
+Now every screen has access to all authentication functionality.
+
+---
+
+# 5. Update `AccountScreen`
+
+## Before
+
+```jsx
+import { useContext } from "react";
+import AuthContext from "../auth/context";
+import authStorage from "../auth/storage";
+
+const { user, setUser } = useContext(AuthContext);
+
+const handleLogout = () => {
+    setUser(null);
+    authStorage.removeToken();
+};
+```
+
+Lots of authentication details.
+
+---
+
+## After
+
+Import only the hook.
+
+```jsx
+import useAuth from "../auth/useAuth";
+```
+
+Use it.
+
+```jsx
+const { user, logout } = useAuth();
+```
+
+Display user info.
+
+```jsx
+<ListItem
+    title={user.name}
+    subTitle={user.email}
+    image={require("../assets/mosh.jpg")}
+/>
+```
+
+Logout.
+
+```jsx
+<ListItem
+    title="Log Out"
+    IconComponent={
+        <Icon
+            name="logout"
+            backgroundColor="#ffe66d"
+        />
+    }
+    onPress={logout}
+/>
+```
+
+The screen is now responsible only for the UI.
+
+---
+
+# 6. Update `LoginScreen`
+
+## Before
+
+The screen contained business logic.
+
+```jsx
+const user = jwtDecode(result.data);
+
+setUser(user);
+
+authStorage.storeToken(result.data);
+```
+
+This mixes UI and authentication.
+
+---
+
+## After
+
+Import the hook.
+
+```jsx
+import useAuth from "../auth/useAuth";
+```
+
+Get the login function.
+
+```jsx
+const { login } = useAuth();
+```
+
+After a successful API call simply write:
+
+```jsx
+login(result.data);
+```
+
+That's all.
+
+The hook handles everything internally.
+
+---
+
+# 7. Separation of Concerns
+
+## Before
+
+```
+LoginScreen
+    Login API
+    Decode JWT
+    Save Token
+    Update Context
+
+AccountScreen
+    Update Context
+    Remove Token
+```
+
+Authentication logic is scattered.
+
+---
+
+## After
+
+```
+LoginScreen
+    UI only
+
+AccountScreen
+    UI only
+
+useAuth
+    Login
+    Logout
+    Decode JWT
+    Store Token
+    Remove Token
+```
+
+One place for all authentication logic.
+
+---
+
+# 8. Advantages of Using a Custom Hook
+
+### Cleaner Components
+
+Instead of many imports:
+
+```jsx
+useContext
+AuthContext
+jwtDecode
+authStorage
+```
+
+Only:
+
+```jsx
+useAuth
+```
+
+---
+
+### Easier Maintenance
+
+If login changes later:
+
+* Add refresh tokens
+* Add analytics
+* Add logging
+* Add biometric authentication
+
+Only `useAuth.js` changes.
+
+Screens stay untouched.
+
+---
+
+### Reusable
+
+Any screen can simply do:
+
+```jsx
+const { user, login, logout } = useAuth();
+```
+
+No duplicated code.
+
+---
+
+# 9. Best Practices
+
+* Keep UI inside screens.
+* Move business logic into custom hooks.
+* Store authentication logic in one place.
+* Use React Context only for sharing authentication state.
+* Keep components small and focused.
+* If many files import the same modules repeatedly, consider creating a custom hook.
+
+---
+
+# 10. Full Final Code
+
+## `auth/useAuth.js`
+
+```jsx
+import { useContext } from "react";
+import jwtDecode from "jwt-decode";
+
+import AuthContext from "./context";
+import authStorage from "./storage";
+
+export default function useAuth() {
+  const { user, setUser } = useContext(AuthContext);
+
+  const login = (authToken) => {
+    const user = jwtDecode(authToken);
+
+    setUser(user);
+
+    authStorage.storeToken(authToken);
+  };
+
+  const logout = () => {
+    setUser(null);
+
+    authStorage.removeToken();
+  };
+
+  return {
+    user,
+    login,
+    logout,
+  };
+}
+```
+
+---
+
+## Updated `LoginScreen.js`
+
+```jsx
+import React, { useState } from "react";
+
+import authApi from "../api/auth";
+import useAuth from "../auth/useAuth";
+
+import {
+  Form,
+  FormField,
+  SubmitButton,
+  ErrorMessage,
+} from "../components/forms";
+
+function LoginScreen() {
+  const [loginFailed, setLoginFailed] = useState(false);
+
+  const { login } = useAuth();
+
+  const handleSubmit = async ({ email, password }) => {
+    const result = await authApi.login(email, password);
+
+    if (!result.ok) {
+      setLoginFailed(true);
+      return;
+    }
+
+    setLoginFailed(false);
+
+    login(result.data);
+  };
+
+  return (
+    <Form
+      initialValues={{
+        email: "",
+        password: "",
+      }}
+      onSubmit={handleSubmit}
+    >
+      <ErrorMessage
+        error="Invalid email and/or password."
+        visible={loginFailed}
+      />
+
+      <FormField
+        name="email"
+        placeholder="Email"
+      />
+
+      <FormField
+        name="password"
+        placeholder="Password"
+        secureTextEntry
+      />
+
+      <SubmitButton title="Login" />
+    </Form>
+  );
+}
+
+export default LoginScreen;
+```
+
+---
+
+## Updated `AccountScreen.js`
+
+```jsx
+import React from "react";
+import { StyleSheet, View, FlatList } from "react-native";
+
+import useAuth from "../auth/useAuth";
+
+import { ListItem, ListItemSeparator } from "../components/lists";
+import colors from "../config/colors";
+import Icon from "../components/Icon";
+import routes from "../navigation/routes";
+import Screen from "../components/Screen";
+
+const menuItems = [
+  {
+    title: "My Listings",
+    icon: {
+      name: "format-list-bulleted",
+      backgroundColor: colors.primary,
+    },
+  },
+  {
+    title: "My Messages",
+    icon: {
+      name: "email",
+      backgroundColor: colors.secondary,
+    },
+    targetScreen: routes.MESSAGES,
+  },
+];
+
+function AccountScreen({ navigation }) {
+  const { user, logout } = useAuth();
+
+  return (
+    <Screen style={styles.screen}>
+      <View style={styles.container}>
+        <ListItem
+          title={user.name}
+          subTitle={user.email}
+          image={require("../assets/mosh.jpg")}
+        />
+      </View>
+
+      <View style={styles.container}>
+        <FlatList
+          data={menuItems}
+          keyExtractor={(menuItem) => menuItem.title}
+          ItemSeparatorComponent={ListItemSeparator}
+          renderItem={({ item }) => (
+            <ListItem
+              title={item.title}
+              IconComponent={
+                <Icon
+                  name={item.icon.name}
+                  backgroundColor={item.icon.backgroundColor}
+                />
+              }
+              onPress={() =>
+                navigation.navigate(item.targetScreen)
+              }
+            />
+          )}
+        />
+      </View>
+
+      <ListItem
+        title="Log Out"
+        IconComponent={
+          <Icon
+            name="logout"
+            backgroundColor="#ffe66d"
+          />
+        }
+        onPress={logout}
+      />
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: {
+    backgroundColor: colors.light,
+  },
+  container: {
+    marginVertical: 20,
+  },
+});
+
+export default AccountScreen;
+```
+
+---
+
+# 11. Summary
+
+This lecture refactors the authentication system using a custom `useAuth` hook.
+
+Key improvements:
+
+* Created a reusable `useAuth` hook.
+* Moved login business logic into the hook.
+* Moved logout business logic into the hook.
+* Removed JWT decoding from UI components.
+* Removed token storage logic from screens.
+* Simplified `LoginScreen` and `AccountScreen`.
+* Improved separation of concerns.
+* Made the authentication code easier to maintain, extend, and reuse.
