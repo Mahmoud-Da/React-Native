@@ -7537,3 +7537,385 @@ Key concepts covered:
 * The server validates the JWT using its secret key.
 * If valid, the server extracts the user and makes it available to protected routes.
 * This approach centralizes authentication logic, eliminates duplicate code, and keeps screens focused only on the user interface.
+
+*** 15- Exercise ***
+# Authentication - Exercise: Implement User Registration
+
+## 1. Goal
+
+In this exercise, you will implement the **user registration flow**.
+
+When a new user signs up:
+
+* Send their information to the backend.
+* Show an error if the email already exists.
+* Automatically log the user in after successful registration.
+* Navigate directly to the main application.
+
+This provides a smoother user experience because the user does not need to log in manually after creating an account.
+
+---
+
+# 2. Registration API
+
+The backend provides the following endpoint:
+
+-------------------code----------------------http
+POST /users
+-------------------code----------------------
+
+Request body:
+
+-------------------code----------------------
+{
+  "name": "Mosh Hamedani",
+  "email": "mosh@domain.com",
+  "password": "12345"
+}
+-------------------code----------------------
+
+---
+
+# 3. Possible Server Responses
+
+## Success
+
+If the email is unique:
+
+-------------------code----------------------http
+200 OK
+-------------------code----------------------
+
+Response:
+
+-------------------code----------------------
+{
+    "_id": "...",
+    "name": "Mosh Hamedani",
+    "email": "mosh@domain.com"
+}
+-------------------code----------------------
+
+The user is successfully created.
+
+---
+
+## Failure
+
+If another user already has the same email:
+
+-------------------code----------------------http
+400 Bad Request
+-------------------code----------------------
+
+Response:
+
+-------------------code----------------------
+{
+    "error": "A user with the given email already exists."
+}
+-------------------code----------------------
+
+The app should display this message to the user.
+
+---
+
+# 4. Registration Flow
+
+The complete process should look like this:
+
+-------------------code----------------------
+User fills registration form
+          │
+          ▼
+POST /users
+          │
+          ▼
+Registration successful?
+      │             │
+      │             │
+     Yes            No
+      │             │
+      ▼             ▼
+Login automatically  Show error message
+      │
+      ▼
+Store JWT
+      │
+      ▼
+Navigate to AppNavigator
+-------------------code----------------------
+
+---
+
+# 5. Step 1 – Create the Registration API
+
+Create a new API module (or extend an existing one).
+
+Example:
+
+-------------------code----------------------
+// api/users.js
+
+import client from "./client";
+
+const register = (userInfo) =>
+  client.post("/users", userInfo);
+
+export default {
+  register,
+};
+-------------------code----------------------
+
+This sends:
+
+-------------------code----------------------
+client.post("/users", {
+    name,
+    email,
+    password,
+});
+-------------------code----------------------
+
+---
+
+# 6. Step 2 – Submit the Registration Form
+
+When the user presses **Register**:
+
+1. Collect:
+
+* Name
+* Email
+* Password
+
+2. Call:
+
+-------------------code----------------------
+usersApi.register(values);
+-------------------code----------------------
+
+---
+
+# 7. Step 3 – Handle Registration Errors
+
+If the request fails:
+
+-------------------code----------------------
+if (!result.ok) {
+    // show error
+}
+-------------------code----------------------
+
+Display the server's error message.
+
+Example:
+
+-------------------code----------------------
+A user with the given email already exists.
+-------------------code----------------------
+
+This gives users clear feedback about why registration failed.
+
+---
+
+# 8. Step 4 – Automatically Log In
+
+After successful registration:
+
+Call the login endpoint.
+
+-------------------code----------------------
+authApi.login(
+    values.email,
+    values.password
+);
+-------------------code----------------------
+
+This returns a JWT.
+
+---
+
+# 9. Step 5 – Authenticate the User
+
+Use the existing authentication flow.
+
+-------------------code----------------------
+login(authToken);
+-------------------code----------------------
+
+Your existing `useAuth()` hook already:
+
+* Decodes the JWT.
+* Stores the token securely.
+* Updates the current user.
+* Navigates to the authenticated part of the app.
+
+Because the authentication system is already built, registration only needs to obtain a valid token and reuse the login process.
+
+---
+
+# 10. Why Log In Automatically?
+
+Without automatic login:
+
+-------------------code----------------------
+Register
+    ↓
+Success
+    ↓
+Go back
+    ↓
+Open Login
+    ↓
+Enter credentials again
+-------------------code----------------------
+
+This creates unnecessary work for the user.
+
+---
+
+With automatic login:
+
+-------------------code----------------------
+Register
+    ↓
+Success
+    ↓
+Login automatically
+    ↓
+Go to Home Screen
+-------------------code----------------------
+
+A much smoother experience.
+
+---
+
+# 11. Error Handling
+
+Two common outcomes:
+
+### Registration succeeds
+
+-------------------code----------------------
+User created
+        ↓
+Login
+        ↓
+Home Screen
+-------------------code----------------------
+
+---
+
+### Registration fails
+
+-------------------code----------------------
+User already exists
+        ↓
+Display error
+        ↓
+Stay on registration screen
+-------------------code----------------------
+
+The user can immediately correct the email and try again.
+
+---
+
+# 12. Recommended Architecture
+
+Keep responsibilities separated.
+
+### Registration Screen
+
+Responsible for:
+
+* UI
+* Validation
+* Displaying errors
+
+---
+
+### `usersApi`
+
+Responsible for:
+
+* Calling `/users`
+
+---
+
+### `authApi`
+
+Responsible for:
+
+* Calling `/auth`
+
+---
+
+### `useAuth`
+
+Responsible for:
+
+* Decoding JWT
+* Saving JWT
+* Updating React Context
+* Logging users in
+
+This keeps each module focused on a single responsibility.
+
+---
+
+# 13. Best Practices
+
+* Validate the registration form before sending it.
+* Display the server's error message whenever possible.
+* Reuse the existing login functionality instead of duplicating authentication logic.
+* Automatically log users in after successful registration for a better user experience.
+* Keep registration and authentication logic separate.
+
+---
+
+# 14. Example Registration Flow
+
+-------------------code----------------------
+Registration Screen
+        │
+        ▼
+usersApi.register()
+        │
+        ▼
+Registration succeeds
+        │
+        ▼
+authApi.login()
+        │
+        ▼
+Receive JWT
+        │
+        ▼
+useAuth.login()
+        │
+        ▼
+Store Token
+        │
+        ▼
+Update Context
+        │
+        ▼
+Navigate to Main App
+-------------------code----------------------
+
+---
+
+# 15. Summary
+
+This lecture is an exercise that builds on the authentication system already implemented.
+
+Key tasks include:
+
+* Create a `POST /users` API endpoint in the client.
+* Send the user's name, email, and password.
+* Show an error if the email already exists.
+* Automatically authenticate the user after successful registration.
+* Reuse the existing `authApi` and `useAuth` logic instead of creating a separate authentication flow.
+
+By following this approach, the registration process remains simple, avoids duplicated code, and provides a seamless experience where users are taken directly into the application after creating their account.
