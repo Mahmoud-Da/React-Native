@@ -8367,3 +8367,533 @@ In this lecture you learned how to implement a complete registration flow:
 * Kept the registration screen clean by separating UI from authentication business logic.
 
 This approach produces code that is easier to maintain, easier to extend, and follows good separation of concerns.
+
+*** 17- Showing an Activity Indicator ***
+# React Native Authentication - Adding a Loading Indicator with `useApi`
+
+## 1. Overview
+
+In this lecture, we improve the **user registration experience**.
+
+Previously:
+
+* The app called the registration API.
+* The user had **no visual feedback** while waiting.
+
+Now we:
+
+* Use the custom `useApi` hook.
+* Display an `ActivityIndicator`.
+* Track loading automatically.
+* Fix a bug inside `useApi`.
+* Refactor the hook to make it cleaner.
+
+---
+
+# 2. Problem
+
+When the internet connection is slow:
+
+-------------------code----------------------
+User taps Register
+        │
+        ▼
+Nothing happens...
+        │
+        ▼
+User wonders:
+"Did the app freeze?"
+-------------------code----------------------
+
+This creates a poor user experience.
+
+---
+
+# 3. Solution
+
+Use the custom `useApi` hook.
+
+Instead of calling:
+
+-------------------code----------------------
+usersApi.register(...)
+-------------------code----------------------
+
+We let the hook manage:
+
+* loading
+* error
+* response data
+
+---
+
+# 4. Create a Register API Instance
+
+Instead of calling the API directly:
+
+-------------------code----------------------
+const result = await usersApi.register(userInfo);
+-------------------code----------------------
+
+Create a hook instance:
+
+-------------------code----------------------
+const registerApi = useApi(usersApi.register);
+-------------------code----------------------
+
+This object contains:
+
+-------------------code----------------------
+registerApi
+│
+├── request()
+├── loading
+├── error
+└── data
+-------------------code----------------------
+
+---
+
+# 5. Register Using the Hook
+
+Replace:
+
+-------------------code----------------------
+const result =
+    await usersApi.register(userInfo);
+-------------------code----------------------
+
+with
+
+-------------------code----------------------
+const result =
+    await registerApi.request(userInfo);
+-------------------code----------------------
+
+Now the hook automatically updates:
+
+-------------------code----------------------
+loading = true
+-------------------code----------------------
+
+before the request
+
+and
+
+-------------------code----------------------
+loading = false
+-------------------code----------------------
+
+after it finishes.
+
+---
+
+# 6. Do the Same for Login
+
+Instead of
+
+-------------------code----------------------
+authApi.login(...)
+-------------------code----------------------
+
+create another hook.
+
+-------------------code----------------------
+const loginApi = useApi(authApi.login);
+-------------------code----------------------
+
+Replace
+
+-------------------code----------------------
+const { data: authToken } =
+    await authApi.login(
+        userInfo.email,
+        userInfo.password
+    );
+-------------------code----------------------
+
+with
+
+-------------------code----------------------
+const { data: authToken } =
+    await loginApi.request(
+        userInfo.email,
+        userInfo.password
+    );
+-------------------code----------------------
+
+Now both requests are tracked independently.
+
+---
+
+# 7. Show the Activity Indicator
+
+Import your custom Activity Indicator component.
+
+-------------------code----------------------
+import ActivityIndicator
+    from "../components/ActivityIndicator";
+-------------------code----------------------
+
+Render it above the form.
+
+-------------------code----------------------jsx
+<ActivityIndicator
+    visible={
+        registerApi.loading ||
+        loginApi.loading
+    }
+/>
+-------------------code----------------------
+
+The indicator appears whenever:
+
+* registration is loading
+* login is loading
+
+---
+
+# 8. Why Two Loading States?
+
+Registration consists of **two API calls**:
+
+-------------------code----------------------
+Register
+      │
+      ▼
+POST /users
+      │
+      ▼
+Success
+      │
+      ▼
+POST /auth
+      │
+      ▼
+Receive JWT
+-------------------code----------------------
+
+The loading indicator should stay visible during **both** requests.
+
+---
+
+# 9. Bug in `useApi`
+
+After switching to `useApi`, the app crashes:
+
+-------------------code----------------------
+Cannot read property 'ok' of undefined
+-------------------code----------------------
+
+Why?
+
+Because the hook never returns the response.
+
+Current code:
+
+-------------------code----------------------
+if (!response.ok) {
+    setError(true);
+}
+-------------------code----------------------
+
+Nothing is returned.
+
+So:
+
+-------------------code----------------------
+const result =
+    await registerApi.request(...)
+-------------------code----------------------
+
+becomes
+
+-------------------code----------------------
+result === undefined
+-------------------code----------------------
+
+Then
+
+-------------------code----------------------
+result.ok
+-------------------code----------------------
+
+throws an error.
+
+---
+
+# 10. Fix the Hook
+
+Return the response.
+
+Instead of:
+
+-------------------code----------------------
+if (!response.ok) {
+    setError(true);
+}
+-------------------code----------------------
+
+Use:
+
+-------------------code----------------------
+if (!response.ok) {
+    setError(true);
+    return response;
+}
+
+return response;
+-------------------code----------------------
+
+Now callers always receive:
+
+-------------------code----------------------
+result.ok
+result.data
+result.problem
+-------------------code----------------------
+
+---
+
+# 11. Refactor the Hook
+
+The instructor simplifies the code.
+
+Instead of:
+
+-------------------code----------------------
+if (!response.ok)
+    setError(true);
+else
+    setError(false);
+
+setData(response.data);
+
+return response;
+-------------------code----------------------
+
+Use:
+
+-------------------code----------------------
+setData(response.data);
+setError(!response.ok);
+
+return response;
+-------------------code----------------------
+
+Much cleaner.
+
+---
+
+# 12. Final `request()` Function
+
+-------------------code----------------------
+const request = async (...args) => {
+  setLoading(true);
+
+  const response = await apiFunc(...args);
+
+  setLoading(false);
+
+  setData(response.data);
+  setError(!response.ok);
+
+  return response;
+};
+-------------------code----------------------
+
+This version:
+
+* updates loading
+* updates data
+* updates error
+* always returns the response
+
+---
+
+# 13. Registration Flow
+
+-------------------code----------------------
+User presses Register
+        │
+        ▼
+registerApi.request()
+        │
+        ▼
+Loading = true
+        │
+        ▼
+Show Activity Indicator
+        │
+        ▼
+Server Response
+        │
+        ▼
+Loading = false
+        │
+        ▼
+Hide Indicator
+        │
+        ▼
+If success
+        │
+        ▼
+loginApi.request()
+        │
+        ▼
+Loading = true
+        │
+        ▼
+Show Indicator
+        │
+        ▼
+Receive JWT
+        │
+        ▼
+auth.login()
+        │
+        ▼
+Navigate to Home
+-------------------code----------------------
+
+---
+
+# 14. Full Final Code
+
+## RegisterScreen.js
+
+-------------------code----------------------
+import ActivityIndicator from "../components/ActivityIndicator";
+import useApi from "../hooks/useApi";
+
+const registerApi = useApi(usersApi.register);
+const loginApi = useApi(authApi.login);
+
+const handleSubmit = async (userInfo) => {
+  const result = await registerApi.request(userInfo);
+
+  if (!result.ok) {
+    if (result.data)
+      setError(result.data.error);
+    else
+      setError("An unexpected error occurred.");
+
+    return;
+  }
+
+  const { data: authToken } =
+    await loginApi.request(
+      userInfo.email,
+      userInfo.password
+    );
+
+  auth.login(authToken);
+};
+
+<ActivityIndicator
+  visible={
+    registerApi.loading ||
+    loginApi.loading
+  }
+/>
+-------------------code----------------------
+
+---
+
+## useApi.js
+
+-------------------code----------------------
+const request = async (...args) => {
+  setLoading(true);
+
+  const response = await apiFunc(...args);
+
+  setLoading(false);
+
+  setData(response.data);
+  setError(!response.ok);
+
+  return response;
+};
+-------------------code----------------------
+
+---
+
+# 15. Important Notes
+
+### Always return the API response
+
+Without:
+
+-------------------code----------------------
+return response;
+-------------------code----------------------
+
+your component cannot access:
+
+* `response.ok`
+* `response.data`
+* `response.problem`
+
+---
+
+### Keep loading logic inside `useApi`
+
+Components should not manually manage loading state for every request.
+
+---
+
+### Track each API call separately
+
+Use different hook instances:
+
+-------------------code----------------------
+const registerApi = useApi(...);
+const loginApi = useApi(...);
+-------------------code----------------------
+
+This keeps each request independent.
+
+---
+
+### Display feedback during slow connections
+
+Users should always know the app is working.
+
+---
+
+### Refactor repetitive logic
+
+Using:
+
+-------------------code----------------------
+setError(!response.ok);
+-------------------code----------------------
+
+is simpler than multiple `if/else` blocks.
+
+---
+
+# 16. Best Practices
+
+* Use `useApi` for every API request.
+* Always return the response from reusable hooks.
+* Keep loading state inside hooks.
+* Show a loading indicator during network requests.
+* Separate registration and login into different API hooks.
+* Refactor duplicated logic whenever possible.
+
+---
+
+# 17. Summary
+
+In this lecture, you improved the registration flow by:
+
+* Replacing direct API calls with the reusable `useApi` hook.
+* Creating separate API handlers for registration and login.
+* Displaying an activity indicator while requests are in progress.
+* Fixing a bug where `useApi` failed to return the response object.
+* Refactoring the hook to simplify loading, error, and data handling.
+* Providing better user feedback during slow network connections.
+
+The next lecture improves the UX further by displaying the loading indicator as a full-screen overlay, preventing users from interacting with the UI while requests are in progress.
