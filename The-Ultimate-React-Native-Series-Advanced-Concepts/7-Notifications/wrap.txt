@@ -453,3 +453,440 @@ The next topic is more important than the provider itself:
 There is no final implementation code in this lecture because it focuses on **choosing a push notification provider** rather than implementing notifications.
 
 The actual notification code will be introduced in the following lessons.
+
+
+*** 3- Architecture ***
+
+# 1. Overview: How Push Notifications Work
+
+Push notifications can be implemented without Redux.
+
+The lecture explains that there are **four main steps**:
+
+1. Register the device and obtain an Expo Push Token.
+2. Store that token on the backend.
+3. Send notifications from the backend.
+4. Handle notifications received by the app.
+
+The complete flow is:
+
+-------------------code----------------------
+Mobile App
+    |
+    | 1. Register device
+    v
+Expo
+    |
+    | Push Token
+    v
+Mobile App
+    |
+    | 2. Send token
+    v
+Backend / Database
+    |
+    | 3. Send notification
+    v
+Expo Push Notification Service
+    |
+    v
+Target Device
+    |
+    | 4. User taps notification
+    v
+Mobile App
+-------------------code----------------------
+
+---
+
+# 2. Step 1: Register the App and Get a Push Token
+
+The first step is to register the application with Expo.
+
+The goal is to obtain an **Expo Push Token**.
+
+A push token is a long string that identifies a particular device/app installation for push notifications.
+
+Conceptually:
+
+-------------------code----------------------
+const pushToken = "ExponentPushToken[xxxxxxxxxxxxxxxxxxxx]";
+-------------------code----------------------
+
+The important idea is:
+
+-------------------code----------------------
+Device
+   ↓
+Expo registration
+   ↓
+Push Token
+-------------------code----------------------
+
+Once we have this token, the backend can use it to send a notification to that particular device.
+
+---
+
+# 3. Step 2: Store the Push Token on the Server
+
+After obtaining the token, the application should send it to the backend.
+
+The backend then stores it in the database.
+
+For example, a user record could look conceptually like:
+
+-------------------code----------------------
+{
+  id: 123,
+  name: "John",
+  email: "john@domain.com",
+  expoPushToken: "ExponentPushToken[xxxxxxxxxxxxxxxxxxxx]"
+}
+-------------------code----------------------
+
+The database therefore associates:
+
+-------------------code----------------------
+User
+  ↓
+Expo Push Token
+  ↓
+Specific device
+-------------------code----------------------
+
+This allows the backend to determine which device should receive a notification.
+
+---
+
+# 4. Step 3: Send the Notification from the Server
+
+The important architectural point is:
+
+**The notification should be sent by the backend, not directly by the React Native client.**
+
+Consider a marketplace application.
+
+Suppose:
+
+-------------------code----------------------
+User A
+   ↓
+Wants to contact
+   ↓
+User B
+   ↓
+About User B's red jacket
+-------------------code----------------------
+
+The screen might contain:
+
+-------------------code----------------------
+Red Jacket
+
+[ Message input................ ]
+
+             [ Send ]
+-------------------code----------------------
+
+When User A presses **Send**:
+
+### Step 1: Client sends the message
+
+-------------------code----------------------
+await messagesApi.send({
+  listingId,
+  message,
+});
+-------------------code----------------------
+
+### Step 2: Backend receives it
+
+-------------------code----------------------
+React Native
+      ↓
+   Backend
+-------------------code----------------------
+
+### Step 3: Backend stores the message
+
+-------------------code----------------------
+Database
+
+Messages
+-----------------------
+sender
+recipient
+listing
+message
+createdAt
+-------------------code----------------------
+
+### Step 4: Backend sends the notification
+
+-------------------code----------------------
+Backend
+   ↓
+Expo Push Notification Service
+   ↓
+User B's Device
+-------------------code----------------------
+
+So the complete process is:
+
+-------------------code----------------------
+User A
+  ↓
+Send message
+  ↓
+Backend
+  ├──→ Save message
+  │
+  └──→ Send notification
+             ↓
+        Expo Push Service
+             ↓
+          User B
+-------------------code----------------------
+
+---
+
+# 5. Why the Backend Sends the Notification
+
+This separation is important.
+
+The client should primarily communicate with the backend:
+
+-------------------code----------------------
+Client → Backend
+-------------------code----------------------
+
+The backend knows:
+
+* Who sent the message
+* Who owns the listing
+* Which user should receive the notification
+* Which push token belongs to that user
+
+Therefore, the backend can make the notification decision.
+
+For example:
+
+-------------------code----------------------
+const recipient = await users.findById(listing.userId);
+
+await sendPushNotification(
+  recipient.expoPushToken
+);
+-------------------code----------------------
+
+The exact implementation will come later.
+
+---
+
+# 6. Step 4: Handle the Received Notification
+
+The final step happens inside the React Native application.
+
+The app needs to decide what should happen when the user receives or taps a notification.
+
+For example:
+
+-------------------code----------------------
+Notification:
+
+"John sent you a message about your red jacket."
+-------------------code----------------------
+
+When the user taps it, we might want to navigate them to:
+
+-------------------code----------------------
+Messages Screen
+       ↓
+Conversation with John
+-------------------code----------------------
+
+Conceptually:
+
+-------------------code----------------------
+notification → user taps
+                    ↓
+              Open Messages
+                    ↓
+              Open conversation
+-------------------code----------------------
+
+This is called **handling the notification**.
+
+---
+
+# 7. The Four Steps Together
+
+The entire architecture can be remembered as:
+
+### Step 1 — Register
+
+-------------------code----------------------
+App → Expo → Push Token
+-------------------code----------------------
+
+### Step 2 — Store
+
+-------------------code----------------------
+Push Token → Backend → Database
+-------------------code----------------------
+
+### Step 3 — Send
+
+-------------------code----------------------
+User action → Backend → Expo → Target Device
+-------------------code----------------------
+
+### Step 4 — Handle
+
+-------------------code----------------------
+Notification → User taps → App handles it
+-------------------code----------------------
+
+---
+
+# 8. Important Distinction: Token vs Notification
+
+Don't confuse these two concepts.
+
+### Push Token
+
+Identifies the destination device/app installation.
+
+-------------------code----------------------
+"ExponentPushToken[abc123...]"
+-------------------code----------------------
+
+### Notification
+
+The actual message sent to that device.
+
+-------------------code----------------------
+{
+  title: "New Message",
+  body: "John sent you a message."
+}
+-------------------code----------------------
+
+The relationship is:
+
+-------------------code----------------------
+Push Token = WHERE to send
+
+Notification = WHAT to send
+-------------------code----------------------
+
+---
+
+# 9. Best Practices
+
+### 9.1 Store tokens on the backend
+
+Don't rely on keeping the push token only inside the mobile app.
+
+The backend needs the token when it wants to send a notification later.
+
+### 9.2 Send notifications from the backend
+
+The backend should control notification delivery because it knows the application's business logic.
+
+### 9.3 Associate tokens with users
+
+A useful conceptual database structure is:
+
+-------------------code----------------------
+User
+├── id
+├── name
+├── email
+└── expoPushToken
+-------------------code----------------------
+
+### 9.4 Think about multiple devices
+
+A user may eventually have:
+
+-------------------code----------------------
+User
+ ├── iPhone
+ ├── iPad
+ └── Android device
+-------------------code----------------------
+
+In a production application, you may therefore need to associate **multiple push tokens** with one user rather than assuming one token per user.
+
+---
+
+# 10. Code at This Stage
+
+The lecture does not yet implement the four steps. It only explains the architecture.
+
+The next lesson starts with **Step 1: registering the app and obtaining the Expo Push Token**.
+
+A conceptual version of the process is:
+
+-------------------code----------------------
+const token = await registerForPushNotifications();
+
+console.log(token);
+-------------------code----------------------
+
+The actual Expo implementation will be added in the next lesson.
+
+---
+
+# 11. Summary
+
+Push notifications follow four main steps:
+
+-------------------code----------------------
+1. Register
+      ↓
+   Get Push Token
+
+2. Store
+      ↓
+   Save Token in Backend
+
+3. Send
+      ↓
+   Backend sends notification
+
+4. Handle
+      ↓
+   App responds when notification is received/tapped
+-------------------code----------------------
+
+The most important architectural rule is:
+
+**The mobile app obtains and registers the token, but the backend is responsible for sending notifications.**
+
+For the marketplace example:
+
+-------------------code----------------------
+User A sends message
+        ↓
+Backend saves message
+        ↓
+Backend identifies User B
+        ↓
+Backend sends notification
+        ↓
+User B receives notification
+        ↓
+User B taps notification
+        ↓
+App opens the appropriate screen
+-------------------code----------------------
+
+---
+
+# 12. Full Final Code
+
+There is no complete final implementation yet because this lecture is explaining the architecture rather than implementing the notification system.
+
+The first actual code will come in the next lesson, where we implement **Step 1: obtaining the Expo Push Token**.
