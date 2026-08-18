@@ -890,3 +890,682 @@ App opens the appropriate screen
 There is no complete final implementation yet because this lecture is explaining the architecture rather than implementing the notification system.
 
 The first actual code will come in the next lesson, where we implement **Step 1: obtaining the Expo Push Token**.
+
+*** 4- Getting a Push Notification Token ***
+# 1. Goal of This Lesson
+
+In this lesson, we start implementing **push notifications with Expo**.
+
+The first objective is:
+
+> Ask the user for notification permission and obtain an **Expo Push Token**.
+
+The token will later be sent to the backend and associated with the logged-in user.
+
+---
+
+# 2. Important Testing Requirement: Real Device
+
+Expo's Notifications API cannot be properly tested using:
+
+* Android Emulator
+* iOS Simulator
+
+You need a **real physical device**.
+
+The flow is:
+
+-------------------code----------------------
+Computer
+   ↓
+Metro Bundler
+   ↓
+Real iPhone / Android phone
+   ↓
+Expo Notifications API
+-------------------code----------------------
+
+This is important because if you test only in a simulator, the permission/token behavior will not work as expected.
+
+---
+
+# 3. Expo Notifications API
+
+The application uses Expo's notifications API.
+
+In an Expo managed application, the necessary functionality is available without manually configuring the native iOS and Android projects.
+
+Conceptually:
+
+-------------------code----------------------
+import Notifications from "expo-notifications";
+-------------------code----------------------
+
+For a bare React Native project, additional native configuration is required.
+
+---
+
+# 4. Why Register Only Logged-In Users?
+
+The application already has authentication logic:
+
+-------------------code----------------------
+if (user) {
+  // App Navigator
+} else {
+  // Auth Navigator
+}
+-------------------code----------------------
+
+The lecture wants to obtain a push token **only after the user has logged in**.
+
+Why?
+
+Because the token needs to be associated with a specific user.
+
+For example:
+
+-------------------code----------------------
+User
+├── id
+├── name
+├── email
+└── expoPushToken
+-------------------code----------------------
+
+So we don't want to register an anonymous device before knowing who the user is.
+
+---
+
+# 5. Import the Required Libraries
+
+In `AppNavigator.js`, import Expo Notifications and the permissions module.
+
+-------------------code----------------------
+import Notifications from "expo-notifications";
+import * as Permissions from "expo-permissions";
+-------------------code----------------------
+
+The lecture uses:
+
+* `Notifications` to obtain the Expo Push Token.
+* `Permissions` to request notification permission.
+
+---
+
+# 6. Create the Registration Function
+
+Inside `AppNavigator`, create an asynchronous function.
+
+-------------------code----------------------
+const registerForPushNotifications = async () => {
+  // Registration logic
+};
+-------------------code----------------------
+
+The function is asynchronous because both requesting permission and obtaining the token are asynchronous operations.
+
+---
+
+# 7. Request Notification Permission
+
+First, ask the user for permission.
+
+-------------------code----------------------
+const permission = await Permissions.askAsync(
+  Permissions.NOTIFICATIONS
+);
+-------------------code----------------------
+
+Then check whether permission was granted:
+
+-------------------code----------------------
+if (!permission.granted) {
+  return;
+}
+-------------------code----------------------
+
+The complete logic is:
+
+-------------------code----------------------
+const permission = await Permissions.askAsync(
+  Permissions.NOTIFICATIONS
+);
+
+if (!permission.granted) {
+  return;
+}
+-------------------code----------------------
+
+### Important
+
+On an emulator/simulator, the permission result may not behave like a real device.
+
+Therefore, test this functionality on an actual phone.
+
+---
+
+# 8. Get the Expo Push Token
+
+Once permission has been granted, request the token:
+
+-------------------code----------------------
+const token = await Notifications.getExpoPushTokenAsync();
+-------------------code----------------------
+
+The token is a long string similar to:
+
+-------------------code----------------------
+ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxxxx]
+-------------------code----------------------
+
+This token identifies the destination for push notifications.
+
+---
+
+# 9. App Installation vs Device
+
+An important detail from the lecture:
+
+The token more accurately identifies an **app installation**, rather than simply the physical device.
+
+For example:
+
+-------------------code----------------------
+Install App
+    ↓
+Push Token A
+-------------------code----------------------
+
+If the application is deleted and reinstalled:
+
+-------------------code----------------------
+Reinstall App
+    ↓
+Push Token B
+-------------------code----------------------
+
+So you should not assume that the token remains permanently unchanged.
+
+If the application is simply launched again without being reinstalled, the same token will normally be returned.
+
+---
+
+# 10. Add Error Handling
+
+Network/device operations can fail, so the registration code should use `try...catch`.
+
+-------------------code----------------------
+const registerForPushNotifications = async () => {
+  try {
+    const permission = await Permissions.askAsync(
+      Permissions.NOTIFICATIONS
+    );
+
+    if (!permission.granted) {
+      return;
+    }
+
+    const token = await Notifications.getExpoPushTokenAsync();
+
+    console.log(token);
+  } catch (error) {
+    console.log("Error getting a push token.", error);
+  }
+};
+-------------------code----------------------
+
+This prevents an error during registration from crashing the application.
+
+---
+
+# 11. Run the Registration When the App Starts
+
+The lecture uses `useEffect` to execute the registration function.
+
+Import `useEffect`:
+
+-------------------code----------------------
+import React, { useEffect } from "react";
+-------------------code----------------------
+
+Then:
+
+-------------------code----------------------
+useEffect(() => {
+  registerForPushNotifications();
+}, []);
+-------------------code----------------------
+
+The empty dependency array means the effect runs once when the component is mounted.
+
+---
+
+# 12. Complete Flow
+
+At this point, the process is:
+
+-------------------code----------------------
+User logs in
+     ↓
+App Navigator renders
+     ↓
+useEffect runs
+     ↓
+registerForPushNotifications()
+     ↓
+Ask notification permission
+     ↓
+Permission granted?
+     ↓
+Yes
+     ↓
+getExpoPushTokenAsync()
+     ↓
+Expo Push Token
+     ↓
+console.log(token)
+-------------------code----------------------
+
+The next step will be:
+
+-------------------code----------------------
+Expo Push Token
+       ↓
+Send to backend
+       ↓
+Store with user
+-------------------code----------------------
+
+---
+
+# 13. Important Best Practices
+
+### 13.1 Test on a real device
+
+Do not rely on:
+
+-------------------code----------------------
+iOS Simulator
+Android Emulator
+-------------------code----------------------
+
+Use an actual phone.
+
+### 13.2 Associate the token with the authenticated user
+
+The token should eventually be stored with the correct user:
+
+-------------------code----------------------
+{
+  id: user.id,
+  name: user.name,
+  email: user.email,
+  expoPushToken: token,
+}
+-------------------code----------------------
+
+### 13.3 Handle permission denial
+
+The user may refuse notifications.
+
+Your application should continue functioning even if:
+
+-------------------code----------------------
+permission.granted === false
+-------------------code----------------------
+
+Push notifications are an optional capability, not something that should normally prevent the app from working.
+
+### 13.4 Don't only store the token locally
+
+The backend eventually needs the token because **the backend is responsible for sending notifications**.
+
+---
+
+# 14. Summary
+
+The main concepts from this lesson are:
+
+1. Use Expo Notifications for push notifications.
+2. Test push notifications on a **real physical device**.
+3. Ask the user for notification permission.
+4. If permission is granted, obtain the Expo Push Token.
+5. The token identifies an app installation.
+6. Reinstalling the app can result in a new token.
+7. The token should eventually be sent to the backend.
+8. The backend will associate the token with the authenticated user.
+
+The most important code is:
+
+-------------------code----------------------
+const registerForPushNotifications = async () => {
+  try {
+    const permission = await Permissions.askAsync(
+      Permissions.NOTIFICATIONS
+    );
+
+    if (!permission.granted) {
+      return;
+    }
+
+    const token = await Notifications.getExpoPushTokenAsync();
+
+    console.log(token);
+  } catch (error) {
+    console.log("Error getting a push token.", error);
+  }
+};
+-------------------code----------------------
+
+---
+
+# 15. Full Final Code
+
+Assuming this logic is being added to `AppNavigator.js`, the complete code for the lesson is:
+
+-------------------code----------------------
+import React, { useEffect } from "react";
+import Notifications from "expo-notifications";
+import * as Permissions from "expo-permissions";
+
+function AppNavigator() {
+  const registerForPushNotifications = async () => {
+    try {
+      const permission = await Permissions.askAsync(
+        Permissions.NOTIFICATIONS
+      );
+
+      if (!permission.granted) {
+        return;
+      }
+
+      const token = await Notifications.getExpoPushTokenAsync();
+
+      console.log(token);
+    } catch (error) {
+      console.log("Error getting a push token.", error);
+    }
+  };
+
+  useEffect(() => {
+    registerForPushNotifications();
+  }, []);
+
+  return (
+    // Existing AppNavigator JSX goes here
+    null
+  );
+}
+
+export default AppNavigator;
+-------------------code----------------------
+
+**Important:** The `return null` above is only a placeholder because the lecture excerpt does not include the existing JSX/navigation code inside `AppNavigator`. Keep your existing `AppNavigator` return content and add the notification logic around it.
+
+
+Yes. For **this lecture**, the file you need to modify is your:
+
+`navigation/AppNavigator.js`
+
+Your current code uses the newer React Navigation API (`createBottomTabNavigator`), so we should adapt the lecture's older Expo code to your current project rather than copying it literally.
+
+### 1. Install the required Expo packages
+
+If your project does not already have them:
+
+-------------------code----------------------
+npx expo install expo-notifications expo-device
+-------------------code----------------------
+
+`expo-device` is useful because push notifications need a **real physical device**, not an Android emulator or iOS simulator.
+
+### 2. Update `AppNavigator.js`
+
+We need to:
+
+1. Import `useEffect`.
+2. Import `Notifications`.
+3. Import `Device`.
+4. Create `registerForPushNotificationsAsync()`.
+5. Ask the user for notification permission.
+6. Get the Expo push token.
+7. Log the token for now.
+8. Run the function once when `AppNavigator` mounts.
+
+Here is your code with the notification functionality added:
+
+-------------------code----------------------
+import React, { useEffect } from "react";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import * as Notifications from "expo-notifications";
+import * as Device from "expo-device";
+
+import AccountNavigator from "./AccountNavigator";
+import FeedNavigator from "./FeedNavigator";
+import ListingEditScreen from "../screens/ListingEditScreen";
+import NewListingButton from "./NewListingButton";
+import routes from "./routes";
+
+const Tab = createBottomTabNavigator();
+
+async function registerForPushNotificationsAsync() {
+  try {
+    // Push notifications require a physical device.
+    if (!Device.isDevice) {
+      console.log(
+        "Push notifications require a physical device."
+      );
+      return;
+    }
+
+    // Check existing notification permission.
+    const { status: existingStatus } =
+      await Notifications.getPermissionsAsync();
+
+    let finalStatus = existingStatus;
+
+    // Ask the user for permission if we don't have it yet.
+    if (existingStatus !== "granted") {
+      const { status } =
+        await Notifications.requestPermissionsAsync();
+
+      finalStatus = status;
+    }
+
+    // Permission was denied.
+    if (finalStatus !== "granted") {
+      console.log("Notification permission not granted.");
+      return;
+    }
+
+    // Get the Expo push notification token.
+    const tokenData =
+      await Notifications.getExpoPushTokenAsync();
+
+    const token = tokenData.data;
+
+    console.log("Expo Push Token:", token);
+
+    return token;
+  } catch (error) {
+    console.log(
+      "Error getting a push notification token:",
+      error
+    );
+  }
+}
+
+const AppNavigator = () => {
+  useEffect(() => {
+    registerForPushNotificationsAsync();
+  }, []);
+
+  return (
+    <Tab.Navigator>
+      <Tab.Screen
+        name="Feed"
+        component={FeedNavigator}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons
+              name="home"
+              color={color}
+              size={size}
+            />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="ListingEdit"
+        component={ListingEditScreen}
+        options={({ navigation }) => ({
+          tabBarButton: () => (
+            <NewListingButton
+              onPress={() =>
+                navigation.navigate(routes.LISTING_EDIT)
+              }
+            />
+          ),
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons
+              name="plus-circle"
+              color={color}
+              size={size}
+            />
+          ),
+        })}
+      />
+
+      <Tab.Screen
+        name="Account"
+        component={AccountNavigator}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons
+              name="account"
+              color={color}
+              size={size}
+            />
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  );
+};
+
+export default AppNavigator;
+-------------------code----------------------
+
+### 3. What happens now?
+
+When the logged-in user reaches `AppNavigator`:
+
+-------------------code----------------------
+AppNavigator
+     |
+     v
+useEffect()
+     |
+     v
+registerForPushNotificationsAsync()
+     |
+     +--> Is this a real device?
+     |
+     +--> Ask for notification permission
+     |
+     +--> Get Expo Push Token
+     |
+     v
+console.log(token)
+-------------------code----------------------
+
+You should eventually see something like:
+
+-------------------code----------------------
+Expo Push Token: ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]
+-------------------code----------------------
+
+The important point from the lecture is that this token identifies the **app installation on the device**.
+
+### 4. Important difference from the lecture
+
+The lecture uses older Expo APIs such as:
+
+-------------------code----------------------
+import Notifications from "expo-notifications";
+import * as Permissions from "expo-permissions";
+-------------------code----------------------
+
+and:
+
+-------------------code----------------------
+Permissions.askAsync(...)
+-------------------code----------------------
+
+Your current Expo setup should use the modern API:
+
+-------------------code----------------------
+import * as Notifications from "expo-notifications";
+-------------------code----------------------
+
+and:
+
+-------------------code----------------------
+Notifications.getPermissionsAsync();
+Notifications.requestPermissionsAsync();
+-------------------code----------------------
+
+So **don't copy the old `expo-permissions` code from the lecture exactly**.
+
+### 5. Why do we put this in `AppNavigator`?
+
+The lecture specifically wants notification registration **only when the user is authenticated**.
+
+Your `App.js` already does something conceptually like:
+
+-------------------code----------------------
+{user ? <AppNavigator /> : <AuthNavigator />}
+-------------------code----------------------
+
+Therefore:
+
+-------------------code----------------------
+Not logged in
+     ↓
+AuthNavigator
+     ↓
+No push-token registration
+
+Logged in
+     ↓
+AppNavigator
+     ↓
+Register for push notifications
+     ↓
+Get push token
+-------------------code----------------------
+
+That's a good architectural choice because the next lecture will take this token and **send it to your backend**, where it will be associated with the current user.
+
+### 6. Next step
+
+For **this lecture**, stop after confirming that the token appears in the console.
+
+The next step is:
+
+-------------------code----------------------
+Expo Push Token
+      ↓
+API request
+      ↓
+Backend
+      ↓
+Current user
+      ↓
+Save token in database
+-------------------code----------------------
+
+That is where we'll need to connect the token to your existing `auth` system and current user.
