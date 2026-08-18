@@ -1569,3 +1569,575 @@ Save token in database
 -------------------code----------------------
 
 That is where we'll need to connect the token to your existing `auth` system and current user.
+
+*** 5- Storing the Push Notification Token ***
+# Push Notifications: Store the Expo Push Token on the Server
+
+## 1. Goal of This Lecture
+
+Previously, we learned how to:
+
+1. Ask the user for notification permission.
+2. Get the Expo Push Notification Token.
+3. Identify the device/app installation with that token.
+
+Now we need to **send that token to our backend** and associate it with the currently logged-in user.
+
+The overall flow becomes:
+
+-------------------code----------------------
+User logs in
+    ↓
+AppNavigator starts
+    ↓
+Request notification permission
+    ↓
+Get Expo Push Token
+    ↓
+POST token to backend
+    ↓
+Backend associates token with current user
+-------------------code----------------------
+
+---
+
+# 2. Backend API
+
+The backend provides a protected endpoint:
+
+-------------------code----------------------
+POST /expoPushTokens
+-------------------code----------------------
+
+The endpoint requires:
+
+### Authentication header
+
+-------------------code----------------------
+x-auth-token: <authentication-token>
+-------------------code----------------------
+
+Your API client already handles this automatically.
+
+### Request body
+
+-------------------code----------------------on
+{
+  "token": "ExponentPushToken[xxxxxxxxxxxxxxxxxxxx]"
+}
+-------------------code----------------------
+
+If everything succeeds, the server returns:
+
+-------------------code----------------------
+201 Created
+-------------------code----------------------
+
+The backend then associates the token with the logged-in user.
+
+For example:
+
+-------------------code----------------------
+User
+├── id
+├── name
+├── email
+├── password
+└── expoPushToken
+-------------------code----------------------
+
+The important part for us is:
+
+-------------------code----------------------
+expoPushToken
+-------------------code----------------------
+
+---
+
+# 3. Create the API Module
+
+Go to:
+
+-------------------code----------------------
+api/
+-------------------code----------------------
+
+Create:
+
+-------------------code----------------------
+expoPushTokens.js
+-------------------code----------------------
+
+The responsibility of this file is simple:
+
+> Communicate with the backend endpoint responsible for registering Expo push tokens.
+
+---
+
+## Step 1: Import the API client
+
+-------------------code----------------------
+import client from "./client";
+-------------------code----------------------
+
+The `client` is important because it automatically adds the authentication token to protected requests.
+
+---
+
+## Step 2: Create the register function
+
+The function receives the Expo push token:
+
+-------------------code----------------------
+const register = (pushToken) =>
+  client.post("/expoPushTokens", {
+    token: pushToken,
+  });
+-------------------code----------------------
+
+Notice that we don't manually add:
+
+-------------------code----------------------
+x-auth-token
+-------------------code----------------------
+
+The API client does that for us.
+
+---
+
+## Step 3: Export the API
+
+-------------------code----------------------
+export default {
+  register,
+};
+-------------------code----------------------
+
+---
+
+# 4. Complete `api/expoPushTokens.js`
+
+Your new file should therefore be:
+
+-------------------code----------------------
+import client from "./client";
+
+const register = (pushToken) =>
+  client.post("/expoPushTokens", {
+    token: pushToken,
+  });
+
+export default {
+  register,
+};
+-------------------code----------------------
+
+---
+
+# 5. Use the API in `AppNavigator.js`
+
+Previously, our notification registration function probably ended with:
+
+-------------------code----------------------
+console.log("Expo Push Token:", token);
+-------------------code----------------------
+
+We don't need to simply print the token anymore.
+
+Instead, we send it to our backend.
+
+---
+
+## Step 1: Import the API
+
+At the top of `AppNavigator.js`:
+
+-------------------code----------------------
+import expoPushTokensApi from "../api/expoPushTokens";
+-------------------code----------------------
+
+---
+
+## Step 2: Send the token to the server
+
+Replace:
+
+-------------------code----------------------
+console.log("Expo Push Token:", token);
+-------------------code----------------------
+
+with:
+
+-------------------code----------------------
+expoPushTokensApi.register(token);
+-------------------code----------------------
+
+We don't need `await` here because we don't need to wait for the server response before continuing.
+
+This request can happen in the background.
+
+---
+
+# 6. Why We Don't Need to Send the Auth Token Manually
+
+Our request:
+
+-------------------code----------------------
+expoPushTokensApi.register(token);
+-------------------code----------------------
+
+eventually calls:
+
+-------------------code----------------------
+client.post("/expoPushTokens", {
+  token: pushToken,
+});
+-------------------code----------------------
+
+Our `client.js` contains the request transformation that we implemented earlier.
+
+Conceptually:
+
+-------------------code----------------------
+expoPushTokensApi
+       ↓
+client.post()
+       ↓
+client.js
+       ↓
+Get authentication token
+       ↓
+Add x-auth-token header
+       ↓
+Send request
+-------------------code----------------------
+
+Therefore, the final HTTP request looks approximately like:
+
+-------------------code----------------------
+POST /expoPushTokens
+x-auth-token: <JWT>
+
+{
+  "token": "ExponentPushToken[...]"
+}
+-------------------code----------------------
+
+This is why the endpoint can identify **which user** owns the push token.
+
+---
+
+# 7. Why This Endpoint Is Protected
+
+Suppose John sends:
+
+-------------------code----------------------on
+{
+  "token": "ExponentPushToken[ABC]"
+}
+-------------------code----------------------
+
+The backend needs to know that this token belongs to John.
+
+The authentication token in the header tells the backend:
+
+-------------------code----------------------
+Authentication token
+        ↓
+Current user = John
+        ↓
+Save Expo token ABC
+        ↓
+John.expoPushToken = ABC
+-------------------code----------------------
+
+This is much safer than allowing the client to specify:
+
+-------------------code----------------------on
+{
+  "userId": 123,
+  "token": "..."
+}
+-------------------code----------------------
+
+The backend determines the current user from the authenticated request.
+
+---
+
+# 8. Updated Notification Flow
+
+At this point, our complete notification registration flow is:
+
+-------------------code----------------------
+                    LOGIN
+                      ↓
+              Authentication Token
+                      ↓
+                AppNavigator
+                      ↓
+             Ask Notification Permission
+                      ↓
+             Expo Push Notification Token
+                      ↓
+             expoPushTokensApi.register()
+                      ↓
+                  client.js
+                      ↓
+            Add x-auth-token automatically
+                      ↓
+          POST /expoPushTokens
+                      ↓
+                  Backend
+                      ↓
+            Find authenticated user
+                      ↓
+             Save Expo Push Token
+-------------------code----------------------
+
+Now the server knows how to reach the user's device.
+
+---
+
+# 9. Important Notes and Best Practices
+
+### 9.1 Keep API calls in the API layer
+
+Don't write this directly inside your screen:
+
+-------------------code----------------------
+client.post("/expoPushTokens", ...)
+-------------------code----------------------
+
+Instead:
+
+-------------------code----------------------
+expoPushTokensApi.register(token);
+-------------------code----------------------
+
+This keeps your application organized.
+
+---
+
+### 9.2 Don't manually pass the authentication token
+
+Because `client.js` already handles:
+
+-------------------code----------------------
+x-auth-token
+-------------------code----------------------
+
+you only need to provide:
+
+-------------------code----------------------
+{
+  token: pushToken
+}
+-------------------code----------------------
+
+---
+
+### 9.3 Push tokens identify an app installation
+
+A push token is more accurately associated with an **app installation**, not permanently with a physical device.
+
+For example:
+
+-------------------code----------------------
+Install app
+    ↓
+Token A
+
+Uninstall + reinstall
+    ↓
+Token B
+-------------------code----------------------
+
+Therefore, your backend should be prepared for tokens to change.
+
+---
+
+### 9.4 Don't log sensitive information in production
+
+The lecture shows the token in the console for demonstration.
+
+In a production application, avoid unnecessarily logging authentication tokens or other sensitive information.
+
+---
+
+# 10. Full Final Code
+
+## `api/expoPushTokens.js`
+
+-------------------code----------------------
+import client from "./client";
+
+const register = (pushToken) =>
+  client.post("/expoPushTokens", {
+    token: pushToken,
+  });
+
+export default {
+  register,
+};
+-------------------code----------------------
+
+## `navigation/AppNavigator.js`
+
+Based on your current `AppNavigator.js` and the previous notification lecture:
+
+-------------------code----------------------
+import React, { useEffect } from "react";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import * as Notifications from "expo-notifications";
+import * as Device from "expo-device";
+
+import AccountNavigator from "./AccountNavigator";
+import FeedNavigator from "./FeedNavigator";
+import ListingEditScreen from "../screens/ListingEditScreen";
+import NewListingButton from "./NewListingButton";
+import routes from "./routes";
+
+import expoPushTokensApi from "../api/expoPushTokens";
+
+const Tab = createBottomTabNavigator();
+
+async function registerForPushNotificationsAsync() {
+  try {
+    // Push notifications require a physical device.
+    if (!Device.isDevice) {
+      console.log(
+        "Push notifications require a physical device."
+      );
+      return;
+    }
+
+    // Check existing permission.
+    const { status: existingStatus } =
+      await Notifications.getPermissionsAsync();
+
+    let finalStatus = existingStatus;
+
+    // Ask for permission if necessary.
+    if (existingStatus !== "granted") {
+      const { status } =
+        await Notifications.requestPermissionsAsync();
+
+      finalStatus = status;
+    }
+
+    // Permission denied.
+    if (finalStatus !== "granted") {
+      console.log(
+        "Notification permission not granted."
+      );
+      return;
+    }
+
+    // Get Expo push token.
+    const tokenData =
+      await Notifications.getExpoPushTokenAsync();
+
+    const token = tokenData.data;
+
+    // Send token to the backend.
+    expoPushTokensApi.register(token);
+  } catch (error) {
+    console.log(
+      "Error getting a push notification token:",
+      error
+    );
+  }
+}
+
+const AppNavigator = () => {
+  useEffect(() => {
+    registerForPushNotificationsAsync();
+  }, []);
+
+  return (
+    <Tab.Navigator>
+      <Tab.Screen
+        name="Feed"
+        component={FeedNavigator}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons
+              name="home"
+              color={color}
+              size={size}
+            />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="ListingEdit"
+        component={ListingEditScreen}
+        options={({ navigation }) => ({
+          tabBarButton: () => (
+            <NewListingButton
+              onPress={() =>
+                navigation.navigate(routes.LISTING_EDIT)
+              }
+            />
+          ),
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons
+              name="plus-circle"
+              color={color}
+              size={size}
+            />
+          ),
+        })}
+      />
+
+      <Tab.Screen
+        name="Account"
+        component={AccountNavigator}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons
+              name="account"
+              color={color}
+              size={size}
+            />
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  );
+};
+
+export default AppNavigator;
+-------------------code----------------------
+
+# 11. Summary
+
+The key idea from this lecture is:
+
+**Get the Expo push token → send it to the backend → associate it with the authenticated user.**
+
+The new API module is:
+
+-------------------code----------------------
+api/expoPushTokens.js
+-------------------code----------------------
+
+with:
+
+-------------------code----------------------
+expoPushTokensApi.register(token);
+-------------------code----------------------
+
+And the backend receives:
+
+-------------------code----------------------on
+{
+  "token": "ExponentPushToken[...]"
+}
+-------------------code----------------------
+
+Because your `client.js` automatically adds the JWT authentication header, the backend knows **which logged-in user owns that push token**.
+
+The next logical step is to use the stored token to actually **send a notification from the server to that user's device**.
