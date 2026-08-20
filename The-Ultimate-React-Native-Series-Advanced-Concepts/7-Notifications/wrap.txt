@@ -2629,3 +2629,563 @@ Data  → { listingId: 123 }
 -------------------code----------------------
 
 Later, the `listingId` can be used to determine **which screen/listing should open when the user interacts with the notification**.
+
+
+*** 7- Sending Notifications on the Server ***
+# Push Notifications — Sending Notifications from the Backend
+
+## 1. Goal of This Lecture
+
+Until now, we have:
+
+1. Requested notification permission.
+2. Obtained an Expo Push Token.
+3. Stored the token on the server.
+4. Tested sending a notification manually.
+
+Now we learn how to **send push notifications programmatically from our backend**.
+
+The important idea is:
+
+> The mobile app does not directly send the push notification. The backend sends it using an Expo SDK.
+
+The flow is:
+
+-------------------code----------------------
+Your Backend
+     ↓
+Expo Server SDK
+     ↓
+Expo Push Notification Service
+     ↓
+ ┌───────────────┐
+ │               │
+Android        iOS
+ │               │
+ ↓               ↓
+FCM             APNs
+ │               │
+ ↓               ↓
+Android Device  iPhone
+-------------------code----------------------
+
+---
+
+# 2. Expo Provides SDKs for Different Backends
+
+Expo provides server-side SDKs for different programming languages.
+
+Examples include:
+
+* Node.js
+* Python
+* Ruby
+* Other supported environments
+
+You choose the SDK that matches your backend technology.
+
+For example, if your backend is Node.js:
+
+-------------------code----------------------
+Node.js Backend
+      ↓
+Expo Server SDK
+      ↓
+Expo Push Service
+-------------------code----------------------
+
+If your backend is Python:
+
+-------------------code----------------------
+Python Backend
+      ↓
+Expo Python SDK
+      ↓
+Expo Push Service
+-------------------code----------------------
+
+The important point is that the SDK handles the communication with Expo for you.
+
+---
+
+# 3. What Happens Behind the Scenes?
+
+Suppose your backend wants to send:
+
+-------------------code----------------------
+"Mosh says: Is your jacket still available?"
+-------------------code----------------------
+
+Your backend sends an HTTP request to Expo.
+
+-------------------code----------------------
+Backend
+   |
+   | HTTP POST
+   ↓
+Expo Push Service
+-------------------code----------------------
+
+Expo then determines the target device's platform.
+
+### Android
+
+-------------------code----------------------
+Backend
+   ↓
+Expo
+   ↓
+Firebase Cloud Messaging (FCM)
+   ↓
+Android Device
+-------------------code----------------------
+
+### iOS
+
+-------------------code----------------------
+Backend
+   ↓
+Expo
+   ↓
+Apple Push Notification Service (APNs)
+   ↓
+iPhone
+-------------------code----------------------
+
+You don't have to manually implement the FCM/APNs communication.
+
+That is one of the major advantages of using Expo's push notification service.
+
+---
+
+# 4. Why Use Expo Instead of Directly Using FCM/APNs?
+
+Without Expo, your backend would need to deal with platform-specific notification systems.
+
+Conceptually:
+
+-------------------code----------------------
+Your Backend
+   ├── Android → FCM
+   └── iOS → APNs
+-------------------code----------------------
+
+With Expo:
+
+-------------------code----------------------
+Your Backend
+     ↓
+Expo
+     ├── Android → FCM
+     └── iOS → APNs
+-------------------code----------------------
+
+Expo hides much of this complexity.
+
+Your backend only needs to communicate with Expo.
+
+---
+
+# 5. Backend Implementation
+
+The lecture's backend contains a utility module similar to:
+
+-------------------code----------------------
+utils/
+└── pushNotifications.js
+-------------------code----------------------
+
+The purpose of this module is to provide one simple function:
+
+-------------------code----------------------
+sendPushNotification(pushToken, message)
+-------------------code----------------------
+
+The rest of the application doesn't need to know how Expo works internally.
+
+This is another example of **separation of concerns**.
+
+---
+
+# 6. Install the Expo Server SDK
+
+For a Node.js backend, install the Expo server SDK.
+
+-------------------code----------------------
+npm install expo-server-sdk
+-------------------code----------------------
+
+Then import it into your notification utility:
+
+-------------------code----------------------
+const { Expo } = require("expo-server-sdk");
+-------------------code----------------------
+
+If your project uses ES modules, the import syntax may differ depending on your Node configuration.
+
+---
+
+# 7. Create the Expo Client
+
+Create an Expo client:
+
+-------------------code----------------------
+const expo = new Expo();
+-------------------code----------------------
+
+This object communicates with Expo's push notification service.
+
+---
+
+# 8. Create `sendPushNotification()`
+
+The function should receive:
+
+-------------------code----------------------
+pushToken
+message
+-------------------code----------------------
+
+For example:
+
+-------------------code----------------------
+sendPushNotification(
+  "ExponentPushToken[...]",
+  {
+    title: "Mosh says",
+    body: "Is your jacket still available?",
+  }
+);
+-------------------code----------------------
+
+The function is responsible for creating and sending the Expo notification.
+
+---
+
+# 9. Validate the Push Token
+
+Before sending a notification, it's a good idea to verify that the token is a valid Expo push token.
+
+The SDK provides:
+
+-------------------code----------------------
+Expo.isExpoPushToken(pushToken)
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+if (!Expo.isExpoPushToken(pushToken)) {
+  throw new Error("Invalid Expo push token");
+}
+-------------------code----------------------
+
+This prevents your backend from trying to send an invalid token.
+
+---
+
+# 10. Create the Notification Message
+
+The notification message can contain:
+
+-------------------code----------------------
+{
+  to: pushToken,
+  sound: "default",
+  title: "Mosh says",
+  body: "Is your jacket still available?",
+  data: {
+    listingId: 123,
+  },
+}
+-------------------code----------------------
+
+There are two important parts:
+
+### Visible notification
+
+-------------------code----------------------
+title: "Mosh says",
+body: "Is your jacket still available?",
+-------------------code----------------------
+
+### Application data
+
+-------------------code----------------------
+data: {
+  listingId: 123,
+}
+-------------------code----------------------
+
+The `data` object can later be used by the application to determine what to do when the user interacts with the notification.
+
+---
+
+# 11. Send the Notification
+
+The Expo SDK provides a method for sending push notifications.
+
+Conceptually:
+
+-------------------code----------------------
+await expo.sendPushNotificationsAsync([
+  message,
+]);
+-------------------code----------------------
+
+The SDK then communicates with Expo's servers.
+
+The complete flow is:
+
+-------------------code----------------------
+sendPushNotification()
+        ↓
+Validate token
+        ↓
+Create notification message
+        ↓
+Expo Server SDK
+        ↓
+Expo Push Service
+        ↓
+FCM / APNs
+        ↓
+User's device
+-------------------code----------------------
+
+---
+
+# 12. Why Put This in a Utility Module?
+
+Instead of writing Expo code throughout your backend, keep it in one place:
+
+-------------------code----------------------
+utils/
+└── pushNotifications.js
+-------------------code----------------------
+
+Then elsewhere in your backend you can simply do:
+
+-------------------code----------------------
+sendPushNotification(
+  user.expoPushToken,
+  message
+);
+-------------------code----------------------
+
+The rest of your backend doesn't need to know about:
+
+* Expo SDK
+* Expo HTTP requests
+* FCM
+* APNs
+* Push message formatting
+
+This keeps your code clean.
+
+---
+
+# 13. Example Usage
+
+Imagine the user sends a message about a listing.
+
+-------------------code----------------------
+User A
+   ↓
+Sends message
+   ↓
+Backend
+   ↓
+Save message to database
+   ↓
+Find listing owner
+   ↓
+Get owner's Expo Push Token
+   ↓
+sendPushNotification()
+   ↓
+Expo
+   ↓
+Owner's phone
+-------------------code----------------------
+
+For example:
+
+-------------------code----------------------
+await sendPushNotification(
+  listingOwner.expoPushToken,
+  {
+    title: currentUser.name,
+    body: message.text,
+    data: {
+      listingId: listing.id,
+    },
+  }
+);
+-------------------code----------------------
+
+This is the basic architecture we'll eventually use for messaging notifications.
+
+---
+
+# 14. Important Best Practices
+
+## 14.1 Keep notification code on the server
+
+Do not put your server-side Expo credentials or notification-sending logic inside the React Native application.
+
+The architecture should be:
+
+-------------------code----------------------
+React Native
+     ↓
+Your Backend
+     ↓
+Expo
+     ↓
+Device
+-------------------code----------------------
+
+---
+
+## 14.2 Keep Expo-specific code isolated
+
+A good structure is:
+
+-------------------code----------------------
+backend/
+├── routes/
+├── middleware/
+├── models/
+└── utils/
+    └── pushNotifications.js
+-------------------code----------------------
+
+This makes it easier to replace Expo later if your project requirements change.
+
+---
+
+## 14.3 Store the token with the user
+
+The user record should contain something like:
+
+-------------------code----------------------
+{
+  id: 123,
+  name: "Mosh",
+  email: "mosh@example.com",
+  expoPushToken: "ExponentPushToken[...]"
+}
+-------------------code----------------------
+
+Then you can send a notification to a specific user.
+
+---
+
+## 14.4 Don't send sensitive information
+
+Avoid putting sensitive data directly inside notification payloads.
+
+Prefer:
+
+-------------------code----------------------
+data: {
+  listingId: 123,
+}
+-------------------code----------------------
+
+rather than putting private information in the notification.
+
+---
+
+# 15. Full Final Code
+
+Because the lecture is showing the backend implementation, the main new file is:
+
+-------------------code----------------------
+utils/pushNotifications.js
+-------------------code----------------------
+
+A clean Node.js implementation is:
+
+-------------------code----------------------
+const { Expo } = require("expo-server-sdk");
+
+const expo = new Expo();
+
+const sendPushNotification = async (pushToken, message) => {
+  if (!Expo.isExpoPushToken(pushToken)) {
+    throw new Error("Invalid Expo push token");
+  }
+
+  const notification = {
+    to: pushToken,
+    sound: "default",
+    ...message,
+  };
+
+  const messages = [notification];
+
+  const chunks = expo.chunkPushNotifications(messages);
+
+  for (const chunk of chunks) {
+    try {
+      const tickets = await expo.sendPushNotificationsAsync(
+        chunk
+      );
+
+      console.log("Push notification tickets:", tickets);
+    } catch (error) {
+      console.error(
+        "Error sending push notification:",
+        error
+      );
+    }
+  }
+};
+
+module.exports = {
+  sendPushNotification,
+};
+-------------------code----------------------
+
+Then another backend module can use it like this:
+
+-------------------code----------------------
+const {
+  sendPushNotification,
+} = require("../utils/pushNotifications");
+
+await sendPushNotification(
+  user.expoPushToken,
+  {
+    title: "Mosh says",
+    body: "Is your jacket still available?",
+    data: {
+      listingId: 123,
+    },
+  }
+);
+-------------------code----------------------
+
+## Summary
+
+The most important thing to remember is:
+
+-------------------code----------------------
+Backend
+   ↓
+Expo Server SDK
+   ↓
+Expo Push Service
+   ↓
+ ┌───────────┐
+ ↓           ↓
+FCM         APNs
+ ↓           ↓
+Android     iOS
+-------------------code----------------------
+
+Your backend only needs to call the Expo SDK. Expo handles the platform-specific delivery infrastructure.
+
+The next logical step is to connect this to the application's **messaging feature**, so that when one user sends a message to another user, the backend saves the message and sends a push notification to the recipient.
