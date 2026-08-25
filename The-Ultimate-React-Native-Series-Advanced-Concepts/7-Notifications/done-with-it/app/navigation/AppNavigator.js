@@ -8,6 +8,7 @@ import FeedNavigator from "./FeedNavigator";
 import ListingEditScreen from "../screens/ListingEditScreen";
 import NewListingButton from "./NewListingButton";
 import routes from "./routes";
+import navigation from "./rootNavigation";
 
 const Tab = createBottomTabNavigator();
 
@@ -16,7 +17,7 @@ const AppNavigator = () => {
     const subscription =
       Notifications.addNotificationResponseReceivedListener(
         (notification) => {
-          console.log(notification);
+          navigation.navigate("Account");
         }
       );
 
