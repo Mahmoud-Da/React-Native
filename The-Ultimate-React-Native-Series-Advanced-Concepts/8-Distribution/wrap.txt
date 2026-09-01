@@ -666,3 +666,332 @@ Expo Build
         ↓
 iOS + Android icons
 -------------------code----------------------
+
+
+*** 4- Optimizing JavaScript Bundle ***
+# Optimizing Production Assets in an Expo App
+
+## 1. Why Do We Need to Optimize Assets?
+
+When we build the app for production, assets such as images are bundled into the application.
+
+For example:
+
+-------------------code----------------------
+assets/
+├── logo.png
+├── couch.jpg
+├── chair.jpg
+└── jacket.jpg
+-------------------code----------------------
+
+These files can increase the final application size.
+
+The goal is:
+
+> Keep only the assets that are absolutely necessary when the app starts.
+
+Anything that isn't immediately required should preferably be downloaded later from the internet/server.
+
+---
+
+## 2. Remove Unnecessary Assets
+
+Earlier in the course, some images were used as temporary data before connecting the application to the backend.
+
+For example:
+
+-------------------code----------------------
+couch.jpg
+chair.jpg
+jacket.jpg
+-------------------code----------------------
+
+Once the application gets its data from the backend, these images are no longer needed.
+
+### Step
+
+Delete unnecessary files:
+
+-------------------code----------------------
+assets/
+├── logo.png
+└── other-essential-assets
+-------------------code----------------------
+
+This reduces the size of the production application.
+
+### Important Rule
+
+Before building:
+
+1. Open the `assets` folder.
+2. Identify which files are actually required at startup.
+3. Delete unused or obsolete files.
+4. Move remotely available content to the server/CDN when appropriate.
+
+---
+
+# 3. Install `sharp-cli`
+
+After removing unnecessary assets, we should optimize the remaining images.
+
+The lecture uses `sharp-cli`.
+
+Install it globally:
+
+-------------------code----------------------
+npm install -g sharp-cli
+-------------------code----------------------
+
+### What is `sharp-cli`?
+
+`sharp-cli` is a command-line tool based on the Sharp image-processing library.
+
+It can optimize images and reduce their file size while maintaining good visual quality.
+
+---
+
+# 4. Optimize Expo Assets
+
+After installing `sharp-cli`, run:
+
+-------------------code----------------------
+npx expo-optimize
+-------------------code----------------------
+
+The optimization process uses Sharp behind the scenes to reduce the size of the images.
+
+For example:
+
+-------------------code----------------------
+npx expo-optimize
+-------------------code----------------------
+
+The tool processes the assets and reports how much space was saved.
+
+Example:
+
+-------------------code----------------------
+Optimizing assets...
+
+logo.png    saved: 20 KB
+image1.jpg  saved: 50 KB
+image2.jpg  saved: 58 KB
+
+Total saved: 128 KB
+-------------------code----------------------
+
+The exact output will depend on your project.
+
+---
+
+# 5. What Happens During Optimization?
+
+Conceptually:
+
+-------------------code----------------------
+Original image
+      |
+      v
+   Sharp
+      |
+      v
+Optimized image
+      |
+      v
+Smaller production bundle
+-------------------code----------------------
+
+The important point is that the image is compressed/optimized without noticeably reducing its visual quality.
+
+---
+
+# 6. Why Asset Optimization Matters
+
+In the example from the lecture, the optimization saved approximately:
+
+-------------------code----------------------
+128 KB
+-------------------code----------------------
+
+For a small application, this isn't a huge amount.
+
+However, in a larger application you may have:
+
+* Dozens or hundreds of images
+* Large PNG files
+* Background images
+* Icons
+* Fonts
+* Other bundled resources
+
+The savings can become significant.
+
+For example:
+
+-------------------code----------------------
+100 images × 200 KB
+= 20 MB
+-------------------code----------------------
+
+Reducing each image by even 30% could save several megabytes.
+
+---
+
+# 7. Best Practices
+
+### 7.1 Don't bundle everything
+
+Only bundle assets that are required immediately.
+
+Bad:
+
+-------------------code----------------------
+assets/
+├── 100 product images
+├── 50 profile images
+├── backgrounds
+├── unused images
+└── temporary test images
+-------------------code----------------------
+
+Better:
+
+-------------------code----------------------
+assets/
+├── app-icon.png
+├── splash.png
+└── other startup-critical assets
+-------------------code----------------------
+
+Download user/content-specific images from your backend when needed.
+
+---
+
+### 7.2 Delete development leftovers
+
+Before production, check for:
+
+-------------------code----------------------
+test images
+temporary files
+unused icons
+old screenshots
+sample data
+unused fonts
+-------------------code----------------------
+
+They should not unnecessarily be included in the final application.
+
+---
+
+### 7.3 Optimize images before building
+
+A good production workflow is:
+
+-------------------code----------------------
+Remove unused assets
+        ↓
+Optimize remaining assets
+        ↓
+Test the application
+        ↓
+Create production build
+-------------------code----------------------
+
+---
+
+### 7.4 Don't sacrifice quality unnecessarily
+
+The objective isn't simply:
+
+> "Make every image as small as possible."
+
+Instead:
+
+> "Use the smallest reasonable file size while maintaining acceptable quality."
+
+---
+
+# 8. Complete Commands
+
+The main commands from this lesson are:
+
+### Install Sharp CLI
+
+-------------------code----------------------
+npm install -g sharp-cli
+-------------------code----------------------
+
+### Optimize Expo assets
+
+-------------------code----------------------
+npx expo-optimize
+-------------------code----------------------
+
+These are terminal commands rather than JavaScript code.
+
+---
+
+# 9. Full Final Setup
+
+There isn't a JavaScript file that needs to be changed for this lesson.
+
+The final project should simply contain only the necessary assets, for example:
+
+-------------------code----------------------
+your-project/
+├── assets/
+│   ├── logo.png
+│   └── other-essential-assets
+├── app/
+├── components/
+├── screens/
+├── api/
+├── navigation/
+└── package.json
+-------------------code----------------------
+
+Then run:
+
+-------------------code----------------------
+npm install -g sharp-cli
+npx expo-optimize
+-------------------code----------------------
+
+---
+
+# 10. Summary
+
+The production asset optimization process is:
+
+1. **Remove unnecessary assets**
+
+   * Delete old/test images such as `couch.jpg`, `chair.jpg`, and `jacket.jpg`.
+
+2. **Keep only essential startup assets**
+
+   * Don't bundle content that can be downloaded from the backend.
+
+3. **Install Sharp CLI**
+
+-------------------code----------------------
+npm install -g sharp-cli
+-------------------code----------------------
+
+4. **Optimize Expo assets**
+
+-------------------code----------------------
+npx expo-optimize
+-------------------code----------------------
+
+5. **Check the reported savings**
+
+   * Larger projects can benefit significantly from image optimization.
+
+6. **Build only after the assets are cleaned and optimized.**
+
+### Key idea
+
+> **Smaller bundled assets = smaller application size and potentially faster installation/startup.**
