@@ -343,3 +343,326 @@ Distribute to users
 This section is essentially about answering the question:
 
 **"I built my React Native app. How do I turn it into a real application that I can give to users?"**
+
+*** 2- App Icon ***
+# App Icon Configuration in Expo
+
+## 1. Overview
+
+Before creating and distributing the application, we need to prepare some important production assets.
+
+The **first step is configuring a proper app icon**.
+
+Expo makes this relatively simple because we provide **one high-resolution icon**, and Expo can generate the required sizes for different platforms.
+
+---
+
+# 2. App Icon Requirements
+
+The lecture specifies the following requirements for the main icon:
+
+### File format
+
+The icon should be:
+
+-------------------code----------------------
+PNG
+-------------------code----------------------
+
+### Dimensions
+
+The icon should be exactly:
+
+-------------------code----------------------
+1024 × 1024 pixels
+-------------------code----------------------
+
+Both dimensions must be identical.
+
+Correct:
+
+-------------------code----------------------
+Width:  1024 px
+Height: 1024 px
+-------------------code----------------------
+
+Incorrect:
+
+-------------------code----------------------
+Width:  1024 px
+Height: 1000 px
+-------------------code----------------------
+
+The icon should be perfectly square.
+
+---
+
+# 3. Don't Add Rounded Corners
+
+The source icon should **not contain rounded corners**.
+
+Use:
+
+-------------------code----------------------
+Square image
+    ↓
+Expo / platform processing
+    ↓
+Platform-specific icon
+-------------------code----------------------
+
+Don't manually create the rounded corners.
+
+The platform handles the appropriate presentation.
+
+---
+
+# 4. Follow Platform Design Guidelines
+
+The icon should follow the design guidelines for both:
+
+* Apple
+* Android
+
+This is important because app stores and operating systems have specific recommendations for application icons.
+
+The general principle is:
+
+-------------------code----------------------
+1024 × 1024 PNG
+        ↓
+Platform guidelines
+        ↓
+Production app icon
+-------------------code----------------------
+
+---
+
+# 5. Add the Icon to the Assets Folder
+
+Place the icon inside your project's `assets` directory.
+
+For example:
+
+-------------------code----------------------
+project/
+├── assets/
+│   ├── icon.png
+│   └── ...
+├── app.json
+└── ...
+-------------------code----------------------
+
+In the lecture, the provided icon represents the letter **D**, referring to the app "Done."
+
+---
+
+# 6. Configure the Icon in `app.json`
+
+Open:
+
+-------------------code----------------------
+app.json
+-------------------code----------------------
+
+Expo projects normally contain an `icon` property inside the Expo configuration.
+
+Example:
+
+-------------------code----------------------
+{
+  "expo": {
+    "icon": "./assets/icon.png"
+  }
+}
+-------------------code----------------------
+
+The important part is:
+
+-------------------code----------------------
+"icon": "./assets/icon.png"
+-------------------code----------------------
+
+This tells Expo where the application's main icon is located.
+
+---
+
+# 7. How Expo Handles the Icon
+
+One of the major advantages of Expo's managed workflow is that you don't have to manually create every icon size.
+
+You provide:
+
+-------------------code----------------------
+1024 × 1024 icon
+-------------------code----------------------
+
+Expo's build system handles the platform-specific icon generation.
+
+Conceptually:
+
+-------------------code----------------------
+                icon.png
+             1024 × 1024
+                   |
+                   v
+             Expo Build Service
+              /            \
+             /              \
+          iOS              Android
+           |                  |
+      Required sizes      Required sizes
+-------------------code----------------------
+
+This significantly reduces the amount of native configuration you need to manage.
+
+---
+
+# 8. Expo Managed Workflow vs. Ejected/Bare Projects
+
+### Expo Managed Workflow
+
+You provide one main icon:
+
+-------------------code----------------------
+assets/icon.png
+-------------------code----------------------
+
+and configure:
+
+-------------------code----------------------
+{
+  "expo": {
+    "icon": "./assets/icon.png"
+  }
+}
+-------------------code----------------------
+
+Expo handles much of the platform-specific work.
+
+### Bare / Ejected Workflow
+
+If you move away from Expo's managed workflow, you generally have to deal with native project configuration yourself.
+
+That can mean configuring:
+
+* iOS icon assets
+* Android icon resources
+* Different resolutions
+* Native project settings
+
+The process isn't impossible, but it requires more manual work.
+
+---
+
+# 9. Why Expo Makes This Easier
+
+The main advantage is **less native configuration**.
+
+Without Expo:
+
+-------------------code----------------------
+Create icon sizes
+       ↓
+Configure iOS
+       ↓
+Configure Android
+       ↓
+Maintain native assets
+-------------------code----------------------
+
+With Expo:
+
+-------------------code----------------------
+Create one 1024 × 1024 PNG
+       ↓
+Configure app.json
+       ↓
+Expo handles the rest
+-------------------code----------------------
+
+This is one of the conveniences of the managed workflow.
+
+---
+
+# 10. Best Practices
+
+### Icon checklist
+
+Before building your application:
+
+* [ ] PNG format
+* [ ] Exactly 1024 × 1024 pixels
+* [ ] Width = height
+* [ ] No manually added rounded corners
+* [ ] High-quality artwork
+* [ ] Follow Apple design guidelines
+* [ ] Follow Android design guidelines
+* [ ] Place the icon in `assets/`
+* [ ] Configure its path in `app.json`
+
+### Important
+
+Don't resize the image to different dimensions yourself unless you have a specific reason. The production build system can generate the required platform-specific versions.
+
+---
+
+# 11. Full Final Code
+
+## `app.json`
+
+-------------------code----------------------
+{
+  "expo": {
+    "name": "Done",
+    "slug": "done",
+    "version": "1.0.0",
+    "icon": "./assets/icon.png"
+  }
+}
+-------------------code----------------------
+
+The essential configuration introduced in this lesson is:
+
+-------------------code----------------------
+"icon": "./assets/icon.png"
+-------------------code----------------------
+
+Your actual `app.json` may contain many additional properties from the previous lessons. **Do not replace your entire existing file with the simplified example above**; add or update the `icon` property while keeping your existing configuration.
+
+---
+
+# 12. Summary
+
+The main points to remember:
+
+1. The app icon should be a **PNG**.
+2. Use exactly **1024 × 1024 pixels**.
+3. Width and height must be identical.
+4. Don't manually add rounded corners.
+5. Follow Apple's and Android's icon guidelines.
+6. Put the icon inside the `assets` folder.
+7. Configure its path using the `icon` property in `app.json`.
+8. Expo can handle generating the required platform-specific icon sizes.
+9. This is one of the benefits of the **Expo managed workflow**.
+10. Bare/ejected projects require more native configuration.
+
+### Key configuration
+
+-------------------code----------------------
+"icon": "./assets/icon.png"
+-------------------code----------------------
+
+So the workflow is simply:
+
+-------------------code----------------------
+Create 1024 × 1024 PNG
+        ↓
+assets/icon.png
+        ↓
+app.json
+        ↓
+Expo Build
+        ↓
+iOS + Android icons
+-------------------code----------------------
