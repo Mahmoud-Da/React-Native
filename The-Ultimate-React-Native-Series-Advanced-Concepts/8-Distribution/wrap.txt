@@ -4151,3 +4151,971 @@ IPA file
           ↓
 App Store submission
 -------------------code----------------------
+
+*** 10- Distributing to the App Store ***
+# Submitting an iOS App to the App Store and TestFlight
+
+## 1. Overview
+
+Once we have an iOS `.ipa` build, the next step is to upload it to **App Store Connect**.
+
+The overall process is:
+
+-------------------code----------------------
+iOS project
+    ↓
+Build
+    ↓
+IPA file
+    ↓
+App Store Connect
+    ↓
+Upload build
+    ↓
+Processing
+    ↓
+TestFlight
+    ↓
+Beta testing
+    ↓
+Prepare App Store listing
+    ↓
+Submit for Apple review
+    ↓
+Approval
+    ↓
+App Store
+-------------------code----------------------
+
+There are two major stages:
+
+### Testing
+
+Use **TestFlight** to distribute the app to beta testers.
+
+### Production
+
+Submit the application to Apple's review process and release it on the App Store.
+
+---
+
+# 2. Open App Store Connect
+
+Go to:
+
+-------------------code----------------------
+appstoreconnect.apple.com
+-------------------code----------------------
+
+Log in with the Apple ID associated with your Apple Developer account.
+
+From the dashboard:
+
+-------------------code----------------------
+My Apps
+    ↓
+Create New App
+-------------------code----------------------
+
+---
+
+# 3. Create a New App
+
+When creating the application, App Store Connect asks for several pieces of information.
+
+### Platform
+
+Select the platform.
+
+For this project:
+
+-------------------code----------------------
+iOS
+-------------------code----------------------
+
+because the application is an iOS-only app.
+
+---
+
+# 4. Enter the App Name
+
+The lecture uses:
+
+-------------------code----------------------
+Done With It
+-------------------code----------------------
+
+The name is what users will see in the App Store.
+
+Example:
+
+-------------------code----------------------
+Name:
+Done With It
+-------------------code----------------------
+
+---
+
+# 5. Select the Primary Language
+
+Choose the main language of the App Store listing.
+
+The lecture uses:
+
+-------------------code----------------------
+English
+-------------------code----------------------
+
+This does not necessarily mean the application itself can only support English.
+
+It refers to the primary language used for the App Store metadata.
+
+---
+
+# 6. Select the Bundle ID
+
+App Store Connect asks you to select a Bundle ID.
+
+This must correspond to the Bundle Identifier configured for the application.
+
+For example:
+
+-------------------code----------------------
+com.example.donewithit
+-------------------code----------------------
+
+The relationship is:
+
+-------------------code----------------------
+app.json
+     ↓
+bundleIdentifier
+     ↓
+Apple Developer
+     ↓
+App Store Connect
+-------------------code----------------------
+
+The Bundle ID identifies the application.
+
+---
+
+# 7. Enter the SKU
+
+The **SKU** is an internal unique identifier for the application.
+
+The lecture uses:
+
+-------------------code----------------------
+com.codewithmosh.donewithit
+-------------------code----------------------
+
+The SKU is not the same thing as the Bundle ID.
+
+Conceptually:
+
+-------------------code----------------------
+Bundle ID
+→ Identifies the application in Apple's ecosystem
+
+SKU
+→ Internal identifier for App Store Connect
+-------------------code----------------------
+
+Choose a unique value that makes sense for your project.
+
+---
+
+# 8. Create the App
+
+After entering:
+
+* Platform
+* Name
+* Primary language
+* Bundle ID
+* SKU
+
+create the application.
+
+You now have an App Store Connect application record.
+
+---
+
+# 9. Upload the IPA
+
+The lecture uses **Transporter** to upload the `.ipa`.
+
+Transporter is Apple's tool for delivering application builds to App Store Connect.
+
+The lecture's workflow is:
+
+-------------------code----------------------
+IPA file
+   ↓
+Transporter
+   ↓
+App Store Connect
+-------------------code----------------------
+
+Install Transporter through Apple's available distribution channel, sign in, and select the application delivery workflow.
+
+Then drag and drop the `.ipa` file into Transporter.
+
+---
+
+# 10. Deliver the Build
+
+After adding the `.ipa`:
+
+-------------------code----------------------
+IPA
+ ↓
+Transporter
+ ↓
+Deliver
+-------------------code----------------------
+
+Transporter uploads the build to App Store Connect.
+
+The upload can take several minutes depending on the file size and connection.
+
+---
+
+# 11. Check the Activity Tab
+
+After delivery, return to App Store Connect.
+
+Open your application and go to:
+
+-------------------code----------------------
+Activity
+-------------------code----------------------
+
+Here you can see uploaded builds.
+
+For example:
+
+-------------------code----------------------
+Build 1
+Status: Processing
+-------------------code----------------------
+
+The build is not immediately available for testing.
+
+Apple first needs to process it.
+
+---
+
+# 12. Build Processing
+
+The lecture says processing can take around:
+
+-------------------code----------------------
+20–30 minutes
+-------------------code----------------------
+
+Sometimes it is faster or slower.
+
+The important point is:
+
+-------------------code----------------------
+Uploaded
+   ↓
+Processing
+   ↓
+Available
+-------------------code----------------------
+
+Don't assume that a successful Transporter upload means the build is immediately ready in TestFlight.
+
+---
+
+# 13. If Processing Gets Stuck
+
+The lecture recommends re-delivering the application through Transporter if processing remains stuck for an unusually long time.
+
+Conceptually:
+
+-------------------code----------------------
+Processing stuck
+      ↓
+Check the build
+      ↓
+Re-deliver if necessary
+-------------------code----------------------
+
+However, before re-uploading, check Apple's current App Store Connect status/errors because processing delays can also be caused by Apple-side issues or problems with the build.
+
+---
+
+# 14. TestFlight
+
+Once Apple finishes processing the build, go to:
+
+-------------------code----------------------
+TestFlight
+-------------------code----------------------
+
+**TestFlight** allows you to distribute prerelease versions of your application to testers.
+
+The workflow becomes:
+
+-------------------code----------------------
+Build
+  ↓
+App Store Connect
+  ↓
+TestFlight
+  ↓
+Beta testers
+-------------------code----------------------
+
+This allows you to test the application before releasing it publicly.
+
+---
+
+# 15. Missing Compliance Warning
+
+The lecture mentions that App Store Connect may show:
+
+-------------------code----------------------
+Missing Compliance
+-------------------code----------------------
+
+This is related to export compliance and encryption.
+
+Apple asks whether your application uses certain types of encryption.
+
+You need to answer the questions accurately based on what your app actually does.
+
+The lecture's example answers:
+
+-------------------code----------------------
+Uses custom encryption?
+No
+-------------------code----------------------
+
+This allowed the instructor to proceed with internal testing.
+
+### Important
+
+Don't simply select "No" because the course did.
+
+Your answer depends on the actual technologies used by your application and Apple's current export-compliance rules.
+
+---
+
+# 16. Internal Testing
+
+TestFlight provides different ways to test your application.
+
+The lecture first demonstrates:
+
+-------------------code----------------------
+Internal Testing
+-------------------code----------------------
+
+You can add people associated with your App Store Connect organization/account.
+
+For example:
+
+-------------------code----------------------
+App Store Connect Users
+       ↓
+Select tester
+       ↓
+Add tester
+-------------------code----------------------
+
+The tester can then access the test build through TestFlight.
+
+---
+
+# 17. External Testing
+
+You can also invite people outside your App Store Connect team.
+
+The lecture creates a tester group:
+
+-------------------code----------------------
+Group 1
+-------------------code----------------------
+
+Then adds external testers.
+
+You can invite testers using their email addresses.
+
+Conceptually:
+
+-------------------code----------------------
+External Tester
+      ↓
+Email invitation
+      ↓
+TestFlight
+      ↓
+Install app
+-------------------code----------------------
+
+---
+
+# 18. TestFlight App
+
+Testers need Apple's **TestFlight** app installed on their iPhones.
+
+The process is:
+
+-------------------code----------------------
+1. Tester receives invitation
+        ↓
+2. Install TestFlight
+        ↓
+3. Open invitation
+        ↓
+4. Download test build
+        ↓
+5. Install application
+        ↓
+6. Test application
+-------------------code----------------------
+
+This lets you test the real iOS build on physical devices before public release.
+
+---
+
+# 19. Internal vs External Testers
+
+The basic distinction is:
+
+| Internal Testing            | External Testing                |
+| --------------------------- | ------------------------------- |
+| App Store Connect users     | People outside your team        |
+| Convenient for team testing | Useful for broader beta testing |
+| TestFlight                  | TestFlight                      |
+| Smaller controlled group    | Larger group of invited testers |
+
+The exact limits and review requirements for external testing can change, so check Apple's current TestFlight rules when releasing a real application.
+
+---
+
+# 20. Prepare the App for Production
+
+After testing is complete, the next step is preparing the application for public release.
+
+Go to the App Store section of App Store Connect and prepare the application for submission.
+
+You need to provide App Store metadata.
+
+Examples include:
+
+* Screenshots
+* Promotional text
+* Keywords
+* Support URL
+* Description
+* Other required App Store information
+
+---
+
+# 21. App Store Screenshots
+
+Screenshots show potential users what the application looks like.
+
+You need to provide the appropriate screenshots for the supported device sizes required by Apple.
+
+Example:
+
+-------------------code----------------------
+App Store listing
+      ↓
+Screenshots
+      ↓
+Potential users see app UI
+-------------------code----------------------
+
+Make sure screenshots accurately represent the current version of the application.
+
+---
+
+# 22. App Description and Metadata
+
+The App Store listing requires information such as:
+
+-------------------code----------------------
+App name
+Description
+Keywords
+Promotional text
+Support URL
+Screenshots
+-------------------code----------------------
+
+These are different from the actual application code.
+
+They describe the application to App Store users.
+
+---
+
+# 23. Submit the App for Review
+
+After completing the App Store listing:
+
+-------------------code----------------------
+Prepare submission
+       ↓
+Submit for Review
+-------------------code----------------------
+
+Apple then reviews the application.
+
+The lecture says the review commonly takes around a day or two, but review times can vary significantly.
+
+---
+
+# 24. Possible Review Outcomes
+
+There are two basic outcomes.
+
+### Approved
+
+-------------------code----------------------
+Submit
+   ↓
+Apple review
+   ↓
+Approved
+   ↓
+App becomes available
+-------------------code----------------------
+
+### Rejected
+
+-------------------code----------------------
+Submit
+   ↓
+Apple review
+   ↓
+Rejected
+   ↓
+Read Apple's feedback
+   ↓
+Fix the problem
+   ↓
+Create a new build if necessary
+   ↓
+Resubmit
+-------------------code----------------------
+
+A rejection does not necessarily mean the project is finished. You need to address the specific issue Apple identifies.
+
+---
+
+# 25. What Happens When You Need to Resubmit?
+
+This is one of the most important parts of the lecture.
+
+When you create a new iOS build, you need to increase the build number.
+
+For example:
+
+-------------------code----------------------
+First build:
+Version 1.0.0
+Build 1
+-------------------code----------------------
+
+Then:
+
+-------------------code----------------------
+Second build:
+Version 1.0.0
+Build 2
+-------------------code----------------------
+
+Then:
+
+-------------------code----------------------
+Third build:
+Version 1.0.0
+Build 3
+-------------------code----------------------
+
+The user-facing version doesn't necessarily need to change for every build.
+
+---
+
+# 26. Complete Resubmission Workflow
+
+When a new build is required:
+
+-------------------code----------------------
+1. Fix the application
+        ↓
+2. Increase build number
+        ↓
+3. Create a new iOS build
+        ↓
+4. Obtain new IPA
+        ↓
+5. Upload using Transporter
+        ↓
+6. Wait for App Store Connect processing
+        ↓
+7. Test with TestFlight if necessary
+        ↓
+8. Submit new build for review
+-------------------code----------------------
+
+This is the cycle you'll repeat whenever a new binary is required.
+
+---
+
+# 27. Version vs Build Number
+
+Remember the difference:
+
+-------------------code----------------------
+Version
+1.0.0
+-------------------code----------------------
+
+is the user-facing application version.
+
+While:
+
+-------------------code----------------------
+Build Number
+1
+-------------------code----------------------
+
+identifies a particular submitted build.
+
+For example:
+
+-------------------code----------------------
+Version 1.0.0
+ ├── Build 1
+ ├── Build 2
+ └── Build 3
+-------------------code----------------------
+
+Then you might release:
+
+-------------------code----------------------
+Version 1.1.0
+ └── Build 4
+-------------------code----------------------
+
+The exact numbering strategy is up to your release process, but every uploaded iOS build needs an appropriate unique/increasing build number.
+
+---
+
+# 28. Full Final Configuration
+
+## `app.json`
+
+A simplified example:
+
+-------------------code----------------------
+{
+  "expo": {
+    "name": "Done With It",
+    "slug": "done-with-it",
+    "version": "1.0.0",
+    "ios": {
+      "bundleIdentifier": "com.example.donewithit",
+      "buildNumber": "1"
+    }
+  }
+}
+-------------------code----------------------
+
+For the next build:
+
+-------------------code----------------------
+{
+  "expo": {
+    "name": "Done With It",
+    "slug": "done-with-it",
+    "version": "1.0.0",
+    "ios": {
+      "bundleIdentifier": "com.example.donewithit",
+      "buildNumber": "2"
+    }
+  }
+}
+-------------------code----------------------
+
+Notice that:
+
+-------------------code----------------------
+bundleIdentifier
+-------------------code----------------------
+
+stays the same.
+
+The:
+
+-------------------code----------------------
+buildNumber
+-------------------code----------------------
+
+increases.
+
+---
+
+# 29. Full Final Workflow
+
+-------------------code----------------------
+┌──────────────────────────┐
+│       React Native       │
+│          App             │
+└────────────┬─────────────┘
+             ↓
+      Build iOS App
+             ↓
+        IPA File
+             ↓
+┌──────────────────────────┐
+│    App Store Connect     │
+└────────────┬─────────────┘
+             ↓
+         Transporter
+             ↓
+        Upload IPA
+             ↓
+         Processing
+             ↓
+         TestFlight
+             ↓
+       Beta Testing
+             ↓
+     Prepare App Store
+             ↓
+       Submit Review
+             ↓
+     ┌───────┴───────┐
+     ↓               ↓
+  Approved        Rejected
+     ↓               ↓
+  Release       Fix Issues
+                     ↓
+               New Build Number
+                     ↓
+                New IPA
+                     ↓
+                  Upload
+-------------------code----------------------
+
+---
+
+# 30. Important Notes and Best Practices
+
+## 30.1 Never Change the Bundle ID Accidentally
+
+The Bundle ID represents the application's identity.
+
+Keep it consistent:
+
+-------------------code----------------------
+com.yourcompany.yourapp
+-------------------code----------------------
+
+---
+
+## 30.2 Always Increment the Build Number
+
+Before uploading a new iOS build:
+
+-------------------code----------------------
+1 → 2 → 3 → 4
+-------------------code----------------------
+
+Do not upload a new binary using an already-used build number.
+
+---
+
+## 30.3 Test Before App Store Review
+
+A good workflow is:
+
+-------------------code----------------------
+Build
+ ↓
+TestFlight
+ ↓
+Test
+ ↓
+Fix
+ ↓
+Submit
+-------------------code----------------------
+
+This can reduce the chance of discovering obvious problems only after submission.
+
+---
+
+## 30.4 Keep App Store Metadata Accurate
+
+Your:
+
+* Screenshots
+* Description
+* Promotional text
+* Keywords
+
+should accurately represent the application.
+
+Don't submit screenshots or descriptions that don't match the actual app.
+
+---
+
+## 30.5 Export Compliance Must Be Answered Accurately
+
+The lecture selects "No" for custom encryption, but this is not a universal answer.
+
+Your answer depends on your application's actual encryption technologies and Apple's requirements.
+
+---
+
+## 30.6 Review Times Are Not Guaranteed
+
+The lecture says approximately 1–2 days, but App Store review times can vary.
+
+Treat this as an estimate from the course, not a guaranteed processing time.
+
+---
+
+# 31. Modern Expo Note
+
+The lecture uses the older Expo workflow:
+
+-------------------code----------------------bash
+expo build:ios
+-------------------code----------------------
+
+and:
+
+-------------------code----------------------
+Transporter
+-------------------code----------------------
+
+The underlying App Store Connect/TestFlight workflow remains relevant, but modern Expo projects generally use **EAS Build**.
+
+A modern build command is conceptually:
+
+-------------------code----------------------bash
+eas build --platform ios
+-------------------code----------------------
+
+The resulting iOS build can then be submitted through the current Expo/Apple workflow.
+
+The important concepts to retain from this lecture are:
+
+-------------------code----------------------
+Apple Developer
+      ↓
+App Store Connect
+      ↓
+Build
+      ↓
+Upload
+      ↓
+Processing
+      ↓
+TestFlight
+      ↓
+Review
+      ↓
+App Store
+-------------------code----------------------
+
+---
+
+# Summary
+
+## The complete process
+
+### Step 1 — Build
+
+Create an iOS `.ipa` file.
+
+### Step 2 — App Store Connect
+
+Create your application in App Store Connect.
+
+Provide:
+
+* App name
+* Platform
+* Primary language
+* Bundle ID
+* SKU
+
+### Step 3 — Upload
+
+Use the appropriate Apple/Expo delivery workflow to upload the `.ipa`.
+
+### Step 4 — Processing
+
+Wait for Apple to process the uploaded build.
+
+### Step 5 — TestFlight
+
+Use TestFlight for beta testing.
+
+You can have:
+
+* Internal testers
+* External testers
+
+### Step 6 — Prepare the App Store Listing
+
+Provide:
+
+* Screenshots
+* Description
+* Keywords
+* Promotional text
+* Support URL
+* Other required metadata
+
+### Step 7 — Submit for Review
+
+Apple reviews the application.
+
+-------------------code----------------------
+Approved → Release
+Rejected → Fix → New build → Upload → Resubmit
+-------------------code----------------------
+
+### Most important thing to remember
+
+Whenever you need a new iOS binary:
+
+-------------------code----------------------
+Fix code
+   ↓
+Increase build number
+   ↓
+Build again
+   ↓
+Get new IPA
+   ↓
+Upload
+   ↓
+Test
+   ↓
+Submit
+-------------------code----------------------
+
+And keep these two values straight:
+
+-------------------code----------------------
+Version
+→ What users see
+
+Build Number
+→ Identifies the individual iOS build
+-------------------code----------------------
