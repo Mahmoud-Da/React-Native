@@ -9,8 +9,10 @@ import AuthNavigator from "./app/navigation/AuthNavigator";
 import AuthContext from "./app/auth/context";
 import authStorage from "./app/auth/storage";
 import { navigationRef } from "./app/navigation/rootNavigation";
+import logger from "./utility/logger";
 
 export default function App() {
+  logger.start();
   const [user, setUser] = useState();
   const [isReady, setIsReady] = useState(false);
 

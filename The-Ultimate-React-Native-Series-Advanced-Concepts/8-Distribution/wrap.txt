@@ -995,3 +995,729 @@ npx expo-optimize
 ### Key idea
 
 > **Smaller bundled assets = smaller application size and potentially faster installation/startup.**
+
+*** 5- Error Reporting ***
+# Error Reporting in Production with Bugsnag
+
+## 1. The Problem with `console.log`
+
+During development, we can see errors in the terminal:
+
+-------------------code----------------------
+console.log(error);
+-------------------code----------------------
+
+For example, in `Cache.js`:
+
+-------------------code----------------------
+try {
+  // some operation
+} catch (error) {
+  console.log(error);
+}
+-------------------code----------------------
+
+This works while developing locally.
+
+However, after publishing the application to the App Store or Google Play, we don't have access to the user's terminal.
+
+Therefore:
+
+-------------------code----------------------
+Development
+    ↓
+console.log()
+    ↓
+Terminal
+-------------------code----------------------
+
+But in production:
+
+-------------------code----------------------
+Production App
+    ↓
+Error
+    ↓
+Error reporting service
+    ↓
+Developer dashboard
+-------------------code----------------------
+
+We need an **error reporting service**.
+
+---
+
+# 2. Error Reporting Tools
+
+The lecture introduces two popular options:
+
+* Sentry
+* Bugsnag
+
+Bugsnag can report both handled and unhandled errors and can provide diagnostic information such as:
+
+* Device information
+* OS version
+* React Native / Expo versions
+* Date and time
+* Error stack trace
+* Application release
+* Error frequency
+* User information
+* Error timeline
+
+The important concept is that production errors are collected remotely so developers can investigate them.
+
+---
+
+# 3. Install Bugsnag for Expo
+
+The lecture uses Bugsnag's Expo integration.
+
+The CLI installation command is provided by Bugsnag during project setup.
+
+The general process is:
+
+-------------------code----------------------bash
+npx @bugsnag/expo-cli init
+-------------------code----------------------
+
+During installation, the CLI asks several questions.
+
+### Question 1: Install Bugsnag?
+
+Answer:
+
+-------------------code----------------------
+Yes
+-------------------code----------------------
+
+### Question 2: Version
+
+Choose the latest version.
+
+### Question 3: Package manager
+
+Choose:
+
+-------------------code----------------------
+npm
+-------------------code----------------------
+
+or Yarn if that's what your project uses.
+
+### Question 4: API key
+
+Bugsnag provides an API key from the project dashboard.
+
+The API key allows the application to communicate with Bugsnag.
+
+Important:
+
+**Never expose or commit sensitive credentials unnecessarily.** Follow the current Bugsnag/Expo configuration guidance for production secrets.
+
+---
+
+# 4. Automatically Modify `App.js`
+
+The Bugsnag CLI can add the required initialization code automatically.
+
+Conceptually, it adds something similar to:
+
+-------------------code----------------------
+import Bugsnag from "@bugsnag/expo";
+
+Bugsnag.start();
+-------------------code----------------------
+
+Now Bugsnag is initialized when the application starts.
+
+However, the lecture makes an important architectural improvement:
+
+> We don't want the rest of the application to communicate directly with Bugsnag.
+
+Instead, we create our own abstraction.
+
+---
+
+# 5. Why Use an Abstraction?
+
+Imagine that today we use:
+
+-------------------code----------------------
+Bugsnag
+-------------------code----------------------
+
+but later we decide to switch to:
+
+-------------------code----------------------
+Sentry
+-------------------code----------------------
+
+If every file directly uses Bugsnag:
+
+-------------------code----------------------
+Bugsnag.notify(error);
+-------------------code----------------------
+
+we would have to modify many files.
+
+Instead:
+
+-------------------code----------------------
+Application
+     ↓
+   Logger
+     ↓
+  Bugsnag
+-------------------code----------------------
+
+Now only the logger knows that Bugsnag is being used.
+
+If we later change services:
+
+-------------------code----------------------
+Application
+     ↓
+   Logger
+     ↓
+   Sentry
+-------------------code----------------------
+
+The rest of the application doesn't need to change.
+
+This is an example of **separation of concerns** and **abstraction**.
+
+---
+
+# 6. Create `logger.js`
+
+Go to the utility folder:
+
+-------------------code----------------------
+utility/
+-------------------code----------------------
+
+Create:
+
+-------------------code----------------------
+logger.js
+-------------------code----------------------
+
+So:
+
+-------------------code----------------------
+utility/
+└── logger.js
+-------------------code----------------------
+
+---
+
+# 7. Import Bugsnag
+
+Inside `logger.js`:
+
+-------------------code----------------------
+import Bugsnag from "@bugsnag/expo";
+-------------------code----------------------
+
+This file will be the only place where the application directly communicates with Bugsnag.
+
+---
+
+# 8. Create the `log()` Function
+
+Create a function that receives an error:
+
+-------------------code----------------------
+const log = error => {
+  Bugsnag.notify(error);
+};
+-------------------code----------------------
+
+The application can now simply call:
+
+-------------------code----------------------
+logger.log(error);
+-------------------code----------------------
+
+instead of:
+
+-------------------code----------------------
+Bugsnag.notify(error);
+-------------------code----------------------
+
+---
+
+# 9. Create the `start()` Function
+
+We also want to hide the Bugsnag initialization.
+
+-------------------code----------------------
+const start = () => {
+  Bugsnag.start();
+};
+-------------------code----------------------
+
+Now the rest of the application doesn't need to know how Bugsnag is initialized.
+
+---
+
+# 10. Export the Logger
+
+Export both functions:
+
+-------------------code----------------------
+export default {
+  log,
+  start,
+};
+-------------------code----------------------
+
+The complete `logger.js` is therefore:
+
+-------------------code----------------------
+import Bugsnag from "@bugsnag/expo";
+
+const log = error => {
+  Bugsnag.notify(error);
+};
+
+const start = () => {
+  Bugsnag.start();
+};
+
+export default {
+  log,
+  start,
+};
+-------------------code----------------------
+
+---
+
+# 11. Update `App.js`
+
+Previously, `App.js` directly communicated with Bugsnag:
+
+-------------------code----------------------
+import Bugsnag from "@bugsnag/expo";
+
+Bugsnag.start();
+-------------------code----------------------
+
+We don't want this anymore.
+
+Instead, import our logger:
+
+-------------------code----------------------
+import logger from "./utility/logger";
+-------------------code----------------------
+
+Then initialize it:
+
+-------------------code----------------------
+logger.start();
+-------------------code----------------------
+
+The architecture becomes:
+
+-------------------code----------------------
+App.js
+  ↓
+logger.start()
+  ↓
+Bugsnag.start()
+-------------------code----------------------
+
+---
+
+# 12. Test Error Reporting
+
+To test the system, temporarily add:
+
+-------------------code----------------------
+logger.log(new Error("Error in App"));
+-------------------code----------------------
+
+For example:
+
+-------------------code----------------------
+const App = () => {
+  logger.log(new Error("Error in App"));
+
+  return (
+    // ...
+  );
+};
+-------------------code----------------------
+
+When the application runs, Bugsnag receives the error.
+
+You can then open the Bugsnag dashboard and inspect the reported error.
+
+After testing, **remove this test error**.
+
+---
+
+# 13. Understanding the Bugsnag Dashboard
+
+The dashboard can provide information such as:
+
+### Error location
+
+It shows where the error happened.
+
+Without source maps, you may see locations in the generated production bundle, which is difficult to debug.
+
+---
+
+## 13.1 Source Maps
+
+Source maps allow Bugsnag to translate generated/bundled JavaScript locations back to your original source code.
+
+Without source maps:
+
+-------------------code----------------------
+Error
+↓
+Production bundle
+↓
+Difficult to understand
+-------------------code----------------------
+
+With source maps:
+
+-------------------code----------------------
+Error
+↓
+Source map
+↓
+Original source file + useful line information
+-------------------code----------------------
+
+The lecture notes that source maps are automatically uploaded for published builds when configured through the Bugsnag Expo setup.
+
+---
+
+# 14. Diagnostic Information
+
+Bugsnag can show information about the environment where the error happened.
+
+For example:
+
+-------------------code----------------------
+Device
+iOS version
+React Native version
+Expo version
+Expo SDK version
+Date/time
+Release
+-------------------code----------------------
+
+This is extremely useful because an error may only happen on a particular device, OS version, or application release.
+
+---
+
+# 15. Error Assignment and Releases
+
+Bugsnag also provides tools for managing errors.
+
+For example:
+
+-------------------code----------------------
+Error
+  ↓
+Assign to developer
+  ↓
+Investigate
+  ↓
+Fix
+  ↓
+Release new version
+-------------------code----------------------
+
+You can also monitor error rates across different application releases.
+
+Conceptually:
+
+-------------------code----------------------
+Release 1.0
+   ↓
+Many errors
+
+Release 1.1
+   ↓
+Fewer errors
+
+Release 1.2
+   ↓
+Monitor stability
+-------------------code----------------------
+
+This helps the team understand whether a new release introduces or fixes problems.
+
+---
+
+# 16. Replace `console.log()` in the Application
+
+After creating the logger, anywhere you have production error logging like:
+
+-------------------code----------------------
+console.log(error);
+-------------------code----------------------
+
+replace it with:
+
+-------------------code----------------------
+logger.log(error);
+-------------------code----------------------
+
+For example, in `Cache.js`:
+
+### Before
+
+-------------------code----------------------
+try {
+  // operation
+} catch (error) {
+  console.log(error);
+}
+-------------------code----------------------
+
+### After
+
+-------------------code----------------------
+import logger from "../utility/logger";
+
+try {
+  // operation
+} catch (error) {
+  logger.log(error);
+}
+-------------------code----------------------
+
+The exact import path depends on where `Cache.js` is located.
+
+---
+
+# 17. Important Difference: Logging vs Error Reporting
+
+Don't think of this as simply replacing every `console.log()`.
+
+A useful distinction is:
+
+### Development debugging
+
+-------------------code----------------------
+console.log(value);
+-------------------code----------------------
+
+Useful for temporary debugging.
+
+### Production error reporting
+
+-------------------code----------------------
+logger.log(error);
+-------------------code----------------------
+
+Used when an actual error needs to be monitored remotely.
+
+For example:
+
+-------------------code----------------------
+try {
+  await cache.store(data);
+} catch (error) {
+  logger.log(error);
+}
+-------------------code----------------------
+
+This sends the error to the reporting service.
+
+---
+
+# 18. Best Practices
+
+## 18.1 Keep Bugsnag behind your own abstraction
+
+Prefer:
+
+-------------------code----------------------
+logger.log(error);
+-------------------code----------------------
+
+over:
+
+-------------------code----------------------
+Bugsnag.notify(error);
+-------------------code----------------------
+
+throughout the application.
+
+Only `logger.js` should know which error-reporting provider you're using.
+
+---
+
+## 18.2 Don't leave test errors in production
+
+Remove:
+
+-------------------code----------------------
+logger.log(new Error("Error in App"));
+-------------------code----------------------
+
+after testing.
+
+---
+
+## 18.3 Don't rely exclusively on console logging
+
+`console.log()` is useful during development, but it isn't sufficient for monitoring errors in a distributed production application.
+
+---
+
+## 18.4 Use source maps for production builds
+
+Source maps make production stack traces much easier to understand.
+
+---
+
+## 18.5 Avoid exposing sensitive information
+
+Be careful about sending:
+
+-------------------code----------------------
+passwords
+authentication tokens
+private personal information
+API secrets
+-------------------code----------------------
+
+as diagnostic data.
+
+Error reporting should contain enough information to debug the problem without unnecessarily exposing sensitive data.
+
+---
+
+# 19. Final Architecture
+
+After this refactoring:
+
+-------------------code----------------------
+                Application
+                     |
+                     v
+                  Logger
+                 /      \
+                /        \
+          start()       log()
+             |             |
+             v             v
+       Bugsnag.start()  Bugsnag.notify()
+-------------------code----------------------
+
+This is much cleaner than having Bugsnag scattered throughout the application.
+
+---
+
+# 20. Full Final Code
+
+## `utility/logger.js`
+
+-------------------code----------------------
+import Bugsnag from "@bugsnag/expo";
+
+const log = error => {
+  Bugsnag.notify(error);
+};
+
+const start = () => {
+  Bugsnag.start();
+};
+
+export default {
+  log,
+  start,
+};
+-------------------code----------------------
+
+## `App.js` — relevant final integration
+
+-------------------code----------------------
+import React from "react";
+import logger from "./utility/logger";
+
+const App = () => {
+  logger.start();
+
+  // Your existing App component logic goes here.
+
+  return (
+    // Your existing application JSX
+  );
+};
+
+export default App;
+-------------------code----------------------
+
+For your actual project, **keep your existing `App.js` code** and replace the direct Bugsnag initialization with:
+
+-------------------code----------------------
+import logger from "./utility/logger";
+
+logger.start();
+-------------------code----------------------
+
+Then, in files such as `Cache.js`, replace production error logging:
+
+-------------------code----------------------
+console.log(error);
+-------------------code----------------------
+
+with:
+
+-------------------code----------------------
+logger.log(error);
+-------------------code----------------------
+
+---
+
+# 21. Summary
+
+The main lesson is:
+
+-------------------code----------------------
+console.log()
+    ↓
+Good for development
+-------------------code----------------------
+
+but:
+
+-------------------code----------------------
+Production error
+    ↓
+Logger
+    ↓
+Bugsnag
+    ↓
+Developer dashboard
+-------------------code----------------------
+
+The important implementation steps are:
+
+1. Install and configure Bugsnag.
+2. Create `utility/logger.js`.
+3. Put `Bugsnag.start()` inside `logger.start()`.
+4. Put `Bugsnag.notify()` inside `logger.log()`.
+5. Use `logger.start()` from `App.js`.
+6. Use `logger.log(error)` when reporting errors.
+7. Configure source maps for production builds.
+8. Remove temporary test errors.
+9. Avoid sending sensitive information.
+10. Keep the error-reporting provider hidden behind the logger abstraction.
+
+**Key concept to remember:**
+
+> The application should depend on your `logger` abstraction, not directly on Bugsnag.
