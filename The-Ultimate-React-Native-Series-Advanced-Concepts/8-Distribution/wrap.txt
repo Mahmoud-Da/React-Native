@@ -3320,3 +3320,834 @@ App Store / Google Play
 -------------------code----------------------
 
 The most important takeaway is: **Expo publishing is for quickly sharing/testing the app, while a standalone build produces the native application that can be distributed to end users.**
+
+*** 9- Building the iOS App ***
+
+# Building an iOS App with Expo
+
+## 1. Overview
+
+To build an iOS application and eventually distribute it through the App Store, we need:
+
+1. An **Apple Developer Program** membership.
+2. An iOS **Bundle Identifier**.
+3. An iOS **Build Number**.
+4. An Apple account connected to the build process.
+5. Apple signing credentials such as:
+
+   * Distribution Certificate
+   * Push Notification Key
+   * Provisioning Profile
+6. An iOS build, usually an `.ipa` file.
+
+The lecture demonstrates how Expo can automatically manage much of the Apple signing setup.
+
+---
+
+# 2. Register for the Apple Developer Program
+
+Before building an iOS app for App Store distribution, enroll in the Apple Developer Program.
+
+The lecture uses:
+
+-------------------code----------------------
+developer.apple.com/programs
+-------------------code----------------------
+
+You can enroll as:
+
+* Individual
+* Organization
+
+Apple requires identity/business verification depending on the enrollment type.
+
+The lecture states that the membership costs **$99 per year**.
+
+---
+
+# 3. Apple Developer Membership
+
+An active Apple Developer membership is required for App Store distribution and updates.
+
+The lecture explains:
+
+-------------------code----------------------
+Active membership
+       ↓
+Submit app
+       ↓
+Update app
+-------------------code----------------------
+
+The lecture also states that if you stop renewing, an already-published app can remain on the App Store, although you cannot continue distributing updates without an active membership.
+
+---
+
+# 4. Configure the iOS Section in `app.json`
+
+Next, configure the iOS application settings.
+
+The lecture adds two important properties:
+
+-------------------code----------------------
+{
+  "ios": {
+    "bundleIdentifier": "...",
+    "buildNumber": "..."
+  }
+}
+-------------------code----------------------
+
+These have different purposes.
+
+---
+
+# 5. Bundle Identifier
+
+The **Bundle Identifier** uniquely identifies your application.
+
+Example:
+
+-------------------code----------------------
+{
+  "ios": {
+    "bundleIdentifier": "com.codewithmosh.donewithit"
+  }
+}
+-------------------code----------------------
+
+The lecture uses reverse-DNS notation:
+
+-------------------code----------------------
+com.companyname.appname
+-------------------code----------------------
+
+For example:
+
+-------------------code----------------------
+com.mycompany.donewithit
+-------------------code----------------------
+
+---
+
+# 6. Reverse DNS Naming Convention
+
+The common format is:
+
+-------------------code----------------------
+com.<company-or-developer>.<app-name>
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+com.example.myapp
+-------------------code----------------------
+
+The first part does **not** mean you must own a website at that domain.
+
+For example:
+
+-------------------code----------------------
+com.mahmoud.donewithit
+-------------------code----------------------
+
+does not require:
+
+-------------------code----------------------
+mahmoud.com
+-------------------code----------------------
+
+It is simply a naming convention used to create a unique identifier.
+
+---
+
+# 7. Important: Don't Change the Bundle Identifier
+
+Once an application is established with a Bundle Identifier, don't casually change it.
+
+For example, if you initially use:
+
+-------------------code----------------------
+com.example.donewithit
+-------------------code----------------------
+
+and later change it to:
+
+-------------------code----------------------
+com.example.donewithit2
+-------------------code----------------------
+
+Apple treats it as a different application identity.
+
+Therefore:
+
+-------------------code----------------------
+Bundle Identifier
+        ↓
+App identity
+        ↓
+Keep it consistent
+-------------------code----------------------
+
+Choose it carefully.
+
+---
+
+# 8. Build Number
+
+The second setting is the **build number**.
+
+Example:
+
+-------------------code----------------------
+{
+  "ios": {
+    "buildNumber": "1"
+  }
+}
+-------------------code----------------------
+
+The lecture shows a value of `1.0.0`, but in modern Expo/iOS configuration, the iOS build number is normally an incrementing build identifier rather than the user-facing semantic version.
+
+The important concept is:
+
+-------------------code----------------------
+Every new App Store build
+        ↓
+Increase build number
+-------------------code----------------------
+
+For example:
+
+-------------------code----------------------
+Build 1
+Build 2
+Build 3
+Build 4
+-------------------code----------------------
+
+If you try to upload another build using an already-used build number, App Store Connect will reject it.
+
+---
+
+# 9. Build Number vs App Version
+
+This distinction is very important.
+
+There are two different version concepts.
+
+### User-facing version
+
+Example:
+
+-------------------code----------------------
+{
+  "version": "1.0.0"
+}
+-------------------code----------------------
+
+Users see this as the application version.
+
+### Internal build number
+
+Example:
+
+-------------------code----------------------
+{
+  "ios": {
+    "buildNumber": "1"
+  }
+}
+-------------------code----------------------
+
+This identifies a particular build internally.
+
+So:
+
+-------------------code----------------------
+Version
+1.0.0
+   ↓
+What users see
+
+Build Number
+1
+   ↓
+Internal build identifier
+-------------------code----------------------
+
+You can release:
+
+-------------------code----------------------
+Version 1.0.0
+Build 1
+
+Version 1.0.0
+Build 2
+
+Version 1.0.0
+Build 3
+-------------------code----------------------
+
+This is useful when submitting multiple builds of the same user-facing version.
+
+---
+
+# 10. Example `app.json`
+
+The lecture's configuration conceptually becomes:
+
+-------------------code----------------------
+{
+  "expo": {
+    "name": "Done With It",
+    "slug": "done-with-it",
+    "version": "1.0.0",
+    "ios": {
+      "bundleIdentifier": "com.example.donewithit",
+      "buildNumber": "1"
+    }
+  }
+}
+-------------------code----------------------
+
+Replace the Bundle Identifier with your own unique identifier.
+
+---
+
+# 11. Start the iOS Build
+
+The lecture then runs:
+
+-------------------code----------------------
+expo build:ios
+-------------------code----------------------
+
+This starts the Expo iOS build process.
+
+The command belongs to the older Expo build workflow used by the course.
+
+The modern Expo equivalent is generally based on **EAS Build**, so don't expect `expo build:ios` to work in a current Expo project.
+
+The concept remains:
+
+-------------------code----------------------
+Project
+   ↓
+Start cloud iOS build
+   ↓
+Expo build infrastructure
+   ↓
+iOS binary
+-------------------code----------------------
+
+---
+
+# 12. Choose the Build Type
+
+The lecture asks which type of iOS build should be created.
+
+Two choices are presented:
+
+### Archive
+
+Used for App Store distribution.
+
+-------------------code----------------------
+Archive
+   ↓
+App Store
+-------------------code----------------------
+
+### Simulator
+
+Used for running the application in an iOS simulator.
+
+-------------------code----------------------
+Simulator build
+      ↓
+iOS Simulator
+-------------------code----------------------
+
+For App Store distribution, choose:
+
+-------------------code----------------------
+Archive
+-------------------code----------------------
+
+---
+
+# 13. Connect Your Apple Account
+
+Expo asks whether you have access to the Apple account that will be used for App Store submission.
+
+The answer is:
+
+-------------------code----------------------
+Yes
+-------------------code----------------------
+
+Then provide:
+
+-------------------code----------------------
+Apple ID
+Password
+-------------------code----------------------
+
+Expo uses these credentials to communicate with Apple's developer services and configure the required signing resources.
+
+---
+
+# 14. Apple Distribution Certificate
+
+An iOS application needs to be properly signed before it can be distributed.
+
+One important signing resource is the:
+
+-------------------code----------------------
+Apple Distribution Certificate
+-------------------code----------------------
+
+The certificate allows Apple to verify that the application was signed by an authorized developer.
+
+The lecture chooses to let Expo create/manage it automatically.
+
+Conceptually:
+
+-------------------code----------------------
+Expo
+  ↓
+Apple Developer account
+  ↓
+Create distribution certificate
+  ↓
+Use certificate for build
+-------------------code----------------------
+
+This avoids manually creating and configuring the certificate.
+
+---
+
+# 15. Apple Push Notification Key
+
+The build process also asks about an:
+
+-------------------code----------------------
+Apple Push Notification Key
+-------------------code----------------------
+
+This is related to push notifications.
+
+The lecture again chooses:
+
+-------------------code----------------------
+Let Expo handle it
+-------------------code----------------------
+
+Conceptually:
+
+-------------------code----------------------
+Push Notification Key
+        ↓
+Push notification infrastructure
+        ↓
+iOS application
+-------------------code----------------------
+
+This is particularly relevant because the app previously implemented push notification functionality.
+
+---
+
+# 16. Provisioning Profile
+
+Another important iOS signing component is the:
+
+-------------------code----------------------
+Provisioning Profile
+-------------------code----------------------
+
+It connects the application identity, developer/team, and signing configuration needed for the build.
+
+Again, the lecture chooses automatic management:
+
+-------------------code----------------------
+Expo
+  ↓
+Create provisioning profile
+  ↓
+Configure build
+-------------------code----------------------
+
+This is much simpler than manually managing Apple's signing resources.
+
+---
+
+# 17. Build Is Queued
+
+After the configuration is complete, Expo submits the build.
+
+The terminal shows that the build has been queued.
+
+Conceptually:
+
+-------------------code----------------------
+Your computer
+      ↓
+Build request
+      ↓
+Expo
+      ↓
+Build queue
+      ↓
+Build server
+      ↓
+iOS binary
+-------------------code----------------------
+
+---
+
+# 18. Monitor the Build
+
+Expo provides a URL where you can monitor the build.
+
+You can leave the terminal after submitting the build.
+
+The lecture demonstrates:
+
+-------------------code----------------------
+Ctrl + C
+-------------------code----------------------
+
+to exit the terminal.
+
+Important:
+
+**Pressing `Ctrl + C` does not cancel the cloud build.**
+
+It only stops monitoring the build from that terminal session.
+
+The build continues on Expo's infrastructure.
+
+-------------------code----------------------
+Terminal
+   ↓
+Ctrl + C
+   ↓
+Terminal monitoring stops
+
+Expo server
+   ↓
+Build continues
+-------------------code----------------------
+
+---
+
+# 19. Download the iOS Build
+
+Once the build finishes, Expo provides the resulting file.
+
+The lecture receives:
+
+-------------------code----------------------
+.ipa
+-------------------code----------------------
+
+An `.ipa` file is an iOS application package.
+
+Conceptually:
+
+-------------------code----------------------
+Expo Build
+    ↓
+.ipa
+    ↓
+App Store submission
+-------------------code----------------------
+
+---
+
+# 20. IPA File Size
+
+The lecture observes that the generated `.ipa` can be quite large.
+
+For example:
+
+-------------------code----------------------
+~200 MB
+-------------------code----------------------
+
+However, this is **not necessarily the final size users download from the App Store**.
+
+The App Store processes the uploaded application and distributes it differently.
+
+The lecture's test resulted in an App Store size of approximately:
+
+-------------------code----------------------
+~50 MB
+-------------------code----------------------
+
+for the example application.
+
+The exact final size depends on the application, platform, architecture, assets, dependencies, and Apple's distribution processing.
+
+---
+
+# 21. Why Can the Build Be Large?
+
+The lecture explains that Expo's managed workflow can include APIs and functionality that the application doesn't directly use.
+
+Conceptually:
+
+-------------------code----------------------
+Your application
+       +
+Expo/native capabilities
+       ↓
+Larger binary
+-------------------code----------------------
+
+The lecture notes that future versions of Expo may improve this by including only the APIs actually needed.
+
+---
+
+# 22. Should You Eject Just to Reduce App Size?
+
+The lecture strongly advises against immediately ejecting simply because the binary is large.
+
+The reasoning is:
+
+-------------------code----------------------
+Eject
+ ↓
+More native control
+ ↓
+More manual configuration
+ ↓
+More complexity
+-------------------code----------------------
+
+The trade-off is:
+
+| Managed Expo              | Bare/Native               |
+| ------------------------- | ------------------------- |
+| Simpler                   | More complex              |
+| Less native configuration | More native control       |
+| Easier builds             | More manual work          |
+| Convenient cloud workflow | More customization        |
+| Potentially larger binary | More optimization control |
+
+The correct choice depends on the project requirements.
+
+---
+
+# 23. Important Best Practices
+
+## 23.1 Choose the Bundle Identifier Carefully
+
+Use a unique identifier:
+
+-------------------code----------------------
+com.yourcompany.yourapp
+-------------------code----------------------
+
+Avoid changing it after the application has been established.
+
+---
+
+## 23.2 Increment the Build Number
+
+Every new App Store build needs a new build number.
+
+Example:
+
+-------------------code----------------------
+1 → 2 → 3 → 4
+-------------------code----------------------
+
+Don't reuse an existing build number.
+
+---
+
+## 23.3 Keep User Version and Build Number Separate
+
+Remember:
+
+-------------------code----------------------
+version
+→ User-facing release
+
+buildNumber
+→ Individual submitted build
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+Version:     1.0.0
+Build:       1
+
+Version:     1.0.0
+Build:       2
+-------------------code----------------------
+
+---
+
+## 23.4 Prefer Automatic Signing When Appropriate
+
+For a managed Expo project, automatic handling of Apple certificates and provisioning can significantly simplify the process.
+
+You don't need to manually manage Apple's signing infrastructure unless your project specifically requires it.
+
+---
+
+## 23.5 Don't Optimize for Binary Size Too Early
+
+A larger `.ipa` does not automatically mean the App Store download size is equally large.
+
+Before ejecting or introducing significant native complexity, measure the actual distributed application size and determine whether it is really a problem.
+
+---
+
+# 24. Course-Era Expo vs Modern Expo
+
+This lecture was recorded for an older Expo workflow.
+
+The following command:
+
+-------------------code----------------------
+expo build:ios
+-------------------code----------------------
+
+is **not the current standard Expo build workflow**.
+
+Modern Expo projects generally use:
+
+-------------------code----------------------
+eas build --platform ios
+-------------------code----------------------
+
+through Expo Application Services (EAS).
+
+Likewise, the old concept of "ejecting" is no longer the best way to think about modern Expo projects. Expo's current tooling supports native projects through workflows such as prebuild and EAS.
+
+Therefore, remember the lecture for its concepts:
+
+-------------------code----------------------
+Apple Developer account
+        ↓
+Bundle Identifier
+        ↓
+Build Number
+        ↓
+Signing credentials
+        ↓
+Cloud build
+        ↓
+IPA
+        ↓
+App Store
+-------------------code----------------------
+
+rather than memorizing the old command.
+
+---
+
+# 25. Full Final Code
+
+## `app.json`
+
+A modernized version of the configuration concept shown in the lecture:
+
+-------------------code----------------------
+{
+  "expo": {
+    "name": "Done With It",
+    "slug": "done-with-it",
+    "version": "1.0.0",
+    "ios": {
+      "bundleIdentifier": "com.example.donewithit",
+      "buildNumber": "1"
+    }
+  }
+}
+-------------------code----------------------
+
+Replace:
+
+-------------------code----------------------
+com.example.donewithit
+-------------------code----------------------
+
+with your own unique Bundle Identifier.
+
+---
+
+## iOS Build Command From the Lecture
+
+The exact command used in the course is:
+
+-------------------code----------------------
+expo build:ios
+-------------------code----------------------
+
+For a current Expo project, the equivalent modern concept is:
+
+-------------------code----------------------
+eas build --platform ios
+-------------------code----------------------
+
+The modern command should be used only after configuring the project for EAS and following the current Expo workflow.
+
+---
+
+# Summary
+
+## What we learned
+
+1. You need an **Apple Developer Program** membership for App Store distribution.
+2. The app needs a unique **Bundle Identifier**.
+3. The Bundle Identifier should normally use reverse-DNS notation.
+4. Don't change the Bundle Identifier casually after establishing the app.
+5. The app has a user-facing **version**.
+6. Each submitted build also has an internal **build number**.
+7. The build number must increase for subsequent App Store builds.
+8. Expo can manage Apple signing resources such as:
+
+   * Distribution Certificate
+   * Push Notification Key
+   * Provisioning Profile
+9. Expo can perform the iOS build in the cloud.
+10. The resulting iOS package is an `.ipa` file.
+11. The `.ipa` size is not necessarily the same as the final App Store download size.
+12. Don't eject solely because the development build seems large.
+13. Managed Expo provides simplicity, while native workflows provide more control.
+14. The lecture uses an older Expo build system; modern Expo uses **EAS Build**.
+
+### Complete workflow
+
+-------------------code----------------------
+Apple Developer Program
+          ↓
+Configure app.json
+          ↓
+Bundle Identifier
+          ↓
+Build Number
+          ↓
+Start iOS cloud build
+          ↓
+Apple signing
+          ↓
+Distribution Certificate
+          ↓
+Push Notification Key
+          ↓
+Provisioning Profile
+          ↓
+Expo builds the app
+          ↓
+IPA file
+          ↓
+App Store submission
+-------------------code----------------------
