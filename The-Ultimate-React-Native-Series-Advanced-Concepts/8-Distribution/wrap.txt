@@ -2245,3 +2245,609 @@ Instead of making every part of the application know which environment it is run
 * Use `settings.API_URL` instead of hard-coding the backend URL.
 * This keeps environment-specific configuration centralized and makes deployment easier.
 * The lecture's `Constants.manifest.releaseChannel` approach is from the Expo API used in the course; modern Expo projects may require a different configuration mechanism.
+
+
+*** 7- Publishing ***
+
+# App Distribution: Expo Publishing and Standalone Builds
+
+## 1. Overview
+
+Once an app is ready for distribution, there are two main approaches discussed in the lecture:
+
+1. **Publish the app through Expo**
+2. **Build standalone native binaries for iOS and Android**
+
+The choice depends on the purpose.
+
+### Expo publishing
+
+Useful for:
+
+* Development
+* Testing
+* Sharing with teammates
+* Quickly distributing a new version
+
+### Standalone builds
+
+Useful when:
+
+* Preparing the actual iOS/Android application
+* Distributing through the App Store or Google Play
+* Creating an installable native application
+
+---
+
+# 2. Option 1: Publish the App Through Expo
+
+Publishing through Expo is much faster than creating native binaries.
+
+The basic workflow is:
+
+-------------------code----------------------
+Development
+    ↓
+Expo publish
+    ↓
+Expo hosts the project
+    ↓
+Team members scan QR code
+    ↓
+Run the app with Expo
+-------------------code----------------------
+
+This makes it convenient for a development team because everyone can access the same published version.
+
+---
+
+# 3. Publish Using a Release Channel
+
+The lecture uses a command similar to:
+
+-------------------code----------------------
+expo publish --release-channel staging
+-------------------code----------------------
+
+The important part is:
+
+-------------------code----------------------
+--release-channel staging
+-------------------code----------------------
+
+Here, `staging` is the name of the release channel.
+
+For example:
+
+-------------------code----------------------
+expo publish --release-channel staging
+-------------------code----------------------
+
+You could also use another name:
+
+-------------------code----------------------
+expo publish --release-channel testing
+-------------------code----------------------
+
+or:
+
+-------------------code----------------------
+expo publish --release-channel production
+-------------------code----------------------
+
+The release-channel name is chosen by the developer.
+
+---
+
+# 4. What Is a Release Channel?
+
+A release channel allows us to separate different published versions of the application.
+
+For example:
+
+-------------------code----------------------
+staging
+   ↓
+Testing version
+
+production
+   ↓
+Production version
+-------------------code----------------------
+
+This connects with the previous lecture about environment configuration.
+
+Previously, we had:
+
+-------------------code----------------------
+if (__DEV__) {
+  return settings.dev;
+}
+
+if (Constants.manifest.releaseChannel === "staging") {
+  return settings.staging;
+}
+
+return settings.prod;
+-------------------code----------------------
+
+So when we publish with:
+
+-------------------code----------------------
+expo publish --release-channel staging
+-------------------code----------------------
+
+the application can identify itself as belonging to the `staging` environment.
+
+Conceptually:
+
+-------------------code----------------------
+expo publish --release-channel staging
+                 ↓
+          releaseChannel
+                 ↓
+             "staging"
+                 ↓
+        settings.staging
+                 ↓
+          Staging API
+-------------------code----------------------
+
+This allows the same application code to use different backend environments.
+
+---
+
+# 5. Expo Project Page
+
+After publishing, Expo provides a project page.
+
+The lecture gives an example conceptually similar to:
+
+-------------------code----------------------
+expo.io/<account>/<project>
+-------------------code----------------------
+
+The project page contains information about the published application.
+
+It can also provide a QR code.
+
+---
+
+# 6. Sharing the Application With the Team
+
+One major advantage of Expo publishing is how quickly the application can be shared.
+
+A team member can:
+
+1. Open the Expo project page.
+2. Scan the QR code.
+3. Open the application through Expo.
+4. Run the published version.
+
+Conceptually:
+
+-------------------code----------------------
+Developer
+    ↓
+Publishes application
+    ↓
+Expo
+    ↓
+QR Code
+    ↓
+Team member
+    ↓
+Runs application
+-------------------code----------------------
+
+This avoids repeatedly building native iOS and Android binaries during development.
+
+---
+
+# 7. Why Use Expo Publishing During Development?
+
+Building a native application can take considerably more time than publishing an Expo update.
+
+For example:
+
+-------------------code----------------------
+Expo publishing
+     ↓
+Fast
+     ↓
+Good for testing and development
+-------------------code----------------------
+
+Compared with:
+
+-------------------code----------------------
+Native build
+     ↓
+Build iOS binary
+Build Android binary
+     ↓
+More time and setup
+-------------------code----------------------
+
+Therefore, Expo publishing is particularly convenient when the team needs to test the latest version quickly.
+
+---
+
+# 8. App Privacy
+
+The lecture also discusses the visibility of the Expo project.
+
+This is configured in `app.json`.
+
+The lecture mentions three privacy concepts:
+
+* `unlisted`
+* `public`
+* `private` (mentioned as future functionality in the course)
+
+---
+
+# 9. Unlisted Apps
+
+The default setting discussed in the lecture is:
+
+-------------------code----------------------
+{
+  "expo": {
+    "privacy": "unlisted"
+  }
+}
+-------------------code----------------------
+
+An **unlisted** application is hidden from search results.
+
+However, someone who has the project URL can access it.
+
+Conceptually:
+
+-------------------code----------------------
+Unlisted
+   ↓
+Not shown in search
+   ↓
+People with the URL can access it
+-------------------code----------------------
+
+This is useful when sharing an application with a development team without making it discoverable through public search.
+
+---
+
+# 10. Public Apps
+
+The lecture also mentions:
+
+-------------------code----------------------
+{
+  "expo": {
+    "privacy": "public"
+  }
+}
+-------------------code----------------------
+
+A public project is intended to be openly discoverable.
+
+Conceptually:
+
+-------------------code----------------------
+Public
+   ↓
+Visible publicly
+   ↓
+Anyone can discover/access it
+-------------------code----------------------
+
+---
+
+# 11. Private Apps
+
+The lecture mentions a future `private` option.
+
+The instructor says that the exact behavior was not yet clear at the time of the course.
+
+Therefore, the important thing to remember from the lecture is simply:
+
+-------------------code----------------------
+unlisted → hidden from search but accessible with URL
+public   → publicly discoverable
+private  → mentioned as future functionality in the lecture
+-------------------code----------------------
+
+The exact Expo privacy options have changed over time, so this part should be treated as **course-era information** rather than modern Expo configuration documentation.
+
+---
+
+# 12. Option 2: Standalone Applications
+
+The second distribution method is to build standalone applications for:
+
+* iOS
+* Android
+
+Instead of requiring the Expo client to run the application, the application becomes a standalone native app.
+
+Conceptually:
+
+-------------------code----------------------
+React Native / Expo project
+          ↓
+       Native build
+        /       \
+      iOS      Android
+       ↓          ↓
+   iOS app    Android app
+-------------------code----------------------
+
+This is the approach used when preparing the application for real end-user distribution.
+
+---
+
+# 13. Expo Publishing vs Standalone Builds
+
+| Feature                 | Expo Publishing                      | Standalone Build   |
+| ----------------------- | ------------------------------------ | ------------------ |
+| Development testing     | Very useful                          | Useful             |
+| Team sharing            | Very easy                            | More involved      |
+| Speed                   | Fast                                 | Slower             |
+| Requires Expo client    | Yes, for the course-era workflow     | No                 |
+| Native application      | No                                   | Yes                |
+| App Store / Google Play | Not the final distribution mechanism | Yes                |
+| Main purpose            | Development/testing                  | Final distribution |
+
+The lecture's main point is not that one method replaces the other.
+
+They serve different purposes.
+
+---
+
+# 14. Typical Development Workflow
+
+A practical workflow based on the lecture is:
+
+-------------------code----------------------
+Write code
+   ↓
+Test locally
+   ↓
+Publish to staging
+   ↓
+Team tests application
+   ↓
+Fix problems
+   ↓
+Publish again
+   ↓
+Prepare standalone builds
+   ↓
+iOS / Android distribution
+-------------------code----------------------
+
+This is especially useful when combined with the environment configuration from the previous lecture.
+
+For example:
+
+-------------------code----------------------
+Development
+    ↓
+Local backend
+
+Staging
+    ↓
+Staging backend
+
+Production
+    ↓
+Production backend
+-------------------code----------------------
+
+---
+
+# 15. Important Notes
+
+## 15.1 Release Channel Names Are Arbitrary
+
+The lecture emphasizes that the name can be chosen by the developer.
+
+For example:
+
+-------------------code----------------------
+expo publish --release-channel staging
+-------------------code----------------------
+
+The important thing is that your application configuration uses the same name.
+
+---
+
+## 15.2 Don't Confuse Publishing With App Store Distribution
+
+Publishing through Expo is primarily useful for quickly sharing/testing the application.
+
+A standalone build is what you generally need for actual native distribution.
+
+-------------------code----------------------
+Expo publishing
+→ Development/testing
+
+Standalone build
+→ Native distribution
+-------------------code----------------------
+
+---
+
+## 15.3 The Lecture Uses Older Expo Commands
+
+The lecture is based on an older Expo workflow.
+
+Commands such as:
+
+-------------------code----------------------
+expo publish --release-channel staging
+-------------------code----------------------
+
+and configuration such as:
+
+-------------------code----------------------
+Constants.manifest.releaseChannel
+-------------------code----------------------
+
+belong to that older Expo ecosystem.
+
+Modern Expo uses newer tooling and update/deployment concepts, so if implementing this today, the exact commands and configuration should be adapted to the current Expo SDK rather than copied blindly.
+
+---
+
+# 16. Full Final Code
+
+## `app.json`
+
+Course-era example for an unlisted Expo project:
+
+-------------------code----------------------
+{
+  "expo": {
+    "name": "Done With It",
+    "slug": "done-with-it",
+    "privacy": "unlisted"
+  }
+}
+-------------------code----------------------
+
+If you want a public project in the course's system:
+
+-------------------code----------------------
+{
+  "expo": {
+    "name": "Done With It",
+    "slug": "done-with-it",
+    "privacy": "public"
+  }
+}
+-------------------code----------------------
+
+---
+
+## `config/settings.js`
+
+This connects the distribution concept with the previous environment-configuration lecture:
+
+-------------------code----------------------
+import Constants from "expo-constants";
+
+const settings = {
+  dev: {
+    API_URL: "http://localhost:9000/api",
+  },
+
+  staging: {
+    API_URL: "http://localhost:9000/api",
+  },
+
+  prod: {
+    API_URL: "http://localhost:9000/api",
+  },
+};
+
+const getCurrentSettings = () => {
+  if (__DEV__) {
+    return settings.dev;
+  }
+
+  if (Constants.manifest.releaseChannel === "staging") {
+    return settings.staging;
+  }
+
+  return settings.prod;
+};
+
+export default getCurrentSettings();
+-------------------code----------------------
+
+---
+
+## `api/client.js`
+
+-------------------code----------------------
+import axios from "axios";
+import settings from "../config/settings";
+
+const client = axios.create({
+  baseURL: settings.API_URL,
+});
+
+export default client;
+-------------------code----------------------
+
+---
+
+# 17. Commands From the Lecture
+
+### Publish a staging version
+
+-------------------code----------------------
+expo publish --release-channel staging
+-------------------code----------------------
+
+### Publish a production version
+
+Conceptually:
+
+-------------------code----------------------
+expo publish --release-channel production
+-------------------code----------------------
+
+The important idea is that the release channel determines which environment configuration the application uses.
+
+---
+
+# Summary
+
+### Two distribution options
+
+**1. Expo publishing**
+
+-------------------code----------------------
+Fast
+↓
+Development/testing
+↓
+Share with team
+↓
+QR code / Expo
+-------------------code----------------------
+
+**2. Standalone builds**
+
+-------------------code----------------------
+Native build
+↓
+iOS / Android
+↓
+Final application distribution
+-------------------code----------------------
+
+### Environment connection
+
+-------------------code----------------------
+Release channel
+      ↓
+Environment settings
+      ↓
+API URL
+      ↓
+Correct backend
+-------------------code----------------------
+
+### Key points to remember
+
+1. Expo publishing is useful for quickly sharing development and testing versions.
+2. A release channel can identify which environment the published app belongs to.
+3. `staging` is just a channel name chosen by the developer.
+4. Expo provides a project page and, in the course workflow, a QR code for sharing.
+5. `unlisted` hides the project from search while allowing access through its URL.
+6. Standalone builds create native iOS/Android applications.
+7. Publishing through Expo and building standalone apps serve different purposes.
+8. The lecture uses an older Expo workflow; modern Expo commands and APIs may be different.
