@@ -1,0 +1,225 @@
+*** 1- Introduction ***
+# 1. Introduction: Notifications
+
+This section introduces how to add **push notifications** to a React Native application.
+
+The goal is to extend the existing marketplace-style app so that:
+
+1. A user can contact the owner of a listing.
+2. The owner receives a **push notification** on their mobile device.
+3. The notification informs them that someone has sent them a message.
+
+The section therefore combines two concepts:
+
+* **Messaging:** sending a message to another user.
+* **Push notifications:** notifying that user even when the app is not currently open.
+
+---
+
+# 2. What Is a Push Notification?
+
+A push notification is a message sent from your backend to a user's mobile device.
+
+For example:
+
+-------------------code----------------------
+User A
+   |
+   | Sends message
+   v
+Backend
+   |
+   | Push notification
+   v
+User B's phone
+   |
+   v
+"Someone sent you a message"
+-------------------code----------------------
+
+The important point is that the notification is **not simply a React Native component**.
+
+The backend and the mobile device need to communicate through a push notification service.
+
+---
+
+# 3. Expected Flow
+
+The overall flow will eventually look like this:
+
+### Step 1: User A opens a listing
+
+-------------------code----------------------
+Listing
+    ↓
+Owner: User B
+-------------------code----------------------
+
+### Step 2: User A sends a message
+
+-------------------code----------------------
+User A
+   ↓
+POST message
+   ↓
+Backend
+-------------------code----------------------
+
+### Step 3: Backend identifies the recipient
+
+The backend knows that the listing belongs to User B.
+
+-------------------code----------------------
+Listing owner
+      ↓
+    User B
+-------------------code----------------------
+
+### Step 4: Backend sends a push notification
+
+-------------------code----------------------
+Backend
+   ↓
+Push Notification Service
+   ↓
+User B's Device
+-------------------code----------------------
+
+### Step 5: User B receives the notification
+
+For example:
+
+-------------------code----------------------
+New Message
+
+Someone sent you a message about your listing.
+-------------------code----------------------
+
+---
+
+# 4. Important Architecture Concept
+
+The notification should generally be triggered by the **backend**, not directly by the sender's React Native app.
+
+A simplified architecture is:
+
+-------------------code----------------------
+React Native App A
+        |
+        | API request
+        v
+      Backend
+        |
+        | Determine recipient
+        |
+        | Send push notification
+        v
+ Push Notification Service
+        |
+        v
+React Native App B
+-------------------code----------------------
+
+This is important because the backend is responsible for determining:
+
+* Who owns the listing
+* Who should receive the message
+* Which device belongs to that user
+* When the notification should be sent
+
+---
+
+# 5. Code at This Stage
+
+This introductory lecture does not yet implement a specific code change.
+
+So there is **no meaningful final code to add yet**. The upcoming lessons will introduce the notification implementation step by step.
+
+A conceptual example of the future API could look like:
+
+-------------------code----------------------
+const sendMessage = async (message) => {
+  const result = await messagesApi.send(message);
+
+  if (!result.ok) {
+    return;
+  }
+
+  // Backend will handle the push notification.
+};
+-------------------code----------------------
+
+This is only a conceptual example; the lecture has not yet provided the actual notification API implementation.
+
+---
+
+# 6. Important Notes and Best Practices
+
+### 6.1 Push notifications are different from normal API responses
+
+An API response goes directly back to the application that made the request:
+
+-------------------code----------------------
+App → Backend → App
+-------------------code----------------------
+
+A push notification can reach another device:
+
+-------------------code----------------------
+App A → Backend → App B
+-------------------code----------------------
+
+---
+
+### 6.2 The recipient needs a way to be identified
+
+The backend needs some information that allows it to send the notification to the correct device.
+
+Typically, this involves storing a **push notification token** associated with the user/device.
+
+Conceptually:
+
+-------------------code----------------------
+{
+  userId: 123,
+  pushToken: "device-specific-token"
+}
+-------------------code----------------------
+
+The exact implementation will depend on the notification service being used.
+
+---
+
+### 6.3 Don't put notification credentials or secrets in the mobile app
+
+Sensitive credentials should remain on the backend.
+
+The React Native application should not contain private server credentials that could be extracted from the application.
+
+---
+
+# 7. Summary
+
+The main idea of this section is:
+
+> **When one user performs an action that requires another user's attention, the backend can send a push notification to the target user's device.**
+
+The intended flow is:
+
+-------------------code----------------------
+User sends message
+       ↓
+Backend receives message
+       ↓
+Backend identifies listing owner
+       ↓
+Backend sends push notification
+       ↓
+Owner receives notification
+-------------------code----------------------
+
+This section will therefore teach how to connect **messaging + backend logic + push notifications** to create a more complete mobile application.
+
+## Full Final Code
+
+There is no final implementation code in this introductory lecture yet. The actual notification code will be added in the following lessons.
