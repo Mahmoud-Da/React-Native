@@ -351,3 +351,442 @@ Main goals:
 
 The application will evolve from a simple marketplace app into a fully authenticated mobile application with user accounts and secure access control.
 
+
+*** 2- Authentication Providers ***
+
+# Authentication in React Native - Authentication Solutions Overview
+
+## 1. Introduction
+
+Before implementing authentication, it's important to understand the available options.
+
+There are many authentication providers and platforms that simplify user authentication in mobile applications.
+
+Some of the most popular solutions are:
+
+* Amazon Amplify
+* Firebase
+* Auth0
+
+These services provide ready-made authentication systems, user management, token handling, password recovery, social login, and more.
+
+However, in this course, a custom authentication solution is used instead.
+
+---
+
+# 2. Why Not Use Third-Party Authentication Services?
+
+The instructor intentionally avoids using commercial authentication providers for two main reasons.
+
+---
+
+## Reason 1: Not Everyone Wants to Use Paid Services
+
+Many developers:
+
+* Prefer full control over their backend
+* Do not want vendor lock-in
+* May not want recurring costs
+* May work on projects with limited budgets
+
+Examples:
+
+-------------------code----------------------
+Startup project
+Student project
+Personal portfolio
+Internal company application
+-------------------code----------------------
+
+Using a custom authentication system allows the course to remain useful regardless of budget.
+
+---
+
+## Reason 2: Third-Party APIs Change Over Time
+
+Services frequently update:
+
+* APIs
+* SDKs
+* Configuration steps
+* Pricing models
+* Authentication workflows
+
+Example:
+
+-------------------code----------------------
+Firebase SDK v8
+↓
+Firebase SDK v9
+↓
+Breaking API changes
+-------------------code----------------------
+
+This can cause:
+
+* Course content to become outdated
+* Existing code examples to stop working
+* Additional maintenance work
+
+By teaching authentication concepts directly, the knowledge remains useful even when technologies evolve.
+
+---
+
+# 3. The Goal of This Section
+
+The purpose is not to teach a specific authentication provider.
+
+Instead, the goal is to teach:
+
+-------------------code----------------------
+How authentication works
+Why it works
+How to implement it yourself
+-------------------code----------------------
+
+Once you understand the fundamentals, you can apply the same concepts in:
+
+* React Native
+* React
+* Django
+* Rails
+* ASP.NET
+* Node.js
+* Laravel
+* Spring Boot
+
+and many other frameworks.
+
+---
+
+# 4. Authentication Providers Work Similarly
+
+Although platforms have different APIs, most authentication systems follow the same basic flow.
+
+---
+
+## Step 1: User Registers
+
+User submits:
+
+-------------------code----------------------
+{
+  "name": "John",
+  "email": "john@test.com",
+  "password": "123456"
+}
+-------------------code----------------------
+
+Server creates a user account.
+
+---
+
+## Step 2: User Logs In
+
+User submits credentials:
+
+-------------------code----------------------
+{
+  "email": "john@test.com",
+  "password": "123456"
+}
+-------------------code----------------------
+
+Server verifies credentials.
+
+---
+
+## Step 3: Server Returns a Token
+
+Example:
+
+-------------------code----------------------
+{
+  "token": "JWT_TOKEN"
+}
+-------------------code----------------------
+
+The token proves the user's identity.
+
+---
+
+## Step 4: Client Stores the Token
+
+Common storage options:
+
+-------------------code----------------------
+SecureStore
+Keychain
+Encrypted Storage
+-------------------code----------------------
+
+---
+
+## Step 5: Client Sends Token with Requests
+
+Example:
+
+-------------------code----------------------
+Authorization: Bearer JWT_TOKEN
+-------------------code----------------------
+
+The server validates the token before returning protected resources.
+
+---
+
+# 5. High-Level Authentication Architecture
+
+A typical authentication system looks like this:
+
+-------------------code----------------------
+Mobile App
+     │
+     ▼
+Authentication API
+     │
+     ▼
+Database
+-------------------code----------------------
+
+---
+
+## Registration Flow
+
+-------------------code----------------------
+User
+ │
+ ▼
+Register Screen
+ │
+ ▼
+API
+ │
+ ▼
+Database
+-------------------code----------------------
+
+---
+
+## Login Flow
+
+-------------------code----------------------
+User
+ │
+ ▼
+Login Screen
+ │
+ ▼
+API
+ │
+ ▼
+Token Returned
+ │
+ ▼
+Store Token
+-------------------code----------------------
+
+---
+
+## Authenticated Requests
+
+-------------------code----------------------
+User
+ │
+ ▼
+Mobile App
+ │
+ ▼
+Request + Token
+ │
+ ▼
+Server
+ │
+ ▼
+Protected Data
+-------------------code----------------------
+
+---
+
+# 6. Benefits of Learning a Custom Authentication System
+
+By learning the underlying mechanism instead of a specific service, you gain:
+
+### Better Understanding
+
+You learn:
+
+* Authentication flow
+* Tokens
+* Authorization
+* Session management
+
+instead of memorizing library-specific APIs.
+
+---
+
+### Framework Independence
+
+The same concepts can be implemented in:
+
+-------------------code----------------------
+Node.js
+Django
+Rails
+ASP.NET
+Laravel
+Spring Boot
+-------------------code----------------------
+
+---
+
+### Easier Migration
+
+If you switch providers later:
+
+-------------------code----------------------
+Firebase
+→ Auth0
+
+Auth0
+→ Custom Backend
+
+Custom Backend
+→ Amplify
+-------------------code----------------------
+
+you already understand the underlying principles.
+
+---
+
+# 7. What Will Be Learned Next
+
+The upcoming lessons will explain:
+
+### User Registration
+
+Creating user accounts.
+
+Example:
+
+-------------------code----------------------
+await authApi.register(userInfo);
+-------------------code----------------------
+
+---
+
+### User Login
+
+Authenticating users.
+
+Example:
+
+-------------------code----------------------
+await authApi.login(email, password);
+-------------------code----------------------
+
+---
+
+### Authentication Tokens
+
+Understanding:
+
+* JWT tokens
+* Token storage
+* Token validation
+
+---
+
+### Secure Token Storage
+
+Using secure storage solutions:
+
+-------------------code----------------------
+import * as SecureStore from "expo-secure-store";
+-------------------code----------------------
+
+---
+
+### Protected API Requests
+
+Automatically attaching tokens to API requests.
+
+Example:
+
+-------------------code----------------------
+Authorization: Bearer TOKEN
+-------------------code----------------------
+
+---
+
+### Authentication State Management
+
+Determining:
+
+-------------------code----------------------
+if (user)
+  return <AppNavigator />;
+else
+  return <AuthNavigator />;
+-------------------code----------------------
+
+---
+
+# Important Notes
+
+## Focus on Concepts, Not Vendors
+
+Technologies change.
+
+Authentication principles remain largely the same.
+
+Understanding:
+
+-------------------code----------------------
+Registration
+Login
+Tokens
+Authorization
+Secure Storage
+-------------------code----------------------
+
+is far more valuable than learning a specific SDK.
+
+---
+
+## Third-Party Services Are Still Useful
+
+The course is not criticizing:
+
+* Firebase
+* Auth0
+* Amplify
+
+These services are excellent solutions.
+
+The goal is simply to teach authentication in a way that remains useful regardless of the provider used.
+
+---
+
+## Learn the Foundation First
+
+Once you understand the authentication flow, switching to any provider becomes much easier because most of them follow the same core pattern.
+
+---
+
+# Summary
+
+This lecture explains why the course uses a custom authentication solution instead of commercial services like Firebase, Auth0, or Amplify.
+
+Key takeaways:
+
+1. Third-party authentication providers are convenient but may introduce costs and API changes.
+2. Learning authentication fundamentals is more valuable than learning a specific provider.
+3. Most authentication systems follow the same flow:
+
+   * Register
+   * Login
+   * Receive Token
+   * Store Token
+   * Send Token with Requests
+4. Understanding these concepts allows you to implement authentication in any backend framework.
+5. The next lessons will focus on building and understanding a complete custom authentication workflow in React Native.
