@@ -11,22 +11,20 @@ import authStorage from "./app/auth/storage";
 function App() {
   const [user, setUser] = useState();
   const [isReady, setIsReady] = useState(false);
+  const restoreUser = async () => {
+    const user = await authStorage.getUser();
+
+    if (user)
+      setUser(user);
+  };
 
   if (!isReady)
     return (
       <AppLoading
-        startAsync={restoreToken}
+        startAsync={restoreUser}
         onFinish={() => setIsReady(true)}
       />
     );
-
-  const restoreToken = async () => {
-    const token = await authStorage.getToken();
-
-    if (!token) return;
-
-    setUser(jwtDecode(token));
-  };
 
   return (
     <AuthContext.Provider
