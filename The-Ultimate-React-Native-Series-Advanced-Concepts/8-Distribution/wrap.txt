@@ -1,0 +1,345 @@
+*** 1- Introduction ***
+# Preparing and Distributing a React Native / Expo App
+
+## 1. Overview
+
+This is the **final section of the course**.
+
+The focus now changes from developing and testing the application to **preparing it for real users and real devices**.
+
+The main goal is:
+
+-------------------code----------------------
+Development
+    ↓
+Optimization
+    ↓
+Configuration
+    ↓
+Build
+    ↓
+Real Device
+    ↓
+App Store
+-------------------code----------------------
+
+---
+
+# 2. What We Will Learn
+
+This section covers several important topics.
+
+### 2.1 App Icon
+
+We will learn how to add a proper application icon.
+
+The icon is what users see:
+
+* On the phone's home screen
+* In the app launcher
+* In the App Store / Play Store
+
+---
+
+### 2.2 Asset Optimization
+
+We will optimize application assets such as:
+
+* Images
+* Icons
+* Other static files
+
+The goal is to reduce the application's size and improve performance.
+
+For example:
+
+-------------------code----------------------
+Large images
+    ↓
+Optimization
+    ↓
+Smaller app
+    ↓
+Faster download
+    ↓
+Less storage
+-------------------code----------------------
+
+---
+
+### 2.3 JavaScript Bundle Optimization
+
+React Native applications contain a JavaScript bundle.
+
+Before distributing the application, we want to make sure this bundle is optimized for production.
+
+Conceptually:
+
+-------------------code----------------------
+Source Code
+    ↓
+Bundling
+    ↓
+Optimization
+    ↓
+Production JavaScript Bundle
+-------------------code----------------------
+
+This helps improve:
+
+* Application size
+* Startup performance
+* Overall production performance
+
+---
+
+# 3. Error Reporting
+
+During development, we can use:
+
+-------------------code----------------------
+console.log(error);
+-------------------code----------------------
+
+But this isn't enough for a production application.
+
+Once real users are using the application, we need a way to know when something goes wrong.
+
+A production error-reporting service can help us:
+
+-------------------code----------------------
+User
+  ↓
+Application crashes/errors
+  ↓
+Error reporting service
+  ↓
+Developer receives error information
+-------------------code----------------------
+
+This allows developers to investigate problems that happen on real users' devices.
+
+---
+
+# 4. Environment Configuration
+
+Applications commonly have different environments.
+
+For example:
+
+-------------------code----------------------
+Development
+     ↓
+http://localhost:3000
+
+Production
+     ↓
+https://api.myapp.com
+-------------------code----------------------
+
+We shouldn't have to manually modify our source code every time we switch environments.
+
+Instead, configuration values should be managed separately.
+
+Typical configuration values include:
+
+* API URL
+* Environment name
+* API keys
+* Feature flags
+* Other environment-specific settings
+
+The goal is:
+
+-------------------code----------------------
+Same application code
+        +
+Different configuration
+        ↓
+Development / Production
+-------------------code----------------------
+
+---
+
+# 5. Creating Production Builds
+
+After preparing and optimizing the application, we need to create actual builds.
+
+There are two main platforms:
+
+### iOS
+
+-------------------code----------------------
+React Native / Expo
+        ↓
+iOS Build
+        ↓
+iPhone / iPad
+-------------------code----------------------
+
+### Android
+
+-------------------code----------------------
+React Native / Expo
+        ↓
+Android Build
+        ↓
+Android Device
+-------------------code----------------------
+
+A development application is not the same thing as a production application.
+
+A production build is prepared for distribution to users.
+
+---
+
+# 6. iOS App Store Submission
+
+The instructor will also demonstrate how to submit the iOS application to the **Apple App Store**.
+
+The general process is:
+
+-------------------code----------------------
+Create iOS build
+      ↓
+Prepare app information
+      ↓
+Upload build
+      ↓
+App Store Connect
+      ↓
+Review
+      ↓
+App Store
+-------------------code----------------------
+
+The course focuses specifically on iOS because the instructor has experience with Apple's distribution process.
+
+---
+
+# 7. Android / Google Play Store
+
+The instructor does not demonstrate the complete Google Play Store submission process.
+
+However, the concepts are similar:
+
+-------------------code----------------------
+Create Android build
+      ↓
+Prepare store listing
+      ↓
+Upload build
+      ↓
+Google Play Console
+      ↓
+Review
+      ↓
+Google Play Store
+-------------------code----------------------
+
+The course provides additional resources for learning the Android-specific process.
+
+---
+
+# 8. Important Development vs. Production Difference
+
+A major concept in this section is understanding that an application that works during development is **not automatically ready for production**.
+
+During development, we focus on:
+
+-------------------code----------------------
+Writing code
+Testing
+Debugging
+-------------------code----------------------
+
+For production, we additionally need:
+
+-------------------code----------------------
+Optimization
+Error reporting
+Configuration
+Security
+Build generation
+Distribution
+Store submission
+-------------------code----------------------
+
+---
+
+# 9. Recommended Production Checklist
+
+Before distributing an app, check:
+
+* [ ] App icon configured
+* [ ] Assets optimized
+* [ ] JavaScript bundle optimized
+* [ ] Production API URL configured
+* [ ] Environment configuration separated
+* [ ] Error reporting configured
+* [ ] Production build created
+* [ ] Tested on real iOS device
+* [ ] Tested on real Android device
+* [ ] iOS App Store submission prepared
+* [ ] Android Play Store submission prepared
+
+---
+
+# 10. Full Final Code
+
+This lesson is primarily an **introduction to the final section**, so there is no substantial new code yet.
+
+The key configuration/code topics will be introduced in the following lessons.
+
+A conceptual example of environment configuration might look like:
+
+-------------------code----------------------
+const config = {
+  apiUrl: "https://api.myapp.com",
+};
+
+export default config;
+-------------------code----------------------
+
+But this is only an example of the concept; the actual implementation will depend on the configuration system introduced later in the course.
+
+---
+
+# 11. Summary
+
+This final section is about taking the application from **development to production**.
+
+The main topics are:
+
+1. Add an application icon.
+2. Optimize assets.
+3. Optimize the JavaScript bundle.
+4. Add production error reporting.
+5. Manage configuration for different environments.
+6. Create iOS and Android production builds.
+7. Submit the iOS application to the App Store.
+8. Learn the corresponding Android/Google Play process independently.
+
+The overall production journey is:
+
+-------------------code----------------------
+Build the app
+     ↓
+Optimize it
+     ↓
+Configure environments
+     ↓
+Add error reporting
+     ↓
+Create production builds
+     ↓
+Test on real devices
+     ↓
+Submit to app stores
+     ↓
+Distribute to users
+-------------------code----------------------
+
+This section is essentially about answering the question:
+
+**"I built my React Native app. How do I turn it into a real application that I can give to users?"**
