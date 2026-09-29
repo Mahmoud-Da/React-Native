@@ -1,13 +1,14 @@
-import React, { useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { AppLoading } from "expo";
+import { useState } from "react";
 
-import navigationTheme from "./app/navigation/navigationTheme";
-import AppNavigator from "./app/navigation/AppNavigator";
-import OfflineNotice from "./app/components/OfflineNotice";
-import AuthNavigator from "./app/navigation/AuthNavigator";
 import AuthContext from "./app/auth/context";
 import authStorage from "./app/auth/storage";
+import OfflineNotice from "./app/components/OfflineNotice";
+import AppNavigator from "./app/navigation/AppNavigator";
+import AuthNavigator from "./app/navigation/AuthNavigator";
+import navigationTheme from "./app/navigation/navigationTheme";
+import navigationRef from "./navigation/rootNavigation";
 
 export default function App() {
   const [user, setUser] = useState();
@@ -26,7 +27,7 @@ export default function App() {
   return (
     <AuthContext.Provider value={{ user, setUser }}>
       <OfflineNotice />
-      <NavigationContainer theme={navigationTheme}>
+      <NavigationContainer theme={navigationTheme} ref={navigationRef}>
         {user ? <AppNavigator /> : <AuthNavigator />}
       </NavigationContainer>
     </AuthContext.Provider>
