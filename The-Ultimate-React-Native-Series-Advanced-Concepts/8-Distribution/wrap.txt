@@ -5119,3 +5119,728 @@ Version
 Build Number
 → Identifies the individual iOS build
 -------------------code----------------------
+
+
+*** 11- Building the Android App ***
+# Building for Android with Expo
+
+## 1. Android Configuration in `app.json`
+
+Before building the Android version of the app, we need to add Android-specific configuration.
+
+There are two important settings:
+
+1. `package`
+2. `versionCode`
+
+Example:
+
+-------------------code----------------------
+{
+  "expo": {
+    "name": "Done With It",
+    "slug": "done-with-it",
+    "version": "1.0.0",
+
+    "android": {
+      "package": "com.codewithmosh.donewithit",
+      "versionCode": 1
+    }
+  }
+}
+-------------------code----------------------
+
+---
+
+## 2. The `package` Property
+
+-------------------code----------------------
+"package": "com.codewithmosh.donewithit"
+-------------------code----------------------
+
+The `package` is the **unique identifier of the Android application**.
+
+The usual convention is Reverse DNS notation:
+
+-------------------code----------------------
+com.company.application
+-------------------code----------------------
+
+For example:
+
+-------------------code----------------------
+com.codewithmosh.donewithit
+-------------------code----------------------
+
+### Important
+
+This does **not** mean you need to own or operate a website at:
+
+-------------------code----------------------
+codewithmosh.com
+-------------------code----------------------
+
+It is simply a naming convention for creating a unique application identifier.
+
+### Example
+
+-------------------code----------------------
+com.mycompany.donewithit
+-------------------code----------------------
+
+The important thing is that the identifier should be unique and should be chosen carefully.
+
+---
+
+# 3. The `version` Property
+
+At the top of `app.json`, we have:
+
+-------------------code----------------------
+"version": "1.0.0"
+-------------------code----------------------
+
+This represents the **user-facing version** of the application.
+
+For example:
+
+-------------------code----------------------
+1.0.0
+1.1.0
+2.0.0
+-------------------code----------------------
+
+Users may see this version in the app store.
+
+---
+
+# 4. The `versionCode` Property
+
+Inside the Android configuration:
+
+-------------------code----------------------
+"versionCode": 1
+-------------------code----------------------
+
+`versionCode` is an **internal Android/Google Play version number**.
+
+It is different from the user-facing `version`.
+
+For example:
+
+-------------------code----------------------
+version     = 1.0.0
+versionCode = 1
+-------------------code----------------------
+
+For the next submitted build:
+
+-------------------code----------------------
+version     = 1.0.1
+versionCode = 2
+-------------------code----------------------
+
+Then:
+
+-------------------code----------------------
+version     = 1.1.0
+versionCode = 3
+-------------------code----------------------
+
+### Important rule
+
+Every new build submitted as an update must have an appropriately incremented Android build/version code.
+
+Think of it like this:
+
+-------------------code----------------------
+version
+→ What the user sees
+
+versionCode
+→ Internal build number
+-------------------code----------------------
+
+---
+
+# 5. Building the Android Application
+
+The original lecture uses the old Expo command:
+
+-------------------code----------------------
+expo build:android
+-------------------code----------------------
+
+This was the traditional Expo build workflow when the course was recorded.
+
+For a modern Expo project, Android builds are normally created using **EAS Build**:
+
+-------------------code----------------------
+eas build --platform android
+-------------------code----------------------
+
+So when following this lecture today, use the modern EAS workflow rather than blindly copying the old command.
+
+---
+
+# 6. APK vs Android App Bundle
+
+When creating an Android build, there are two important formats.
+
+## APK
+
+-------------------code----------------------
+.apk
+-------------------code----------------------
+
+An APK can be installed directly on an Android device.
+
+It is useful for:
+
+* Testing.
+* Installing directly on a device.
+* Sharing a test build.
+
+Example:
+
+-------------------code----------------------
+donewithit.apk
+-------------------code----------------------
+
+---
+
+## Android App Bundle
+
+-------------------code----------------------
+.aab
+-------------------code----------------------
+
+An Android App Bundle is the format normally used for distributing an application through Google Play.
+
+Google Play uses the bundle to generate optimized APKs for different devices/configurations.
+
+### Simple rule
+
+-------------------code----------------------
+Testing
+→ APK
+
+Google Play production
+→ AAB
+-------------------code----------------------
+
+---
+
+# 7. Building an APK for Testing
+
+With modern EAS, you can configure a build profile for an APK.
+
+Example `eas.json`:
+
+-------------------code----------------------
+{
+  "build": {
+    "preview": {
+      "android": {
+        "buildType": "apk"
+      }
+    }
+  }
+}
+-------------------code----------------------
+
+Then run:
+
+-------------------code----------------------
+eas build --platform android --profile preview
+-------------------code----------------------
+
+The result is an APK that can be installed on an Android device.
+
+---
+
+# 8. Building an AAB for Google Play
+
+For a production build, configure an App Bundle:
+
+-------------------code----------------------
+{
+  "build": {
+    "production": {
+      "android": {
+        "buildType": "app-bundle"
+      }
+    }
+  }
+}
+-------------------code----------------------
+
+Then:
+
+-------------------code----------------------
+eas build --platform android --profile production
+-------------------code----------------------
+
+This produces an `.aab` suitable for Google Play distribution.
+
+---
+
+# 9. What Is a Keystore?
+
+Android applications need to be **digitally signed**.
+
+A keystore contains the credentials/keys used for signing the application.
+
+Conceptually:
+
+-------------------code----------------------
+Your App
+   ↓
+Signed with Keystore
+   ↓
+Android / Google Play
+-------------------code----------------------
+
+The keystore establishes the signing identity associated with your application.
+
+---
+
+# 10. Creating or Managing the Keystore
+
+In the old Expo workflow, Expo asked whether you already had a keystore.
+
+If you didn't have one, you could let Expo generate it.
+
+The idea was:
+
+-------------------code----------------------
+No existing Keystore
+        ↓
+Expo creates one
+        ↓
+Expo uses it to sign the application
+-------------------code----------------------
+
+With modern EAS, signing credentials can also be managed through EAS.
+
+For example:
+
+-------------------code----------------------
+eas credentials
+-------------------code----------------------
+
+This allows you to inspect/manage Android signing credentials for the project.
+
+---
+
+# 11. The Build Queue
+
+When you start an EAS build, the build is performed remotely.
+
+Conceptually:
+
+-------------------code----------------------
+Your Computer
+      ↓
+EAS Build
+      ↓
+Build Queue
+      ↓
+Remote Build Machine
+      ↓
+Android Build
+      ↓
+APK / AAB
+-------------------code----------------------
+
+You can monitor the build from the build information provided by EAS.
+
+The important idea from the lecture is that the build does not necessarily happen directly on your computer.
+
+---
+
+# 12. Build Waiting Time
+
+Remote build services may place builds into a queue.
+
+Conceptually:
+
+-------------------code----------------------
+Start Build
+     ↓
+Queue
+     ↓
+Available Build Machine
+     ↓
+Build Starts
+-------------------code----------------------
+
+The amount of waiting can depend on the service, plan, and current demand.
+
+The lecture discusses paid plans offering priority builds. These specific plans and pricing may change over time.
+
+---
+
+# 13. APK Size
+
+The instructor notices that the generated APK is relatively large.
+
+The lecture explains this in the context of the older Expo architecture, where the application could contain Expo functionality that was not necessarily all used by the app.
+
+However, this part of the lecture is **historical**.
+
+Modern Expo/React Native build tooling has changed significantly, so you should not assume that the exact APK size or the exact reason given in the lecture still applies today.
+
+---
+
+# 14. Should You Leave Expo Because of App Size?
+
+The instructor's main point is:
+
+> Do not immediately abandon Expo simply because the application is larger than expected.
+
+Moving to a more manually controlled native setup can give you additional control, but it also increases complexity.
+
+Before changing workflows, consider:
+
+-------------------code----------------------
+App size
++
+Native requirements
++
+Build complexity
++
+Maintenance
++
+Development time
+-------------------code----------------------
+
+### Best practice
+
+First measure the actual production build size and identify what is contributing to it.
+
+Do not switch workflows based only on assumptions.
+
+---
+
+# 15. Why the Keystore Is Extremely Important
+
+The keystore is particularly important when publishing updates.
+
+Suppose your first version is:
+
+-------------------code----------------------
+App
+versionCode = 1
+-------------------code----------------------
+
+and it is signed with:
+
+-------------------code----------------------
+Keystore A
+-------------------code----------------------
+
+Later you release:
+
+-------------------code----------------------
+versionCode = 2
+-------------------code----------------------
+
+The update must be signed using the appropriate signing credentials for the existing app.
+
+Conceptually:
+
+-------------------code----------------------
+Version 1
+    ↓
+Keystore A
+    ↓
+Google Play
+
+Version 2
+    ↓
+Keystore A
+    ↓
+Google Play
+-------------------code----------------------
+
+The signing credentials are therefore something you must protect and manage carefully.
+
+---
+
+# 16. What Happens If You Lose Your Signing Credentials?
+
+The lecture strongly emphasizes protecting the keystore.
+
+The exact recovery possibilities depend on how your Android signing is configured and on Google Play's current key-management mechanisms.
+
+The important lesson remains:
+
+-------------------code----------------------
+Signing credentials
+        ↓
+Critical production asset
+-------------------code----------------------
+
+You should never treat the keystore as an ordinary project file.
+
+---
+
+# 17. Never Commit the Keystore to Git
+
+A keystore contains sensitive signing information.
+
+Do not put it in a public Git repository.
+
+For example, avoid:
+
+-------------------code----------------------
+git add donewithit.jks
+git commit -m "Add keystore"
+git push
+-------------------code----------------------
+
+Instead, make sure keystore files are ignored.
+
+Example `.gitignore`:
+
+-------------------code----------------------gitignore
+*.jks
+*.keystore
+-------------------code----------------------
+
+---
+
+# 18. Store the Keystore Securely
+
+Keep secure backups of your signing credentials.
+
+For example:
+
+-------------------code----------------------
+Secure Backup
+│
+├── donewithit.jks
+└── signing credentials
+-------------------code----------------------
+
+Good storage should be:
+
+* Private.
+* Access-controlled.
+* Backed up.
+* Not publicly accessible.
+* Separate from the public source code repository.
+
+Do not store the credentials in:
+
+-------------------code----------------------
+GitHub public repository
+Public cloud folder
+Chat messages
+Public documentation
+-------------------code----------------------
+
+---
+
+# 19. Complete Android Configuration
+
+A simplified `app.json` from the lecture:
+
+-------------------code----------------------
+{
+  "expo": {
+    "name": "Done With It",
+    "slug": "done-with-it",
+    "version": "1.0.0",
+
+    "android": {
+      "package": "com.codewithmosh.donewithit",
+      "versionCode": 1
+    }
+  }
+}
+-------------------code----------------------
+
+---
+
+# 20. Complete Modern EAS Configuration
+
+For a modern Expo project, a simple `eas.json` could look like:
+
+-------------------code----------------------
+{
+  "build": {
+    "preview": {
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "app-bundle"
+      }
+    }
+  }
+}
+-------------------code----------------------
+
+### Testing build
+
+-------------------code----------------------
+eas build --platform android --profile preview
+-------------------code----------------------
+
+Produces:
+
+-------------------code----------------------
+APK
+-------------------code----------------------
+
+### Production build
+
+-------------------code----------------------
+eas build --platform android --profile production
+-------------------code----------------------
+
+Produces:
+
+-------------------code----------------------
+AAB
+-------------------code----------------------
+
+---
+
+# 21. Full Final Code
+
+## `app.json`
+
+-------------------code----------------------
+{
+  "expo": {
+    "name": "Done With It",
+    "slug": "done-with-it",
+    "version": "1.0.0",
+
+    "android": {
+      "package": "com.codewithmosh.donewithit",
+      "versionCode": 1
+    }
+  }
+}
+-------------------code----------------------
+
+## `eas.json`
+
+-------------------code----------------------
+{
+  "build": {
+    "preview": {
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "app-bundle"
+      }
+    }
+  }
+}
+-------------------code----------------------
+
+## `.gitignore`
+
+-------------------code----------------------gitignore
+*.jks
+*.keystore
+-------------------code----------------------
+
+## Build Commands
+
+### APK for testing
+
+-------------------code----------------------
+eas build --platform android --profile preview
+-------------------code----------------------
+
+### AAB for Google Play
+
+-------------------code----------------------
+eas build --platform android --profile production
+-------------------code----------------------
+
+### Manage Android credentials
+
+-------------------code----------------------
+eas credentials
+-------------------code----------------------
+
+---
+
+# 22. Quick Review
+
+-------------------code----------------------
+app.json
+   ↓
+package
+   ↓
+Unique Android app identifier
+
+version
+   ↓
+User-facing version
+
+versionCode
+   ↓
+Internal Android build/version number
+
+       ↓
+
+EAS Build
+       ↓
+   ┌───────────┐
+   │           │
+  APK         AAB
+   │           │
+Testing     Google Play
+   │           │
+   └───────────┘
+
+       ↓
+
+Keystore
+       ↓
+Signs the application
+       ↓
+Keep it secure
+       ↓
+Never commit it to Git
+-------------------code----------------------
+
+# Summary
+
+1. Configure Android in `app.json`.
+2. `package` uniquely identifies the Android application.
+3. `version` is the user-facing application version.
+4. `versionCode` is the internal Android build/version number.
+5. Increase `versionCode` when submitting new builds.
+6. APK is useful for direct installation and testing.
+7. AAB is the normal format for Google Play distribution.
+8. Android applications need signing credentials.
+9. The keystore/signing credentials are sensitive and must be protected.
+10. Never commit `.jks` or `.keystore` files to a public Git repository.
+11. The lecture's `expo build:android` commands are from the older Expo workflow.
+12. Modern Expo projects generally use EAS Build.
+13. Do not switch away from Expo simply because of APK size without first measuring and understanding the actual production build.
+
+The most important concept to remember is:
+
+-------------------code----------------------
+APK → Testing
+AAB → Google Play
+Keystore → Application signing
+package → Application identity
+versionCode → Internal build/version number
+version → User-facing version
+-------------------code----------------------
