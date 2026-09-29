@@ -4774,3 +4774,405 @@ AppNavigator
 The main lesson is **separation of concerns**.
 
 `AppNavigator` should remain focused on navigation and presentation, while `useNotifications` encapsulates the reusable push-notification business logic.
+
+*** 11- Local Notifications ***
+# Local Notifications in Expo
+
+## 1. Remote vs. Local Notifications
+
+Expo supports two main types of notifications:
+
+1. **Remote notifications (Push notifications)**
+
+   * Sent from a server through Expo's notification infrastructure.
+   * Can reach the user's device even when the app isn't running.
+   * This is what we implemented in the previous lessons.
+
+2. **Local notifications**
+
+   * Created directly inside the mobile application.
+   * Do not require a server.
+   * Useful for reminders, order confirmations, scheduled events, etc.
+   * Can be tested using an emulator/simulator.
+
+The important distinction is:
+
+-------------------code----------------------
+Remote:
+Server → Expo → Device
+
+Local:
+App → Device
+-------------------code----------------------
+
+---
+
+# 2. Import Expo Notifications
+
+Just like with push notifications, import the Expo notifications API.
+
+-------------------code----------------------
+import * as Notifications from "expo-notifications";
+-------------------code----------------------
+
+---
+
+# 3. Display a Local Notification Immediately
+
+Suppose we have a button and want to display a notification when the user presses it.
+
+Use:
+
+-------------------code----------------------
+Notifications.presentNotificationAsync()
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+const handleNotification = async () => {
+  await Notifications.presentNotificationAsync({
+    title: "Congratulations",
+    body: "Your order was successfully placed.",
+    data: {
+      displayInForeground: true,
+    },
+  });
+};
+-------------------code----------------------
+
+Then connect it to a button:
+
+-------------------code----------------------jsx
+<Button
+  title="Show Notification"
+  onPress={handleNotification}
+/>
+-------------------code----------------------
+
+### What happens?
+
+When the user taps the button:
+
+-------------------code----------------------
+Button pressed
+     ↓
+handleNotification()
+     ↓
+presentNotificationAsync()
+     ↓
+Notification appears
+-------------------code----------------------
+
+---
+
+# 4. Show Notifications While the App Is in the Foreground
+
+On iOS, notifications normally aren't displayed while the application is in the foreground unless configured appropriately.
+
+The lecture initially uses:
+
+-------------------code----------------------
+data: {
+  displayInForeground: true,
+}
+-------------------code----------------------
+
+For example:
+
+-------------------code----------------------
+await Notifications.presentNotificationAsync({
+  title: "Congratulations",
+  body: "Your order was successfully placed.",
+  data: {
+    displayInForeground: true,
+  },
+});
+-------------------code----------------------
+
+However, if you need this behavior consistently, configuring it globally is preferable.
+
+---
+
+# 5. Configure Foreground Notifications in `app.json`
+
+Instead of repeatedly adding:
+
+-------------------code----------------------
+data: {
+  displayInForeground: true,
+}
+-------------------code----------------------
+
+you can configure the behavior in `app.json`.
+
+Example:
+
+-------------------code----------------------
+{
+  "expo": {
+    "notification": {
+      "iosDisplayInForeground": true
+    }
+  }
+}
+-------------------code----------------------
+
+Then your JavaScript becomes simpler:
+
+-------------------code----------------------
+await Notifications.presentNotificationAsync({
+  title: "Congratulations",
+  body: "Your order was successfully placed.",
+});
+-------------------code----------------------
+
+### Important
+
+The exact Expo configuration syntax can depend on the Expo SDK version you're using. The lecture uses the older Expo notification configuration style, so when working on a current project, check the Expo documentation for the configuration format appropriate to your SDK.
+
+---
+
+# 6. Schedule a Notification for the Future
+
+Local notifications don't have to appear immediately.
+
+Expo also provides:
+
+-------------------code----------------------
+Notifications.scheduleNotificationAsync()
+-------------------code----------------------
+
+The first argument contains the notification.
+
+The second argument contains the schedule.
+
+Conceptually:
+
+-------------------code----------------------
+await Notifications.scheduleNotificationAsync(
+  {
+    content: {
+      title: "Congratulations",
+      body: "Your order was successfully placed.",
+    },
+    trigger: {
+      date: futureDate,
+    },
+  }
+);
+-------------------code----------------------
+
+---
+
+# 7. Schedule a Notification Two Seconds From Now
+
+We can calculate a future date using JavaScript's `Date` object.
+
+-------------------code----------------------
+const date = new Date();
+
+date.setSeconds(date.getSeconds() + 2);
+-------------------code----------------------
+
+This gives us a date two seconds in the future.
+
+Then:
+
+-------------------code----------------------
+await Notifications.scheduleNotificationAsync({
+  content: {
+    title: "Congratulations",
+    body: "Your order was successfully placed.",
+  },
+  trigger: {
+    date,
+  },
+});
+-------------------code----------------------
+
+The flow becomes:
+
+-------------------code----------------------
+Button pressed
+      ↓
+Get current time
+      ↓
+Add 2 seconds
+      ↓
+Schedule notification
+      ↓
+Wait 2 seconds
+      ↓
+Notification appears
+-------------------code----------------------
+
+---
+
+# 8. Immediate vs. Scheduled Notifications
+
+| Method                        | Purpose                            |
+| ----------------------------- | ---------------------------------- |
+| `presentNotificationAsync()`  | Show notification immediately      |
+| `scheduleNotificationAsync()` | Show notification at a future time |
+
+### Immediate
+
+-------------------code----------------------
+await Notifications.presentNotificationAsync({
+  title: "Congratulations",
+  body: "Your order was successfully placed.",
+});
+-------------------code----------------------
+
+### Scheduled
+
+-------------------code----------------------
+await Notifications.scheduleNotificationAsync({
+  content: {
+    title: "Congratulations",
+    body: "Your order was successfully placed.",
+  },
+  trigger: {
+    date,
+  },
+});
+-------------------code----------------------
+
+---
+
+# 9. Why Local Notifications Are Useful
+
+Local notifications are useful when the app itself knows when something should happen.
+
+Examples:
+
+* Medication/reminder apps
+* Calendar reminders
+* Alarm applications
+* Order status reminders
+* Scheduled tasks
+* Countdown notifications
+* Offline reminders
+
+A server is not necessary for these notifications.
+
+---
+
+# 10. Important Notes and Best Practices
+
+### 10.1 Local notifications don't need a push token
+
+Unlike remote notifications, you don't need:
+
+-------------------code----------------------
+Expo Push Token
+-------------------code----------------------
+
+because the notification is created locally.
+
+### 10.2 Local notifications can be tested in a simulator
+
+This is an important difference from the previous push notification implementation.
+
+Remote push notifications generally require a physical device for testing.
+
+Local notifications can be tested in a simulator/emulator.
+
+### 10.3 Prefer global configuration for repeated behavior
+
+If every notification needs the same foreground behavior, configuring it globally is cleaner than repeatedly adding the same property to every notification.
+
+### 10.4 Use `async/await`
+
+Notification APIs return promises, so use:
+
+-------------------code----------------------
+await Notifications.presentNotificationAsync(...)
+-------------------code----------------------
+
+or:
+
+-------------------code----------------------
+await Notifications.scheduleNotificationAsync(...)
+-------------------code----------------------
+
+This makes asynchronous behavior easier to understand.
+
+---
+
+# 11. Full Final Code
+
+The lecture's final example demonstrates a button that schedules a local notification two seconds into the future.
+
+A clean modern version of that example is:
+
+### `App.js`
+
+-------------------code----------------------
+import React from "react";
+import { Button, View } from "react-native";
+import * as Notifications from "expo-notifications";
+
+function App() {
+  const handleNotification = async () => {
+    const date = new Date();
+    date.setSeconds(date.getSeconds() + 2);
+
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Congratulations",
+        body: "Your order was successfully placed.",
+      },
+      trigger: {
+        date,
+      },
+    });
+  };
+
+  return (
+    <View>
+      <Button
+        title="Show Notification"
+        onPress={handleNotification}
+      />
+    </View>
+  );
+}
+
+export default App;
+-------------------code----------------------
+
+For an **immediate** notification instead, replace the scheduling call with:
+
+-------------------code----------------------
+await Notifications.presentNotificationAsync({
+  title: "Congratulations",
+  body: "Your order was successfully placed.",
+});
+-------------------code----------------------
+
+---
+
+# 12. Summary
+
+The key ideas from this lesson are:
+
+1. **Remote notifications** come from a server.
+2. **Local notifications** are created directly inside the app.
+3. Use `presentNotificationAsync()` for an immediate notification.
+4. Use `scheduleNotificationAsync()` for a future notification.
+5. Local notifications don't require an Expo push token.
+6. Local notifications can be tested in a simulator/emulator.
+7. Repeated notification behavior can be configured globally.
+8. Use `async/await` because notification APIs are asynchronous.
+
+The main concept to remember is:
+
+-------------------code----------------------
+Remote notification:
+Backend → Expo → Device
+
+Local notification:
+App → Device
+-------------------code----------------------
