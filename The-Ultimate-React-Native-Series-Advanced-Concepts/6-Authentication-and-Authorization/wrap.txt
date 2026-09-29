@@ -5428,3 +5428,454 @@ const handleLogout = () => {
 # 19. Summary
 
 In this lecture, authentication was made persistent by securely storing the JWT in Expo Secure Store. A dedicated `auth/storage.js` module was created to encapsulate storing, retrieving, and removing the token. After a successful login, the token is saved, decoded with `jwt-decode`, and the user is stored in React Context. When the app starts, the token is restored from Secure Store, decoded again, and the user remains logged in without re-entering credentials. Logging out clears both the React Context and the stored token. The only remaining issue is a brief navigation flicker on app startup, which will be resolved in the next lecture using a loading screen.
+
+*** 11- Controlling the Splash Screen ***
+# Authentication - Splash Screen & Eliminating Login Flicker
+
+## 1. Problem
+
+After implementing persistent authentication with `SecureStore`, the app restores the user's token when it starts.
+
+However, there is a small UI issue:
+
+-------------------code----------------------
+App Starts
+      ↓
+Welcome Screen (briefly appears)
+      ↓
+Token Restored
+      ↓
+Home Screen
+-------------------code----------------------
+
+This brief appearance of the Welcome screen is called a **screen flicker**.
+
+### Why does it happen?
+
+When the app first renders:
+
+* `user` is initially `null`.
+* React immediately renders the authentication navigator.
+* Meanwhile, `restoreToken()` is still running asynchronously.
+* Once the token is restored, the app switches to the main navigator.
+
+The solution is to **delay rendering the app until initialization is complete**.
+
+---
+
+# 2. Solution: Keep the Splash Screen Visible
+
+Expo provides an **AppLoading** component that keeps the splash screen visible while the app performs initialization tasks.
+
+Instead of rendering the app immediately:
+
+-------------------code----------------------
+App Starts
+
+↓
+
+Show Splash Screen
+
+↓
+
+Restore Authentication Token
+
+↓
+
+Initialization Complete
+
+↓
+
+Render App
+-------------------code----------------------
+
+This completely removes the flicker.
+
+---
+
+# 3. Import AppLoading
+
+Import the loading component from Expo.
+
+-------------------code----------------------
+import AppLoading from "expo-app-loading";
+-------------------code----------------------
+
+---
+
+# 4. Create an App Ready State
+
+Create a state variable to track whether initialization has finished.
+
+-------------------code----------------------
+const [isReady, setIsReady] = useState(false);
+-------------------code----------------------
+
+Initially:
+
+-------------------code----------------------
+isReady = false
+-------------------code----------------------
+
+Meaning:
+
+* Keep showing the splash screen.
+
+---
+
+# 5. Remove useEffect()
+
+Previously, token restoration happened inside:
+
+-------------------code----------------------
+useEffect(() => {
+  restoreToken();
+}, []);
+-------------------code----------------------
+
+This is no longer needed because `AppLoading` will call `restoreToken()` automatically.
+
+Delete the entire effect.
+
+---
+
+# 6. Render AppLoading First
+
+Before rendering the app, check whether initialization is complete.
+
+-------------------code----------------------
+if (!isReady)
+  return (
+    <AppLoading
+      startAsync={restoreToken}
+      onFinish={() => setIsReady(true)}
+    />
+  );
+-------------------code----------------------
+
+Explanation:
+
+### `startAsync`
+
+Runs an asynchronous function when the app starts.
+
+-------------------code----------------------
+startAsync={restoreToken}
+-------------------code----------------------
+
+This executes:
+
+-------------------code----------------------
+restoreToken();
+-------------------code----------------------
+
+---
+
+### `onFinish`
+
+Runs after `restoreToken()` finishes.
+
+-------------------code----------------------
+onFinish={() => setIsReady(true)}
+-------------------code----------------------
+
+Now:
+
+-------------------code----------------------
+isReady = true
+-------------------code----------------------
+
+React renders again.
+
+This time:
+
+* Splash screen disappears.
+* App renders normally.
+
+---
+
+# 7. Application Startup Flow
+
+Before:
+
+-------------------code----------------------
+App Starts
+
+↓
+
+Welcome Screen
+
+↓
+
+Restore Token
+
+↓
+
+Home Screen
+-------------------code----------------------
+
+After:
+
+-------------------code----------------------
+App Starts
+
+↓
+
+Splash Screen
+
+↓
+
+Restore Token
+
+↓
+
+Initialization Finished
+
+↓
+
+Home Screen
+-------------------code----------------------
+
+No flickering.
+
+---
+
+# 8. Customize the Splash Screen
+
+The default Expo splash screen is very simple.
+
+You can replace it with your own image.
+
+Place your splash image inside:
+
+-------------------code----------------------
+assets/
+    splash.png
+-------------------code----------------------
+
+---
+
+# 9. Configure app.json
+
+Locate the `splash` section.
+
+Before:
+
+-------------------code----------------------
+{
+  "splash": {
+    "image": "./assets/splash.png",
+    "resizeMode": "contain",
+    "backgroundColor": "#ffffff"
+  }
+}
+-------------------code----------------------
+
+---
+
+# 10. Resize Mode
+
+Default:
+
+-------------------code----------------------
+"resizeMode": "contain"
+-------------------code----------------------
+
+This preserves the image size but may leave white borders.
+
+Change it to:
+
+-------------------code----------------------
+"resizeMode": "cover"
+-------------------code----------------------
+
+Now the image fills the entire screen.
+
+---
+
+# 11. Background Color
+
+The splash image may take a tiny fraction of a second to load.
+
+During that time Expo displays the background color.
+
+Instead of white:
+
+-------------------code----------------------
+"backgroundColor": "#ffffff"
+-------------------code----------------------
+
+Use the dominant color of your splash image.
+
+Example:
+
+-------------------code----------------------
+"backgroundColor": "#E63C4B"
+-------------------code----------------------
+
+Result:
+
+* Smooth transition
+* No white flash
+* Professional appearance
+
+---
+
+# 12. Startup Lifecycle
+
+-------------------code----------------------
+Application Starts
+        │
+        ▼
+Show Splash Screen
+        │
+        ▼
+Call restoreToken()
+        │
+        ▼
+Read SecureStore
+        │
+        ▼
+Token Exists?
+        │
+   ┌────┴─────┐
+   │          │
+  Yes         No
+   │          │
+   ▼          ▼
+Decode JWT   Skip
+   │
+   ▼
+Set Current User
+   │
+   ▼
+setIsReady(true)
+   │
+   ▼
+Render Application
+-------------------code----------------------
+
+---
+
+# 13. Benefits
+
+Using `AppLoading` provides several improvements:
+
+* Eliminates authentication flicker.
+* Prevents incorrect navigation during startup.
+* Creates a smoother user experience.
+* Gives time to restore local data before rendering.
+* Makes the app feel faster and more polished.
+
+---
+
+# 14. Important Notes
+
+### Don't render your app before initialization finishes.
+
+Always wait until startup tasks complete.
+
+---
+
+### AppLoading is ideal for startup tasks.
+
+Examples:
+
+* Restoring JWT tokens
+* Loading fonts
+* Loading themes
+* Reading local settings
+* Loading cached user preferences
+
+---
+
+### Keep startup tasks short.
+
+Only perform essential work before rendering.
+
+Avoid downloading large amounts of data during startup.
+
+---
+
+### Match the splash background color.
+
+Choose the same color used in the splash image to avoid visible flashes.
+
+---
+
+### Use `cover` instead of `contain` when appropriate.
+
+-------------------code----------------------
+"resizeMode": "cover"
+-------------------code----------------------
+
+fills the screen and removes white borders.
+
+---
+
+# 15. Best Practices
+
+* Restore authentication before rendering the app.
+* Keep the splash screen visible until initialization completes.
+* Use `AppLoading` for asynchronous startup tasks.
+* Minimize the amount of work done during startup.
+* Customize the splash screen to match your application's branding.
+* Use a matching background color for seamless transitions.
+* Use `resizeMode: "cover"` for full-screen splash images.
+
+---
+
+# 16. Full Final Code
+
+## App.js (updated)
+
+-------------------code----------------------
+import React, { useState } from "react";
+import AppLoading from "expo-app-loading";
+
+function App() {
+  const [isReady, setIsReady] = useState(false);
+
+  const restoreToken = async () => {
+    // Restore token from SecureStore
+    // Decode JWT
+    // Set current user
+  };
+
+  if (!isReady)
+    return (
+      <AppLoading
+        startAsync={restoreToken}
+        onFinish={() => setIsReady(true)}
+      />
+    );
+
+  return (
+    // Render navigators normally
+  );
+}
+
+export default App;
+-------------------code----------------------
+
+---
+
+## app.json
+
+-------------------code----------------------
+{
+  "expo": {
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#E63C4B"
+    }
+  }
+}
+-------------------code----------------------
+
+---
+
+# 17. Summary
+
+This lecture improves the application's startup experience by eliminating the brief authentication screen flicker. Instead of rendering the app immediately, Expo's `AppLoading` component keeps the splash screen visible while asynchronous initialization tasks—such as restoring the JWT token from Secure Store—are completed. Once initialization finishes, the app renders normally, creating a smooth transition directly to the correct screen. The lecture also demonstrates how to customize the splash screen by providing a branded image, setting `resizeMode` to `"cover"` so it fills the entire display, and matching the splash `backgroundColor` to the image to avoid white flashes during startup.

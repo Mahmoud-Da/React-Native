@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 import AuthContext from "./app/auth/context";
 
@@ -10,10 +10,15 @@ import authStorage from "./app/auth/storage";
 
 function App() {
   const [user, setUser] = useState();
+  const [isReady, setIsReady] = useState(false);
 
-  useEffect(() => {
-    restoreToken();
-  }, []);
+  if (!isReady)
+    return (
+      <AppLoading
+        startAsync={restoreToken}
+        onFinish={() => setIsReady(true)}
+      />
+    );
 
   const restoreToken = async () => {
     const token = await authStorage.getToken();
