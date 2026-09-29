@@ -1721,3 +1721,527 @@ The important implementation steps are:
 **Key concept to remember:**
 
 > The application should depend on your `logger` abstraction, not directly on Bugsnag.
+
+*** 6- Environment Management ***
+# Managing Configuration Settings for Different Environments
+
+## 1. Why Do We Need Environment Settings?
+
+Most applications run in multiple environments:
+
+1. **Development** — when building and testing locally.
+2. **Staging** — a testing environment that is closer to production.
+3. **Production** — the real application used by users.
+
+Each environment can have different configuration values.
+
+### Example: API URL
+
+During development, our app may communicate with a local backend:
+
+-------------------code----------------------
+http://localhost:9000/api
+-------------------code----------------------
+
+But when the application is released, we don't want the production app to communicate with our local computer.
+
+Instead:
+
+-------------------code----------------------
+Development → Local backend
+Staging     → Staging backend
+Production  → Cloud/production backend
+-------------------code----------------------
+
+Therefore, we need a centralized way to manage these settings.
+
+---
+
+# 2. Create a Configuration Folder
+
+Create a folder called:
+
+-------------------code----------------------
+config
+-------------------code----------------------
+
+Then create:
+
+-------------------code----------------------
+config/settings.js
+-------------------code----------------------
+
+The project structure becomes:
+
+-------------------code----------------------
+project/
+├── config/
+│   └── settings.js
+├── api/
+│   └── client.js
+├── App.js
+└── ...
+-------------------code----------------------
+
+The purpose of `settings.js` is to keep environment-specific configuration in one place.
+
+---
+
+# 3. Define Settings for Each Environment
+
+Inside `settings.js`, create an object containing settings for:
+
+* Development
+* Staging
+* Production
+
+### Code
+
+-------------------code----------------------
+const settings = {
+  dev: {
+    API_URL: "http://localhost:9000/api",
+  },
+
+  staging: {
+    API_URL: "http://localhost:9000/api",
+  },
+
+  prod: {
+    API_URL: "http://localhost:9000/api",
+  },
+};
+-------------------code----------------------
+
+For now, all three URLs are the same because the backend has not yet been deployed separately.
+
+Later they might look like:
+
+-------------------code----------------------
+const settings = {
+  dev: {
+    API_URL: "http://localhost:9000/api",
+  },
+
+  staging: {
+    API_URL: "https://staging.example.com/api",
+  },
+
+  prod: {
+    API_URL: "https://api.example.com/api",
+  },
+};
+-------------------code----------------------
+
+This allows the rest of the application to use one configuration interface without hard-coding URLs everywhere.
+
+---
+
+# 4. Detect the Current Environment
+
+Now we need to determine which environment the application is currently running in.
+
+The lecture uses Expo's `Constants` and React Native's `__DEV__` global variable.
+
+Import `Constants`:
+
+-------------------code----------------------
+import Constants from "expo-constants";
+-------------------code----------------------
+
+---
+
+# 5. Detect Development Mode
+
+React Native provides a global variable:
+
+-------------------code----------------------
+__DEV__
+-------------------code----------------------
+
+When the application is running locally in development mode:
+
+-------------------code----------------------
+__DEV__ === true
+-------------------code----------------------
+
+So we can write:
+
+-------------------code----------------------
+if (__DEV__) {
+  return settings.dev;
+}
+-------------------code----------------------
+
+This means:
+
+-------------------code----------------------
+Running locally
+      ↓
+__DEV__ = true
+      ↓
+Use settings.dev
+-------------------code----------------------
+
+---
+
+# 6. Detect Staging
+
+If `__DEV__` is `false`, the application is no longer running in development mode.
+
+It could be:
+
+* Staging
+* Production
+
+The lecture uses the Expo release channel to distinguish between them.
+
+-------------------code----------------------
+Constants.manifest.releaseChannel
+-------------------code----------------------
+
+If the release channel is `"staging"`:
+
+-------------------code----------------------
+if (Constants.manifest.releaseChannel === "staging") {
+  return settings.staging;
+}
+-------------------code----------------------
+
+The idea is:
+
+-------------------code----------------------
+__DEV__ = false
+       ↓
+Check release channel
+       ↓
+"staging" → use staging settings
+-------------------code----------------------
+
+---
+
+# 7. Otherwise Use Production
+
+If the application is not development and the release channel is not staging, the lecture assumes it is production.
+
+-------------------code----------------------
+return settings.prod;
+-------------------code----------------------
+
+Therefore the complete decision process is:
+
+-------------------code----------------------
+                 Start
+                   |
+              __DEV__?
+             /        \
+           true       false
+            |           |
+        settings.dev    |
+                        |
+              releaseChannel?
+                  |
+             "staging"?
+             /        \
+           yes         no
+            |           |
+    settings.staging  settings.prod
+-------------------code----------------------
+
+---
+
+# 8. Create `getCurrentSettings()`
+
+Put the environment detection logic into a function.
+
+-------------------code----------------------
+const getCurrentSettings = () => {
+  if (__DEV__) {
+    return settings.dev;
+  }
+
+  if (Constants.manifest.releaseChannel === "staging") {
+    return settings.staging;
+  }
+
+  return settings.prod;
+};
+-------------------code----------------------
+
+This keeps the environment-selection logic in one place.
+
+---
+
+# 9. Export the Current Settings
+
+Finally, export the result of `getCurrentSettings()`.
+
+-------------------code----------------------
+export default getCurrentSettings();
+-------------------code----------------------
+
+Now other files don't need to know whether the application is running in development, staging, or production.
+
+They can simply import:
+
+-------------------code----------------------
+import settings from "../config/settings";
+-------------------code----------------------
+
+and use:
+
+-------------------code----------------------
+settings.API_URL
+-------------------code----------------------
+
+---
+
+# 10. Update the API Client
+
+Previously, the API client may have contained a hard-coded URL:
+
+-------------------code----------------------
+const client = create({
+  baseURL: "http://localhost:9000/api",
+});
+-------------------code----------------------
+
+This is a problem because the production application would still try to use the development backend.
+
+Instead, import the settings:
+
+-------------------code----------------------
+import settings from "../config/settings";
+-------------------code----------------------
+
+Then change the base URL:
+
+-------------------code----------------------
+const client = create({
+  baseURL: settings.API_URL,
+});
+-------------------code----------------------
+
+Now the API client automatically uses the correct backend.
+
+---
+
+# 11. Why This Is Better
+
+Without centralized configuration:
+
+-------------------code----------------------
+const client = create({
+  baseURL: "http://localhost:9000/api",
+});
+-------------------code----------------------
+
+The URL is hard-coded.
+
+With centralized configuration:
+
+-------------------code----------------------
+const client = create({
+  baseURL: settings.API_URL,
+});
+-------------------code----------------------
+
+The API client doesn't care which environment is active.
+
+The configuration module handles that decision.
+
+### Result
+
+-------------------code----------------------
+Development
+    ↓
+settings.dev
+    ↓
+Development API
+
+
+Staging
+    ↓
+settings.staging
+    ↓
+Staging API
+
+
+Production
+    ↓
+settings.prod
+    ↓
+Production API
+-------------------code----------------------
+
+This makes the application easier to deploy and maintain.
+
+---
+
+# 12. Important Notes
+
+## 12.1 Don't Hard-Code Environment-Specific Values
+
+Avoid:
+
+-------------------code----------------------
+const client = create({
+  baseURL: "http://localhost:9000/api",
+});
+-------------------code----------------------
+
+Prefer:
+
+-------------------code----------------------
+const client = create({
+  baseURL: settings.API_URL,
+});
+-------------------code----------------------
+
+---
+
+## 12.2 Keep Configuration Centralized
+
+Instead of putting URLs throughout the application:
+
+-------------------code----------------------
+fetch("http://localhost:9000/api/users");
+-------------------code----------------------
+
+keep them in:
+
+-------------------code----------------------
+config/settings.js
+-------------------code----------------------
+
+Then use the configuration wherever needed.
+
+---
+
+## 12.3 Staging Is Useful for Testing
+
+A staging environment is useful for testing a build before releasing it to real users.
+
+Typical setup:
+
+-------------------code----------------------
+Development
+    ↓
+Local development/testing
+
+Staging
+    ↓
+Pre-production testing
+
+Production
+    ↓
+Real users
+-------------------code----------------------
+
+---
+
+## 12.4 Release Channels
+
+The lecture uses Expo release channels to identify staging versus production.
+
+Conceptually:
+
+-------------------code----------------------
+staging release → staging configuration
+
+production release → production configuration
+-------------------code----------------------
+
+The exact Expo APIs for release channels have changed in newer Expo versions, so if implementing this lecture in a modern Expo project, verify the current Expo configuration API rather than blindly copying the older course code.
+
+---
+
+# 13. Complete Final Code
+
+## `config/settings.js`
+
+-------------------code----------------------
+import Constants from "expo-constants";
+
+const settings = {
+  dev: {
+    API_URL: "http://localhost:9000/api",
+  },
+
+  staging: {
+    API_URL: "http://localhost:9000/api",
+  },
+
+  prod: {
+    API_URL: "http://localhost:9000/api",
+  },
+};
+
+const getCurrentSettings = () => {
+  if (__DEV__) {
+    return settings.dev;
+  }
+
+  if (Constants.manifest.releaseChannel === "staging") {
+    return settings.staging;
+  }
+
+  return settings.prod;
+};
+
+export default getCurrentSettings();
+-------------------code----------------------
+
+---
+
+## `api/client.js`
+
+The important change is that the API URL now comes from the configuration module:
+
+-------------------code----------------------
+import axios from "axios";
+import settings from "../config/settings";
+
+const client = axios.create({
+  baseURL: settings.API_URL,
+});
+
+export default client;
+-------------------code----------------------
+
+If your course's `client.js` contains additional request transforms, authentication logic, or error handling, keep those parts and only replace the hard-coded `baseURL`.
+
+---
+
+# 14. Final Concept
+
+The main idea of this lecture is:
+
+-------------------code----------------------
+Environment
+     ↓
+settings.js
+     ↓
+Select correct configuration
+     ↓
+settings.API_URL
+     ↓
+API client
+     ↓
+Correct backend
+-------------------code----------------------
+
+Instead of making every part of the application know which environment it is running in, **one configuration module makes that decision for the entire application**.
+
+# Summary
+
+* Applications commonly have **development, staging, and production** environments.
+* Each environment can have different settings, especially API URLs.
+* Create `config/settings.js` to centralize these settings.
+* Define separate objects for `dev`, `staging`, and `prod`.
+* Use environment information to select the correct configuration.
+* Export the selected configuration.
+* Import `settings` into the API client.
+* Use `settings.API_URL` instead of hard-coding the backend URL.
+* This keeps environment-specific configuration centralized and makes deployment easier.
+* The lecture's `Constants.manifest.releaseChannel` approach is from the Expo API used in the course; modern Expo projects may require a different configuration mechanism.
