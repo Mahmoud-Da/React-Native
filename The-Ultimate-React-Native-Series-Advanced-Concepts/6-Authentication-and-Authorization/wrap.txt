@@ -1410,3 +1410,460 @@ Key concepts:
 8. React Context is used to share user data throughout the application.
 9. Prop drilling should be avoided.
 10. Redux is useful only for large, frequently changing shared state, while React Context is ideal for authentication data.
+
+*** 4- Authentication API ***
+# Authentication API Testing with Postman and Creating `auth.js`
+
+## 1. Goal
+
+Before implementing login in the React Native app, test the authentication endpoint directly using Postman.
+
+This helps verify:
+
+* The backend is working correctly.
+* Valid credentials return an authentication token.
+* Invalid credentials return an error.
+* The API contract is understood before connecting the frontend.
+
+---
+
+# 2. Authentication Flow Overview
+
+When a user logs in:
+
+1. User enters email and password.
+2. App sends a POST request to:
+
+-------------------code----------------------
+/api/auth
+-------------------code----------------------
+
+3. Server validates credentials.
+4. If valid:
+
+   * Returns an authentication token.
+5. If invalid:
+
+   * Returns an error response.
+
+---
+
+# 3. Testing Authentication with Postman
+
+## Step 1: Create a POST Request
+
+Request URL:
+
+-------------------code----------------------
+http://localhost:9000/api/auth
+-------------------code----------------------
+
+Method:
+
+-------------------code----------------------
+POST
+-------------------code----------------------
+
+---
+
+## Step 2: Configure Request Body
+
+Choose:
+
+-------------------code----------------------
+Body
+→ Raw
+→ JSON
+-------------------code----------------------
+
+Send:
+
+-------------------code----------------------
+{
+  "email": "mosh@domain.com",
+  "password": "12345"
+}
+-------------------code----------------------
+
+---
+
+# 4. Successful Login Response
+
+When credentials are correct:
+
+-------------------code----------------------
+{
+  "authToken": "long-encrypted-token"
+}
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+{
+  "authToken": "eyJhbGciOiJIUzI1NiIs..."
+}
+-------------------code----------------------
+
+The token:
+
+* Contains user information.
+* Is encrypted.
+* Is digitally signed.
+* Will later be stored in the mobile app.
+
+---
+
+# 5. Failed Login Response
+
+If credentials are incorrect:
+
+Request:
+
+-------------------code----------------------
+{
+  "email": "mosh@domain.com",
+  "password": "wrongpassword"
+}
+-------------------code----------------------
+
+Response:
+
+-------------------code----------------------
+{
+  "error": "Invalid email or password."
+}
+-------------------code----------------------
+
+Status code:
+
+-------------------code----------------------
+400 Bad Request
+-------------------code----------------------
+
+---
+
+# 6. Understanding Status Code 400
+
+HTTP Status:
+
+-------------------code----------------------
+400 Bad Request
+-------------------code----------------------
+
+Meaning:
+
+* Client sent invalid data.
+* Request format is correct.
+* Credentials are incorrect.
+
+This follows common REST API conventions.
+
+---
+
+# 7. Creating Authentication API Module
+
+Instead of calling the endpoint directly inside screens, create a dedicated API module.
+
+Folder:
+
+-------------------code----------------------
+app/
+ └── api/
+      └── auth.js
+-------------------code----------------------
+
+---
+
+## Step 1: Import API Client
+
+-------------------code----------------------
+import client from "./client";
+-------------------code----------------------
+
+---
+
+## Step 2: Create Login Function
+
+-------------------code----------------------
+const login = (email, password) =>
+  client.post("/auth", {
+    email,
+    password,
+  });
+-------------------code----------------------
+
+Explanation:
+
+### Endpoint
+
+-------------------code----------------------
+"/auth"
+-------------------code----------------------
+
+Actual URL:
+
+-------------------code----------------------
+http://192.168.0.14:9000/api/auth
+-------------------code----------------------
+
+Because your `client.js` already contains:
+
+-------------------code----------------------
+baseURL: "http://192.168.0.14:9000/api"
+-------------------code----------------------
+
+---
+
+### Request Body
+
+-------------------code----------------------
+{
+  email,
+  password,
+}
+-------------------code----------------------
+
+Equivalent to:
+
+-------------------code----------------------
+{
+  "email": "user@example.com",
+  "password": "12345"
+}
+-------------------code----------------------
+
+---
+
+## Step 3: Export API
+
+-------------------code----------------------
+export default {
+  login,
+};
+-------------------code----------------------
+
+---
+
+# 8. Full `auth.js`
+
+-------------------code----------------------
+import client from "./client";
+
+const login = (email, password) =>
+  client.post("/auth", {
+    email,
+    password,
+  });
+
+export default {
+  login,
+};
+-------------------code----------------------
+
+---
+
+# 9. How It Will Be Used Later
+
+Example:
+
+-------------------code----------------------
+import authApi from "../api/auth";
+
+const result = await authApi.login(
+  "mosh@domain.com",
+  "12345"
+);
+-------------------code----------------------
+
+Successful response:
+
+-------------------code----------------------
+result.ok === true
+-------------------code----------------------
+
+Failed response:
+
+-------------------code----------------------
+result.ok === false
+-------------------code----------------------
+
+Access returned data:
+
+-------------------code----------------------
+result.data
+-------------------code----------------------
+
+---
+
+# 10. Your Current `client.js`
+
+Current implementation:
+
+-------------------code----------------------
+import { create } from "apisauce";
+
+const apiClient = create({
+  baseURL: "http://192.168.0.14:9000/api",
+});
+
+export default apiClient;
+-------------------code----------------------
+
+Authentication requests will therefore be sent to:
+
+-------------------code----------------------
+http://192.168.0.14:9000/api/auth
+-------------------code----------------------
+
+Examples:
+
+-------------------code----------------------
+client.post("/auth", ...)
+-------------------code----------------------
+
+becomes:
+
+-------------------code----------------------
+POST http://192.168.0.14:9000/api/auth
+-------------------code----------------------
+
+---
+
+# Important Notes
+
+## Test Backend First
+
+Always verify:
+
+-------------------code----------------------
+POST /auth
+-------------------code----------------------
+
+works in Postman before debugging the React Native app.
+
+---
+
+## Keep API Logic Separate
+
+Good:
+
+-------------------code----------------------
+api/auth.js
+-------------------code----------------------
+
+Bad:
+
+-------------------code----------------------
+client.post("/auth")
+-------------------code----------------------
+
+directly inside screens.
+
+Benefits:
+
+* Cleaner code.
+* Easier maintenance.
+* Reusable API functions.
+
+---
+
+## Don't Hardcode Credentials
+
+Use:
+
+-------------------code----------------------
+authApi.login(email, password);
+-------------------code----------------------
+
+instead of:
+
+-------------------code----------------------
+authApi.login(
+  "mosh@domain.com",
+  "12345"
+);
+-------------------code----------------------
+
+---
+
+## Handle Errors Properly
+
+Always check:
+
+-------------------code----------------------
+if (!result.ok)
+-------------------code----------------------
+
+before using:
+
+-------------------code----------------------
+result.data
+-------------------code----------------------
+
+---
+
+# Final Code
+
+## client.js
+
+-------------------code----------------------
+import { create } from "apisauce";
+
+const apiClient = create({
+  baseURL: "http://192.168.0.14:9000/api",
+});
+
+export default apiClient;
+-------------------code----------------------
+
+---
+
+## auth.js
+
+-------------------code----------------------
+import client from "./client";
+
+const login = (email, password) =>
+  client.post("/auth", {
+    email,
+    password,
+  });
+
+export default {
+  login,
+};
+-------------------code----------------------
+
+---
+
+# Summary
+
+* Authentication should be tested first using Postman.
+* Send a POST request to:
+
+-------------------code----------------------
+/api/auth
+-------------------code----------------------
+
+* Valid credentials return an authentication token.
+* Invalid credentials return:
+
+  * Error message
+  * HTTP 400 status code
+* Create a dedicated `auth.js` API module.
+* Use `client.post("/auth", { email, password })`.
+* Export a reusable `login()` function.
+* Since your `client.js` uses:
+
+-------------------code----------------------
+baseURL: "http://192.168.0.14:9000/api"
+-------------------code----------------------
+
+the final authentication endpoint becomes:
+
+-------------------code----------------------
+http://192.168.0.14:9000/api/auth
+-------------------code----------------------
+
+This prepares the app for implementing the actual Login screen and user authentication flow in the next steps.
