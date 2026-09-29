@@ -790,3 +790,623 @@ Key takeaways:
    * Send Token with Requests
 4. Understanding these concepts allows you to implement authentication in any backend framework.
 5. The next lessons will focus on building and understanding a complete custom authentication workflow in React Native.
+
+*** 3- Authentication Flow ***
+# Authentication Flow Architecture in React Native
+
+## 1. Overview
+
+This lecture explains the complete authentication flow and how user information is managed throughout the application.
+
+The main idea:
+
+-------------------code----------------------
+Login Screen
+      │
+      ▼
+POST /auth
+      │
+      ▼
+Server validates credentials
+      │
+      ▼
+Returns Auth Token
+      │
+      ▼
+Extract User Information
+      │
+      ▼
+Store User in App State
+      │
+      ▼
+Show Appropriate Navigator
+-------------------code----------------------
+
+---
+
+# 2. Authentication Process
+
+## Step 1: User Logs In
+
+The user enters:
+
+-------------------code----------------------
+Email
+Password
+-------------------code----------------------
+
+and submits the login form.
+
+Example request:
+
+-------------------code----------------------
+await apiClient.post("/auth", {
+  email,
+  password,
+});
+-------------------code----------------------
+
+---
+
+## Step 2: Send Request to Backend
+
+A POST request is sent to the authentication endpoint.
+
+-------------------code----------------------http
+POST /auth
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+{
+  email: "john@test.com",
+  password: "123456"
+}
+-------------------code----------------------
+
+---
+
+## Step 3: Server Validates Credentials
+
+The backend verifies:
+
+-------------------code----------------------
+Does the user exist?
+Is the password correct?
+-------------------code----------------------
+
+If validation fails:
+
+-------------------code----------------------
+{
+  error: "Invalid email or password"
+}
+-------------------code----------------------
+
+If validation succeeds:
+
+-------------------code----------------------
+{
+  token: "LONG_AUTH_TOKEN"
+}
+-------------------code----------------------
+
+---
+
+# 3. What Is an Authentication Token?
+
+An authentication token is similar to:
+
+* Passport
+* Driver's License
+* ID Card
+
+It proves the user's identity.
+
+Conceptually:
+
+-------------------code----------------------
+User
+  │
+  ▼
+Authenticates
+  │
+  ▼
+Receives Token
+  │
+  ▼
+Uses Token For Future Requests
+-------------------code----------------------
+
+---
+
+## Token Characteristics
+
+An auth token is:
+
+-------------------code----------------------
+Long string
+Encrypted/Signed
+Contains user information
+Issued by server
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+"eyJhbGciOiJIUzI1NiIsInR..."
+-------------------code----------------------
+
+The actual token is much longer.
+
+---
+
+# 4. Extracting User Information
+
+After receiving the token, the app can extract user data.
+
+Typical user information:
+
+-------------------code----------------------
+{
+  userId: 1,
+  name: "John Smith",
+  email: "john@test.com"
+}
+-------------------code----------------------
+
+This data becomes the application's current user object.
+
+---
+
+# 5. Storing the User in App State
+
+The root component should maintain the authenticated user.
+
+Example:
+
+-------------------code----------------------
+const [user, setUser] = useState(null);
+-------------------code----------------------
+
+Initially:
+
+-------------------code----------------------
+user === null
+-------------------code----------------------
+
+After login:
+
+-------------------code----------------------
+user = {
+  id: 1,
+  name: "John Smith",
+  email: "john@test.com"
+};
+-------------------code----------------------
+
+---
+
+# 6. Conditional Navigation
+
+The application's navigation depends on whether a user exists.
+
+---
+
+## User Not Logged In
+
+-------------------code----------------------
+user === null
+-------------------code----------------------
+
+Render:
+
+-------------------code----------------------
+<AuthNavigator />
+-------------------code----------------------
+
+User sees:
+
+-------------------code----------------------
+Welcome Screen
+Login Screen
+Register Screen
+-------------------code----------------------
+
+---
+
+## User Logged In
+
+-------------------code----------------------
+user !== null
+-------------------code----------------------
+
+Render:
+
+-------------------code----------------------
+<AppNavigator />
+-------------------code----------------------
+
+User sees:
+
+-------------------code----------------------
+Listings
+Account
+Messages
+Other Protected Screens
+-------------------code----------------------
+
+---
+
+## Navigation Logic
+
+-------------------code----------------------
+if (user)
+  return <AppNavigator />;
+
+return <AuthNavigator />;
+-------------------code----------------------
+
+---
+
+# 7. Accessing User Data Throughout the App
+
+Many screens need access to:
+
+-------------------code----------------------
+user.name
+user.email
+user.id
+-------------------code----------------------
+
+Examples:
+
+* Account Screen
+* Profile Screen
+* Settings Screen
+* Messaging Screen
+
+---
+
+# 8. The Problem with Prop Drilling
+
+One approach would be:
+
+-------------------code----------------------
+<App user={user}>
+-------------------code----------------------
+
+then:
+
+-------------------code----------------------
+<Navigator user={user}>
+-------------------code----------------------
+
+then:
+
+-------------------code----------------------
+<Screen user={user}>
+-------------------code----------------------
+
+then:
+
+-------------------code----------------------
+<Component user={user}>
+-------------------code----------------------
+
+and so on.
+
+---
+
+## What Is Prop Drilling?
+
+Prop drilling means repeatedly passing data through multiple component levels.
+
+Example:
+
+-------------------code----------------------
+App
+ │
+ ▼
+Navigator
+ │
+ ▼
+Screen
+ │
+ ▼
+Component
+ │
+ ▼
+Child Component
+-------------------code----------------------
+
+Even components that do not need the user object must pass it down.
+
+Problems:
+
+* Repetitive
+* Hard to maintain
+* Difficult to scale
+* Clutters component APIs
+
+---
+
+# 9. Using React Context Instead
+
+React Context solves this problem.
+
+---
+
+## Create Context
+
+-------------------code----------------------
+const AuthContext = React.createContext();
+-------------------code----------------------
+
+---
+
+## Provide User
+
+In App.js:
+
+-------------------code----------------------
+<AuthContext.Provider value={user}>
+  <AppNavigator />
+</AuthContext.Provider>
+-------------------code----------------------
+
+---
+
+## Consume User Anywhere
+
+Any component can access:
+
+-------------------code----------------------
+const user = useContext(AuthContext);
+-------------------code----------------------
+
+without passing props manually.
+
+---
+
+## Benefits
+
+-------------------code----------------------
+No prop drilling
+Cleaner code
+Easier maintenance
+Simple implementation
+-------------------code----------------------
+
+---
+
+# 10. Does React Context Replace Redux?
+
+No.
+
+They solve different problems.
+
+---
+
+## React Context Is Good For
+
+Small objects:
+
+-------------------code----------------------
+{
+  id: 1,
+  name: "John"
+}
+-------------------code----------------------
+
+Examples:
+
+* Authenticated user
+* Theme settings
+* Language settings
+* App configuration
+
+Characteristics:
+
+-------------------code----------------------
+Small data
+Changes infrequently
+Simple sharing
+-------------------code----------------------
+
+---
+
+## Redux Is Better For
+
+Large application state.
+
+Examples:
+
+-------------------code----------------------
+Shopping carts
+Messaging systems
+Complex dashboards
+Large shared state
+-------------------code----------------------
+
+Characteristics:
+
+-------------------code----------------------
+Large state tree
+Frequent updates
+Many subscribers
+Complex data flow
+-------------------code----------------------
+
+---
+
+# 11. Why Redux Performs Better for Large State
+
+With Context:
+
+-------------------code----------------------
+State changes
+      │
+      ▼
+Entire component tree re-renders
+-------------------code----------------------
+
+Even components that don't use the changed property may re-render.
+
+---
+
+With Redux:
+
+-------------------code----------------------
+State changes
+      │
+      ▼
+Only subscribed components re-render
+-------------------code----------------------
+
+This makes Redux more efficient for large, frequently-changing state.
+
+---
+
+# 12. Architecture Overview
+
+-------------------code----------------------
+Login Screen
+      │
+      ▼
+POST /auth
+      │
+      ▼
+Receive Token
+      │
+      ▼
+Extract User
+      │
+      ▼
+Store User In App State
+      │
+      ▼
+AuthContext Provider
+      │
+      ▼
+Available Everywhere
+-------------------code----------------------
+
+---
+
+# Example App Structure
+
+-------------------code----------------------
+App
+│
+├── AuthContext
+│
+├── User State
+│
+├── AuthNavigator
+│     ├── Welcome
+│     ├── Login
+│     └── Register
+│
+└── AppNavigator
+      ├── Listings
+      ├── Messages
+      └── Account
+-------------------code----------------------
+
+---
+
+# Important Notes
+
+## Use Context for Authentication
+
+Authentication data is typically:
+
+-------------------code----------------------
+Small
+Simple
+Rarely changes
+-------------------code----------------------
+
+React Context is usually sufficient.
+
+---
+
+## Avoid Prop Drilling
+
+If multiple components need access to user data:
+
+-------------------code----------------------
+Use Context
+Not Props
+-------------------code----------------------
+
+---
+
+## Do Not Introduce Redux Prematurely
+
+Only use Redux when:
+
+-------------------code----------------------
+Large shared state
+Complex data flow
+Frequent updates
+-------------------code----------------------
+
+Otherwise Context is simpler and easier to maintain.
+
+---
+
+## Authentication State Belongs Near the Root
+
+The authenticated user should generally be stored in:
+
+-------------------code----------------------
+App.js
+-------------------code----------------------
+
+or a dedicated authentication provider.
+
+This allows navigation and other components to react to authentication changes.
+
+---
+
+# Full Authentication Flow Example
+
+-------------------code----------------------
+const [user, setUser] = useState(null);
+
+const handleLogin = async (credentials) => {
+  const token = await authApi.login(credentials);
+
+  const user = decodeToken(token);
+
+  setUser(user);
+};
+
+return (
+  <AuthContext.Provider value={user}>
+    {user ? <AppNavigator /> : <AuthNavigator />}
+  </AuthContext.Provider>
+);
+-------------------code----------------------
+
+---
+
+# Summary
+
+This lecture explains how authentication works at the application architecture level.
+
+Key concepts:
+
+1. User submits email and password.
+2. App sends a POST request to `/auth`.
+3. Server validates credentials.
+4. Server returns an authentication token.
+5. User information is extracted from the token.
+6. The user object is stored in app state.
+7. Navigation is determined by whether the user exists.
+8. React Context is used to share user data throughout the application.
+9. Prop drilling should be avoided.
+10. Redux is useful only for large, frequently changing shared state, while React Context is ideal for authentication data.
