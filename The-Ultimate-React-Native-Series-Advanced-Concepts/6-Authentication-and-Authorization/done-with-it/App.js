@@ -1,17 +1,27 @@
-import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
+import React, { useState } from "react";
 
-import navigationTheme from "./app/navigation/navigationTheme";
+import AuthContext from "./app/auth/context";
+
+import AppNavigator from "./app/navigation/AppNavigator";
 import AuthNavigator from "./app/navigation/AuthNavigator";
-import OfflineNotice from "./app/components/OfflineNotice";
 
-export default function App() {
+function App() {
+  const [user, setUser] = useState();
+
   return (
-    <>
-      <OfflineNotice />
-      <NavigationContainer theme={navigationTheme}>
+    <AuthContext.Provider
+      value={{
+        user,
+        setUser,
+      }}
+    >
+      {user ? (
+        <AppNavigator />
+      ) : (
         <AuthNavigator />
-      </NavigationContainer>
-    </>
+      )}
+    </AuthContext.Provider>
   );
 }
+
+export default App;
