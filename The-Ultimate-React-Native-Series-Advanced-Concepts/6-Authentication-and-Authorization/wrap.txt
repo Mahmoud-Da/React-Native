@@ -1867,3 +1867,587 @@ http://192.168.0.14:9000/api/auth
 -------------------code----------------------
 
 This prepares the app for implementing the actual Login screen and user authentication flow in the next steps.
+
+*** 5- Getting the AuthToken ***
+# Login Screen Authentication Integration
+
+## 1. Goal
+
+Now that the authentication API (`auth.js`) is ready, the next step is to connect it to the Login Screen.
+
+The login screen should:
+
+1. Collect email and password.
+2. Send them to the authentication API.
+3. Display an error message if login fails.
+4. Hide the error when login succeeds.
+5. Receive and display the authentication token returned from the server.
+
+---
+
+# 2. Import the Authentication API
+
+First, import the authentication module.
+
+-------------------code----------------------
+import authApi from "../api/auth";
+-------------------code----------------------
+
+This gives access to:
+
+-------------------code----------------------
+authApi.login(email, password);
+-------------------code----------------------
+
+---
+
+# 3. Replace Inline Submit Function
+
+Instead of handling submission directly inside the form component, create a dedicated function.
+
+Before:
+
+-------------------code----------------------
+<Form
+  onSubmit={(values) => console.log(values)}
+>
+-------------------code----------------------
+
+After:
+
+-------------------code----------------------
+<Form
+  onSubmit={handleSubmit}
+>
+-------------------code----------------------
+
+---
+
+# 4. Create the `handleSubmit` Function
+
+Create a function that receives the form values.
+
+-------------------code----------------------
+const handleSubmit = (loginInfo) => {
+};
+-------------------code----------------------
+
+A better name than `values` is:
+
+-------------------code----------------------
+loginInfo
+-------------------code----------------------
+
+because it clearly describes the data.
+
+---
+
+# 5. Extract Email and Password
+
+Use object destructuring.
+
+-------------------code----------------------
+const handleSubmit = ({ email, password }) => {
+};
+-------------------code----------------------
+
+Now the variables are directly available.
+
+---
+
+# 6. Call the Login API
+
+Send the credentials to the backend.
+
+-------------------code----------------------
+const result = await authApi.login(
+  email,
+  password
+);
+-------------------code----------------------
+
+Since the API call returns a Promise:
+
+-------------------code----------------------
+const handleSubmit = async ({ email, password }) => {
+};
+-------------------code----------------------
+
+---
+
+# 7. Handle Failed Login
+
+Check whether the request succeeded.
+
+-------------------code----------------------
+if (!result.ok) {
+  return;
+}
+-------------------code----------------------
+
+If login fails:
+
+-------------------code----------------------
+if (!result.ok) {
+  setLoginFailed(true);
+  return;
+}
+-------------------code----------------------
+
+The early return prevents the rest of the function from running.
+
+---
+
+# 8. Add Error State
+
+Import React state:
+
+-------------------code----------------------
+import React, { useState } from "react";
+-------------------code----------------------
+
+Create a state variable.
+
+-------------------code----------------------
+const [loginFailed, setLoginFailed] =
+  useState(false);
+-------------------code----------------------
+
+Initial state:
+
+-------------------code----------------------
+false
+-------------------code----------------------
+
+Meaning:
+
+-------------------code----------------------
+No login error initially.
+-------------------code----------------------
+
+---
+
+# 9. Reset Error on Success
+
+If login succeeds:
+
+-------------------code----------------------
+setLoginFailed(false);
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+if (!result.ok) {
+  setLoginFailed(true);
+  return;
+}
+
+setLoginFailed(false);
+-------------------code----------------------
+
+---
+
+# 10. Display Authentication Token
+
+For testing purposes:
+
+-------------------code----------------------
+console.log(result.data);
+-------------------code----------------------
+
+The server returns:
+
+-------------------code----------------------
+result.data
+-------------------code----------------------
+
+which contains the authentication token.
+
+Example:
+
+-------------------code----------------------
+console.log(result.data);
+-------------------code----------------------
+
+Output:
+
+-------------------code----------------------
+eyJhbGciOiJIUzI1NiIs...
+-------------------code----------------------
+
+Later this token will be stored and used to identify the user.
+
+---
+
+# 11. Display Error Messages
+
+Import the ErrorMessage component.
+
+-------------------code----------------------
+import {
+  Form,
+  FormField,
+  SubmitButton,
+  ErrorMessage,
+} from "../components/forms";
+-------------------code----------------------
+
+---
+
+## Add ErrorMessage Above Form Fields
+
+Place it above the first input field.
+
+-------------------code----------------------
+<ErrorMessage
+  error="Invalid email and/or password."
+  visible={loginFailed}
+/>
+-------------------code----------------------
+
+---
+
+### Error Prop
+
+Message shown to the user:
+
+-------------------code----------------------
+error="Invalid email and/or password."
+-------------------code----------------------
+
+---
+
+### Visible Prop
+
+Controls whether the error appears.
+
+-------------------code----------------------
+visible={loginFailed}
+-------------------code----------------------
+
+When:
+
+-------------------code----------------------
+loginFailed === true
+-------------------code----------------------
+
+the error becomes visible.
+
+---
+
+# 12. Login Flow
+
+## Scenario 1: Wrong Password
+
+User enters:
+
+-------------------code----------------------
+Email: mosh@domain.com
+Password: 12345-
+-------------------code----------------------
+
+Result:
+
+-------------------code----------------------
+result.ok === false
+-------------------code----------------------
+
+Then:
+
+-------------------code----------------------
+setLoginFailed(true);
+-------------------code----------------------
+
+Error displayed:
+
+-------------------code----------------------
+Invalid email and/or password.
+-------------------code----------------------
+
+---
+
+## Scenario 2: Correct Password
+
+User enters:
+
+-------------------code----------------------
+Email: mosh@domain.com
+Password: 12345
+-------------------code----------------------
+
+Result:
+
+-------------------code----------------------
+result.ok === true
+-------------------code----------------------
+
+Then:
+
+-------------------code----------------------
+setLoginFailed(false);
+-------------------code----------------------
+
+Error disappears.
+
+Authentication token appears in console.
+
+---
+
+# 13. Temporarily Show Auth Screens
+
+For testing authentication screens, temporarily replace:
+
+-------------------code----------------------
+<AppNavigator />
+-------------------code----------------------
+
+with:
+
+-------------------code----------------------
+<AuthNavigator />
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+return (
+  <NavigationContainer>
+    <AuthNavigator />
+  </NavigationContainer>
+);
+-------------------code----------------------
+
+This ensures the app opens directly on authentication screens.
+
+---
+
+# 14. Step-by-Step Login Process
+
+### Step 1
+
+User fills form.
+
+-------------------code----------------------
+Email
+Password
+-------------------code----------------------
+
+---
+
+### Step 2
+
+Presses Login.
+
+-------------------code----------------------
+onSubmit={handleSubmit}
+-------------------code----------------------
+
+---
+
+### Step 3
+
+API request sent.
+
+-------------------code----------------------
+authApi.login(email, password);
+-------------------code----------------------
+
+---
+
+### Step 4
+
+Server validates credentials.
+
+---
+
+### Step 5A (Failure)
+
+-------------------code----------------------
+setLoginFailed(true);
+-------------------code----------------------
+
+Show:
+
+-------------------code----------------------
+Invalid email and/or password.
+-------------------code----------------------
+
+---
+
+### Step 5B (Success)
+
+-------------------code----------------------
+setLoginFailed(false);
+-------------------code----------------------
+
+Receive:
+
+-------------------code----------------------
+result.data
+-------------------code----------------------
+
+which contains:
+
+-------------------code----------------------
+Authentication Token
+-------------------code----------------------
+
+---
+
+# Important Notes
+
+## Always Use Async/Await
+
+Authentication requests are asynchronous.
+
+-------------------code----------------------
+const result = await authApi.login(
+  email,
+  password
+);
+-------------------code----------------------
+
+---
+
+## Return Immediately After Failure
+
+Good:
+
+-------------------code----------------------
+if (!result.ok) {
+  setLoginFailed(true);
+  return;
+}
+-------------------code----------------------
+
+This prevents accidental execution of success logic.
+
+---
+
+## Use State for Error Visibility
+
+Avoid:
+
+-------------------code----------------------
+visible={true}
+-------------------code----------------------
+
+Use:
+
+-------------------code----------------------
+visible={loginFailed}
+-------------------code----------------------
+
+so the UI reacts automatically.
+
+---
+
+## Token Storage Comes Later
+
+Currently:
+
+-------------------code----------------------
+console.log(result.data);
+-------------------code----------------------
+
+is enough.
+
+Later the token will be:
+
+* Stored securely.
+* Decoded.
+* Used to identify the user.
+* Used for protected API calls.
+
+---
+
+# Full Final Code
+
+## LoginScreen.js
+
+-------------------code----------------------
+import React, { useState } from "react";
+
+import authApi from "../api/auth";
+
+import {
+  Form,
+  FormField,
+  SubmitButton,
+  ErrorMessage,
+} from "../components/forms";
+
+function LoginScreen() {
+  const [loginFailed, setLoginFailed] =
+    useState(false);
+
+  const handleSubmit = async ({
+    email,
+    password,
+  }) => {
+    const result = await authApi.login(
+      email,
+      password
+    );
+
+    if (!result.ok) {
+      setLoginFailed(true);
+      return;
+    }
+
+    setLoginFailed(false);
+
+    console.log(result.data);
+  };
+
+  return (
+    <Form
+      initialValues={{
+        email: "",
+        password: "",
+      }}
+      onSubmit={handleSubmit}
+    >
+      <ErrorMessage
+        error="Invalid email and/or password."
+        visible={loginFailed}
+      />
+
+      <FormField
+        name="email"
+        placeholder="Email"
+      />
+
+      <FormField
+        name="password"
+        placeholder="Password"
+        secureTextEntry
+      />
+
+      <SubmitButton title="Login" />
+    </Form>
+  );
+}
+
+export default LoginScreen;
+-------------------code----------------------
+
+---
+
+# Summary
+
+* Imported the authentication API into the Login Screen.
+* Created a dedicated `handleSubmit()` function.
+* Sent email and password to the server using:
+
+-------------------code----------------------
+authApi.login(email, password);
+-------------------code----------------------
+
+* Added a `loginFailed` state variable.
+* Displayed errors using the `ErrorMessage` component.
+* Used early returns for failed logins.
+* Logged the authentication token on successful login.
+* Temporarily switched to `AuthNavigator` for testing.
+* Prepared the application for the next step: extracting the user object from the authentication token.
