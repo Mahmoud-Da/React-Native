@@ -5176,3 +5176,561 @@ Backend → Expo → Device
 Local notification:
 App → Device
 -------------------code----------------------
+
+
+*** 13- Building the Contact Form ***
+# Contact Seller Feature
+
+## 1. Overview
+
+This lesson implements a **Contact Seller** feature.
+
+The flow is:
+
+-------------------code----------------------
+User enters message
+        ↓
+ContactSellerForm
+        ↓
+Messages API
+        ↓
+POST message + listing ID
+        ↓
+Server
+        ↓
+Success
+        ↓
+Reset form + local notification
+-------------------code----------------------
+
+The feature is divided into three main parts:
+
+1. **API layer** — sends the message to the backend.
+2. **ContactSellerForm** — handles the form and submission.
+3. **ListingDetailsScreen** — displays the form and handles the keyboard properly.
+
+---
+
+# 2. Create the Messages API Module
+
+A new API module is created:
+
+-------------------code----------------------
+api/
+└── messages.js
+-------------------code----------------------
+
+Its responsibility is to communicate with the backend.
+
+The API function is called `send`.
+
+It receives:
+
+* `message` — the text written by the user.
+* `listingId` — identifies the listing/conversation thread.
+
+### Step 1: Define the API function
+
+-------------------code----------------------
+import client from "./client";
+
+const send = (message, listingId) =>
+  client.post("/messages", {
+    message,
+    listingId,
+  });
+
+export default {
+  send,
+};
+-------------------code----------------------
+
+The request body looks like:
+
+-------------------code----------------------
+{
+  "message": "Is this jacket still available?",
+  "listingId": 123
+}
+-------------------code----------------------
+
+### Important concept
+
+The `listingId` represents the **conversation thread**.
+
+Multiple messages can belong to the same listing:
+
+-------------------code----------------------
+Listing #123
+    │
+    ├── Message 1
+    ├── Message 2
+    ├── Message 3
+    └── Message 4
+-------------------code----------------------
+
+This allows the backend to know which listing/conversation the message belongs to.
+
+---
+
+# 3. Create `ContactSellerForm`
+
+A new component is responsible for the UI and submission logic:
+
+-------------------code----------------------
+components/
+└── ContactSellerForm.js
+-------------------code----------------------
+
+It receives a `listing` object.
+
+-------------------code----------------------
+function ContactSellerForm({ listing }) {
+  // ...
+}
+-------------------code----------------------
+
+The important idea is that the form doesn't need to receive just the listing ID.
+
+It receives the whole listing:
+
+-------------------code----------------------
+<ContactSellerForm listing={listing} />
+-------------------code----------------------
+
+Then it can access:
+
+-------------------code----------------------
+listing.id
+-------------------code----------------------
+
+when sending the message.
+
+---
+
+# 4. Handle Form Submission
+
+The form uses Formik.
+
+The submit handler receives the form values and Formik's `resetForm` function.
+
+Conceptually:
+
+-------------------code----------------------
+const handleSubmit = ({ message }, { resetForm }) => {
+  // ...
+};
+-------------------code----------------------
+
+The two important pieces are:
+
+-------------------code----------------------
+message
+-------------------code----------------------
+
+and:
+
+-------------------code----------------------
+resetForm
+-------------------code----------------------
+
+---
+
+# 5. Dismiss the Keyboard
+
+When the user presses Send, we don't want the keyboard to remain open.
+
+So the first step is:
+
+-------------------code----------------------
+Keyboard.dismiss();
+-------------------code----------------------
+
+Import:
+
+-------------------code----------------------
+import { Keyboard } from "react-native";
+-------------------code----------------------
+
+The flow is:
+
+-------------------code----------------------
+Submit
+ ↓
+Dismiss keyboard
+ ↓
+Send API request
+-------------------code----------------------
+
+---
+
+# 6. Send the Message to the Server
+
+Next, call the Messages API:
+
+-------------------code----------------------
+const result = await messagesApi.send(
+  message,
+  listing.id
+);
+-------------------code----------------------
+
+This sends:
+
+-------------------code----------------------
+message
++
+listing.id
+-------------------code----------------------
+
+to the backend.
+
+---
+
+# 7. Handle Errors
+
+If the request fails, we should:
+
+1. Log the error.
+2. Inform the user.
+
+Example:
+
+-------------------code----------------------
+if (!result.ok) {
+  console.log(result.problem);
+  alert("Could not send the message.");
+  return;
+}
+-------------------code----------------------
+
+The `return` is important because we don't want to execute the success logic after an error.
+
+The general structure is:
+
+-------------------code----------------------
+if (error) {
+  // handle error
+  return;
+}
+
+// success
+-------------------code----------------------
+
+---
+
+# 8. Handle Successful Submission
+
+If the message was successfully sent, we perform two actions.
+
+### Step 1: Reset the form
+
+-------------------code----------------------
+resetForm();
+-------------------code----------------------
+
+This clears the message input.
+
+### Step 2: Show a local notification
+
+The app can immediately notify the user that the message was successfully sent.
+
+For example:
+
+-------------------code----------------------
+await Notifications.presentNotificationAsync({
+  title: "Message sent",
+  body: "Your message was successfully sent.",
+});
+-------------------code----------------------
+
+The complete flow is:
+
+-------------------code----------------------
+Send message
+    ↓
+Server accepts message
+    ↓
+Reset form
+    ↓
+Show local notification
+-------------------code----------------------
+
+---
+
+# 9. Listing Details Screen
+
+The `ContactSellerForm` is displayed inside the listing details screen.
+
+The screen receives the current listing and passes it to the form:
+
+-------------------code----------------------jsx
+<ContactSellerForm listing={listing} />
+-------------------code----------------------
+
+This means the form knows which listing the user is contacting the seller about.
+
+---
+
+# 10. KeyboardAvoidingView
+
+The entire listing details screen is wrapped with:
+
+-------------------code----------------------jsx
+<KeyboardAvoidingView>
+-------------------code----------------------
+
+This prevents the keyboard from covering the form when the user starts typing.
+
+Basic structure:
+
+-------------------code----------------------jsx
+<KeyboardAvoidingView
+  behavior="padding"
+  keyboardVerticalOffset={...}
+>
+  {/* screen content */}
+</KeyboardAvoidingView>
+-------------------code----------------------
+
+### Why is this important?
+
+Without it:
+
+-------------------code----------------------
+Input
+  ↓
+Keyboard opens
+  ↓
+Keyboard covers input/button
+-------------------code----------------------
+
+With `KeyboardAvoidingView`:
+
+-------------------code----------------------
+Input
+  ↓
+Keyboard opens
+  ↓
+Screen moves/resizes
+  ↓
+Input remains visible
+-------------------code----------------------
+
+---
+
+# 11. Passing the Listing to the Form
+
+The final important part is passing the listing through the form context/setter.
+
+Conceptually:
+
+-------------------code----------------------jsx
+<Formik
+  ...
+>
+  <ContactSellerForm listing={listing} />
+</Formik>
+-------------------code----------------------
+
+The exact implementation depends on the existing Formik structure in the project.
+
+The important concept is:
+
+-------------------code----------------------
+ListingDetailsScreen
+        ↓
+      listing
+        ↓
+ContactSellerForm
+        ↓
+messagesApi.send(message, listing.id)
+-------------------code----------------------
+
+---
+
+# 12. Recommended Component Responsibilities
+
+This lesson follows good separation of concerns.
+
+### `messages.js`
+
+Responsible for:
+
+-------------------code----------------------
+HTTP/API communication
+-------------------code----------------------
+
+It should know how to call:
+
+-------------------code----------------------
+POST /messages
+-------------------code----------------------
+
+### `ContactSellerForm`
+
+Responsible for:
+
+-------------------code----------------------
+Form UI
+Input
+Validation
+Submit handling
+User feedback
+-------------------code----------------------
+
+### `ListingDetailsScreen`
+
+Responsible for:
+
+-------------------code----------------------
+Displaying listing details
+Keyboard behavior
+Providing listing data
+Rendering ContactSellerForm
+-------------------code----------------------
+
+This separation makes the application easier to maintain.
+
+---
+
+# 13. Full Final Code
+
+Because the lecture describes the existing `ContactSellerForm` and `ListingDetailsScreen` without providing their complete original source, the safest full implementation is to show the complete code for the new API module and the core form logic rather than inventing unrelated project-specific components.
+
+## `api/messages.js`
+
+-------------------code----------------------
+import client from "./client";
+
+const send = (message, listingId) =>
+  client.post("/messages", {
+    message,
+    listingId,
+  });
+
+export default {
+  send,
+};
+-------------------code----------------------
+
+## `components/ContactSellerForm.js`
+
+Core implementation:
+
+-------------------code----------------------
+import React from "react";
+import { Alert, Keyboard } from "react-native";
+import * as Notifications from "expo-notifications";
+
+import messagesApi from "../api/messages";
+
+function ContactSellerForm({ listing }) {
+  const handleSubmit = async ({ message }, { resetForm }) => {
+    Keyboard.dismiss();
+
+    const result = await messagesApi.send(message, listing.id);
+
+    if (!result.ok) {
+      console.log(result.problem);
+
+      Alert.alert(
+        "Error",
+        "Could not send the message."
+      );
+
+      return;
+    }
+
+    resetForm();
+
+    await Notifications.presentNotificationAsync({
+      title: "Message sent",
+      body: "Your message was successfully sent.",
+    });
+  };
+
+  return (
+    // Existing Formik form UI goes here.
+    // The important part is handleSubmit above.
+    null
+  );
+}
+
+export default ContactSellerForm;
+-------------------code----------------------
+
+## `screens/ListingDetailsScreen.js`
+
+The relevant final structure is:
+
+-------------------code----------------------
+import React from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+
+import ContactSellerForm from "../components/ContactSellerForm";
+
+function ListingDetailsScreen({ route }) {
+  const { listing } = route.params;
+
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={64}
+    >
+      {/* Existing listing details UI */}
+
+      <ContactSellerForm listing={listing} />
+    </KeyboardAvoidingView>
+  );
+}
+
+export default ListingDetailsScreen;
+-------------------code----------------------
+
+---
+
+# 14. Summary
+
+The main concepts from this lesson are:
+
+1. Create a dedicated `messages.js` API module.
+2. Send both the **message** and **listing ID** to the backend.
+3. Treat the `listingId` as the conversation/thread identifier.
+4. Keep form logic inside `ContactSellerForm`.
+5. Dismiss the keyboard before submitting.
+6. Handle API errors and show an appropriate message to the user.
+7. Reset the form after a successful request.
+8. Show a local notification after successfully sending the message.
+9. Use `KeyboardAvoidingView` so the keyboard doesn't cover the form.
+10. Pass the current `listing` into `ContactSellerForm`.
+
+The overall architecture is:
+
+-------------------code----------------------
+ListingDetailsScreen
+        |
+        | listing
+        v
+ContactSellerForm
+        |
+        | message + listing.id
+        v
+messages.js
+        |
+        | POST /messages
+        v
+     Backend
+        |
+        v
+    Success
+     /    \
+    /      \
+Reset     Local
+Form    Notification
+-------------------code----------------------
+
+This is another good example of **separation of concerns**: the screen handles presentation, the form handles user interaction, and the API module handles communication with the backend.
