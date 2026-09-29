@@ -223,3 +223,233 @@ This section will therefore teach how to connect **messaging + backend logic + p
 ## Full Final Code
 
 There is no final implementation code in this introductory lecture yet. The actual notification code will be added in the following lessons.
+
+*** 2- Push Notification Services ***
+# 1. Push Notification Providers
+
+When implementing push notifications in a React Native / Expo application, there are several services you can choose from.
+
+The lecture focuses on four main options:
+
+1. **Expo Push Notification Service**
+2. **OneSignal**
+3. **Firebase Cloud Messaging (FCM)**
+4. **Amazon Simple Notification Service (SNS)**
+
+---
+
+# 2. Expo Push Notification Service
+
+For an Expo application, **Expo's notification service is the simplest option**.
+
+The main advantage is that Expo hides much of the native complexity involved in push notifications.
+
+Conceptually:
+
+-------------------code----------------------
+Your React Native App
+        |
+        v
+Expo Push Notification Service
+        |
+        v
+User's Device
+-------------------code----------------------
+
+Instead of configuring many native components yourself, Expo provides an abstraction that makes sending and receiving notifications much easier.
+
+### Main advantages
+
+* Simple setup
+* Works well with Expo applications
+* Hides much of the native complexity
+* Supports both managed and bare/prebuild-style Expo projects
+* Free according to the lecture's recording-time information
+
+---
+
+# 3. Other Notification Providers
+
+## 3.1 OneSignal
+
+OneSignal is a dedicated push notification platform.
+
+It provides additional notification-related features, but integrating it can require more native configuration depending on the project setup.
+
+---
+
+## 3.2 Firebase Cloud Messaging
+
+Firebase Cloud Messaging, commonly called **FCM**, is Google's push notification infrastructure.
+
+It is widely used, especially in applications already using Firebase.
+
+---
+
+## 3.3 Amazon SNS
+
+Amazon Simple Notification Service (**SNS**) is Amazon's notification service.
+
+It can be useful when an organization already has an AWS-based infrastructure or requires AWS services for architectural or policy reasons.
+
+---
+
+# 4. Why the Alternatives Can Be More Complicated
+
+The main issue is not that OneSignal, FCM, or SNS are bad services.
+
+The issue is the **additional setup required**, particularly when working with native iOS and Android projects.
+
+The lecture explains that using these alternatives may require leaving the simple Expo workflow and making changes to the native projects.
+
+Conceptually:
+
+-------------------code----------------------
+Expo Push Notifications
+        |
+        v
+  Less native setup
+        |
+        v
+    Easier setup
+-------------------code----------------------
+
+Compared with:
+
+-------------------code----------------------
+Other providers
+        |
+        v
+Native configuration
+        |
+        v
+iOS configuration
++
+Android configuration
+        |
+        v
+More setup and maintenance
+-------------------code----------------------
+
+If one configuration step is missed, notifications may simply fail to work, making debugging more difficult.
+
+---
+
+# 5. Recommended Choice
+
+For a normal Expo application, the lecture's recommendation is:
+
+> **Use Expo's push notification service unless you have a specific reason to use another provider.**
+
+For example, an organization might have a policy requiring AWS infrastructure. In that situation, Amazon SNS may be required even though Expo would be easier.
+
+So the decision can be summarized as:
+
+| Situation                                  | Recommended approach     |
+| ------------------------------------------ | ------------------------ |
+| Normal Expo application                    | Expo Notifications       |
+| Organization requires AWS                  | Amazon SNS               |
+| Existing Firebase infrastructure           | FCM may make sense       |
+| Specialized notification platform/features | OneSignal may make sense |
+
+The important principle is:
+
+**Don't introduce unnecessary native complexity if Expo already provides everything your application needs.**
+
+---
+
+# 6. No Code Yet
+
+This lecture is about choosing the notification provider, so there isn't a meaningful implementation to add yet.
+
+The next lessons will explain **how push notifications actually work** before we start implementing them.
+
+A conceptual example of what we eventually want is:
+
+-------------------code----------------------javascript
+const sendNotification = async () => {
+  // Send notification through the selected provider
+};
+-------------------code----------------------
+
+The actual implementation will come later.
+
+---
+
+# 7. Important Notes and Best Practices
+
+### 7.1 Choose based on project requirements
+
+Don't automatically choose the most sophisticated notification platform.
+
+First ask:
+
+-------------------code----------------------
+Do I need special notification features?
+        |
+        No
+        ↓
+Use the simplest solution.
+-------------------code----------------------
+
+For an Expo application, that usually means Expo's notification service.
+
+### 7.2 Native configuration increases complexity
+
+The more native configuration you introduce, the more things you potentially need to maintain:
+
+* iOS configuration
+* Android configuration
+* Native permissions
+* Credentials
+* Provider configuration
+* Build configuration
+
+Therefore, avoid unnecessary complexity.
+
+### 7.3 Provider choice is an architectural decision
+
+Changing notification providers later can require changes to:
+
+* Frontend code
+* Backend code
+* Device registration
+* Notification tokens
+* Native configuration
+
+So it's worth choosing a provider deliberately.
+
+---
+
+# 8. Summary
+
+The lecture introduces the main push notification providers:
+
+-------------------code----------------------
+Expo
+OneSignal
+FCM
+Amazon SNS
+-------------------code----------------------
+
+For an Expo application, the recommended default is:
+
+-------------------code----------------------
+Expo Push Notification Service
+-------------------code----------------------
+
+because it provides a much simpler setup and hides much of the native complexity.
+
+The alternatives can be appropriate when there are specific requirements, such as an organization's existing infrastructure or policies.
+
+The next topic is more important than the provider itself:
+
+**Understanding how push notifications work from the device to the backend and back to the user's device.**
+
+---
+
+# 9. Full Final Code
+
+There is no final implementation code in this lecture because it focuses on **choosing a push notification provider** rather than implementing notifications.
+
+The actual notification code will be introduced in the following lessons.
