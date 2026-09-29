@@ -3742,3 +3742,539 @@ user
 -------------------code----------------------
 
 The result is a clean authentication flow where logging in updates the global user state and automatically takes the user into the authenticated part of the application.
+
+*** 8- Getting the Current User ***
+# Displaying Current User Information with React Context
+
+## 1. Goal
+
+Currently, the Account Screen displays hardcoded user information:
+
+-------------------code----------------------
+title="Mosh Hamedani"
+subTitle="programmingwithmosh@gmail.com"
+-------------------code----------------------
+
+Since authentication is already implemented and the current user is stored in React Context, we should display the logged-in user's information dynamically.
+
+---
+
+# 2. Current Problem
+
+Current code:
+
+-------------------code----------------------
+<ListItem
+  title="Mosh Hamedani"
+  subTitle="programmingwithmosh@gmail.com"
+  image={require("../assets/mosh.jpg")}
+/>
+-------------------code----------------------
+
+This means every user sees the same name and email.
+
+Instead, we should use:
+
+-------------------code----------------------
+user.name
+user.email
+-------------------code----------------------
+
+from the authentication context.
+
+---
+
+# 3. Access the Authentication Context
+
+Import `useContext`:
+
+-------------------code----------------------
+import React, { useContext } from "react";
+-------------------code----------------------
+
+Import the authentication context:
+
+-------------------code----------------------
+import AuthContext from "../auth/context";
+-------------------code----------------------
+
+---
+
+# 4. Read the Current User
+
+Inside the component:
+
+-------------------code----------------------
+const { user } = useContext(AuthContext);
+-------------------code----------------------
+
+What happens here?
+
+-------------------code----------------------
+useContext(AuthContext)
+-------------------code----------------------
+
+returns the object provided in App.js:
+
+-------------------code----------------------
+{
+  user,
+  setUser
+}
+-------------------code----------------------
+
+We only need:
+
+-------------------code----------------------
+user
+-------------------code----------------------
+
+so we destructure it.
+
+---
+
+# 5. Replace Hardcoded Values
+
+Before:
+
+-------------------code----------------------
+<ListItem
+  title="Mosh Hamedani"
+  subTitle="programmingwithmosh@gmail.com"
+  image={require("../assets/mosh.jpg")}
+/>
+-------------------code----------------------
+
+After:
+
+-------------------code----------------------
+<ListItem
+  title={user.name}
+  subTitle={user.email}
+  image={require("../assets/mosh.jpg")}
+/>
+-------------------code----------------------
+
+---
+
+# 6. Why Keep the Existing Image?
+
+The JWT token currently contains:
+
+-------------------code----------------------
+{
+  userId,
+  name,
+  email,
+  iat
+}
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------
+{
+  userId: 1,
+  name: "Mosh",
+  email: "mosh@domain.com"
+}
+-------------------code----------------------
+
+Notice:
+
+-------------------code----------------------
+image
+-------------------code----------------------
+
+does not exist.
+
+Therefore:
+
+-------------------code----------------------
+image={require("../assets/mosh.jpg")}
+-------------------code----------------------
+
+remains unchanged for now.
+
+Later you could:
+
+* Store profile images in the database
+* Return image URLs from the backend
+* Display user avatars dynamically
+
+---
+
+# 7. Updated AccountScreen
+
+## Step-by-Step Changes
+
+### Add Imports
+
+-------------------code----------------------
+import React, { useContext } from "react";
+import AuthContext from "../auth/context";
+-------------------code----------------------
+
+### Access Context
+
+-------------------code----------------------
+const { user } = useContext(AuthContext);
+-------------------code----------------------
+
+### Use Dynamic Values
+
+-------------------code----------------------
+title={user.name}
+subTitle={user.email}
+-------------------code----------------------
+
+---
+
+# 8. Updated AccountScreen Code
+
+-------------------code----------------------
+import React, { useContext } from "react";
+import { StyleSheet, View, FlatList } from "react-native";
+
+import { ListItem, ListItemSeparator } from "../components/lists";
+import colors from "../config/colors";
+import Icon from "../components/Icon";
+import routes from "../navigation/routes";
+import Screen from "../components/Screen";
+import AuthContext from "../auth/context";
+
+const menuItems = [
+  {
+    title: "My Listings",
+    icon: {
+      name: "format-list-bulleted",
+      backgroundColor: colors.primary,
+    },
+  },
+  {
+    title: "My Messages",
+    icon: {
+      name: "email",
+      backgroundColor: colors.secondary,
+    },
+    targetScreen: routes.MESSAGES,
+  },
+];
+
+function AccountScreen({ navigation }) {
+  const { user } = useContext(AuthContext);
+
+  return (
+    <Screen style={styles.screen}>
+      <View style={styles.container}>
+        <ListItem
+          title={user.name}
+          subTitle={user.email}
+          image={require("../assets/mosh.jpg")}
+        />
+      </View>
+
+      <View style={styles.container}>
+        <FlatList
+          data={menuItems}
+          keyExtractor={(menuItem) => menuItem.title}
+          ItemSeparatorComponent={ListItemSeparator}
+          renderItem={({ item }) => (
+            <ListItem
+              title={item.title}
+              IconComponent={
+                <Icon
+                  name={item.icon.name}
+                  backgroundColor={item.icon.backgroundColor}
+                />
+              }
+              onPress={() =>
+                navigation.navigate(item.targetScreen)
+              }
+            />
+          )}
+        />
+      </View>
+
+      <ListItem
+        title="Log Out"
+        IconComponent={
+          <Icon
+            name="logout"
+            backgroundColor="#ffe66d"
+          />
+        }
+      />
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: {
+    backgroundColor: colors.light,
+  },
+  container: {
+    marginVertical: 20,
+  },
+});
+
+export default AccountScreen;
+-------------------code----------------------
+
+---
+
+# 9. Data Flow
+
+### Login
+
+-------------------code----------------------
+authApi.login()
+-------------------code----------------------
+
+↓
+
+### Receive JWT Token
+
+-------------------code----------------------
+eyJhbGc...
+-------------------code----------------------
+
+↓
+
+### Decode Token
+
+-------------------code----------------------
+jwtDecode(token)
+-------------------code----------------------
+
+↓
+
+### Get User Object
+
+-------------------code----------------------
+{
+  userId: 1,
+  name: "Mosh",
+  email: "mosh@domain.com"
+}
+-------------------code----------------------
+
+↓
+
+### Store in Context
+
+-------------------code----------------------
+authContext.setUser(user)
+-------------------code----------------------
+
+↓
+
+### Account Screen Reads Context
+
+-------------------code----------------------
+const { user } =
+  useContext(AuthContext);
+-------------------code----------------------
+
+↓
+
+### Display User Information
+
+-------------------code----------------------
+user.name
+user.email
+-------------------code----------------------
+
+---
+
+# Important Notes & Best Practices
+
+### Use Context for Authentication Data
+
+Authentication data is:
+
+* Small
+* Shared globally
+* Rarely changes
+
+This makes React Context an excellent solution.
+
+---
+
+### Avoid Prop Drilling
+
+Instead of:
+
+-------------------code----------------------
+<App user={user}>
+-------------------code----------------------
+
+-------------------code----------------------
+<Navigator user={user}>
+-------------------code----------------------
+
+-------------------code----------------------
+<Screen user={user}>
+-------------------code----------------------
+
+-------------------code----------------------
+<Component user={user}>
+-------------------code----------------------
+
+Use:
+
+-------------------code----------------------
+useContext(AuthContext)
+-------------------code----------------------
+
+directly where needed.
+
+---
+
+### Handle Missing User Safely
+
+In production apps you may add:
+
+-------------------code----------------------
+if (!user) return null;
+-------------------code----------------------
+
+or
+
+-------------------code----------------------
+title={user?.name}
+subTitle={user?.email}
+-------------------code----------------------
+
+to prevent crashes while authentication is loading.
+
+---
+
+### Keep Context Small
+
+Good candidates for Context:
+
+-------------------code----------------------
+user
+theme
+language
+-------------------code----------------------
+
+Avoid storing large frequently-changing application state in Context.
+
+---
+
+# Full Final Code
+
+-------------------code----------------------
+import React, { useContext } from "react";
+import { StyleSheet, View, FlatList } from "react-native";
+
+import { ListItem, ListItemSeparator } from "../components/lists";
+import colors from "../config/colors";
+import Icon from "../components/Icon";
+import routes from "../navigation/routes";
+import Screen from "../components/Screen";
+import AuthContext from "../auth/context";
+
+const menuItems = [
+  {
+    title: "My Listings",
+    icon: {
+      name: "format-list-bulleted",
+      backgroundColor: colors.primary,
+    },
+  },
+  {
+    title: "My Messages",
+    icon: {
+      name: "email",
+      backgroundColor: colors.secondary,
+    },
+    targetScreen: routes.MESSAGES,
+  },
+];
+
+function AccountScreen({ navigation }) {
+  const { user } = useContext(AuthContext);
+
+  return (
+    <Screen style={styles.screen}>
+      <View style={styles.container}>
+        <ListItem
+          title={user.name}
+          subTitle={user.email}
+          image={require("../assets/mosh.jpg")}
+        />
+      </View>
+
+      <View style={styles.container}>
+        <FlatList
+          data={menuItems}
+          keyExtractor={(menuItem) => menuItem.title}
+          ItemSeparatorComponent={ListItemSeparator}
+          renderItem={({ item }) => (
+            <ListItem
+              title={item.title}
+              IconComponent={
+                <Icon
+                  name={item.icon.name}
+                  backgroundColor={item.icon.backgroundColor}
+                />
+              }
+              onPress={() =>
+                navigation.navigate(item.targetScreen)
+              }
+            />
+          )}
+        />
+      </View>
+
+      <ListItem
+        title="Log Out"
+        IconComponent={
+          <Icon
+            name="logout"
+            backgroundColor="#ffe66d"
+          />
+        }
+      />
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: {
+    backgroundColor: colors.light,
+  },
+  container: {
+    marginVertical: 20,
+  },
+});
+
+export default AccountScreen;
+-------------------code----------------------
+
+# Summary
+
+In this lecture you learned how to:
+
+1. Access authentication data using React Context.
+
+-------------------code----------------------
+const { user } =
+  useContext(AuthContext);
+-------------------code----------------------
+
+2. Replace hardcoded values with dynamic user data.
+
+-------------------code----------------------
+title={user.name}
+subTitle={user.email}
+-------------------code----------------------
+
+3. Avoid prop drilling by reading authentication state directly from Context.
+
+4. Display the currently logged-in user's information anywhere in the app.
+
+The Account Screen is now connected to the authentication system and automatically displays the correct user information after login.
