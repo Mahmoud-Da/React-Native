@@ -6433,12 +6433,12 @@ This spreads authentication logic across many screens.
 
 Example:
 
-```jsx
+-------------------code----------------------
 import { useContext } from "react";
 import AuthContext from "../auth/context";
 
 const { user, setUser } = useContext(AuthContext);
-```
+-------------------code----------------------
 
 The **LoginScreen** also:
 
@@ -6454,12 +6454,12 @@ This is business logic and does not belong inside UI components.
 
 Instead of every screen knowing authentication details, create one custom hook.
 
-```
+-------------------code----------------------
 auth/
     context.js
     storage.js
     useAuth.js
-```
+-------------------code----------------------
 
 The hook becomes the only place responsible for:
 
@@ -6469,9 +6469,9 @@ The hook becomes the only place responsible for:
 
 Every screen simply calls:
 
-```jsx
+-------------------code----------------------
 const { user, login, logout } = useAuth();
-```
+-------------------code----------------------
 
 Much cleaner.
 
@@ -6481,7 +6481,7 @@ Much cleaner.
 
 Inside the `auth` folder create:
 
-```jsx
+-------------------code----------------------
 // auth/useAuth.js
 
 import { useContext } from "react";
@@ -6513,7 +6513,7 @@ export default function useAuth() {
     logout,
   };
 }
-```
+-------------------code----------------------
 
 ---
 
@@ -6523,9 +6523,9 @@ export default function useAuth() {
 
 Read the current authentication context.
 
-```jsx
+-------------------code----------------------
 const { user, setUser } = useContext(AuthContext);
-```
+-------------------code----------------------
 
 Now the hook can access and update the logged-in user.
 
@@ -6535,9 +6535,9 @@ Now the hook can access and update the logged-in user.
 
 Implement `login()`.
 
-```jsx
+-------------------code----------------------
 const login = (authToken) => {
-```
+-------------------code----------------------
 
 Receive the JWT.
 
@@ -6545,25 +6545,25 @@ Receive the JWT.
 
 Decode it.
 
-```jsx
+-------------------code----------------------
 const user = jwtDecode(authToken);
-```
+-------------------code----------------------
 
 ---
 
 Update React Context.
 
-```jsx
+-------------------code----------------------
 setUser(user);
-```
+-------------------code----------------------
 
 ---
 
 Save the token securely.
 
-```jsx
+-------------------code----------------------
 authStorage.storeToken(authToken);
-```
+-------------------code----------------------
 
 Now the user stays logged in after restarting the app.
 
@@ -6573,21 +6573,21 @@ Now the user stays logged in after restarting the app.
 
 Implement `logout()`.
 
-```jsx
+-------------------code----------------------
 const logout = () => {
-```
+-------------------code----------------------
 
 Clear the current user.
 
-```jsx
+-------------------code----------------------
 setUser(null);
-```
+-------------------code----------------------
 
 Remove the stored token.
 
-```jsx
+-------------------code----------------------
 authStorage.removeToken();
-```
+-------------------code----------------------
 
 Done.
 
@@ -6597,13 +6597,13 @@ Done.
 
 Expose everything.
 
-```jsx
+-------------------code----------------------
 return {
     user,
     login,
     logout,
 };
-```
+-------------------code----------------------
 
 Now every screen has access to all authentication functionality.
 
@@ -6613,7 +6613,7 @@ Now every screen has access to all authentication functionality.
 
 ## Before
 
-```jsx
+-------------------code----------------------
 import { useContext } from "react";
 import AuthContext from "../auth/context";
 import authStorage from "../auth/storage";
@@ -6624,7 +6624,7 @@ const handleLogout = () => {
     setUser(null);
     authStorage.removeToken();
 };
-```
+-------------------code----------------------
 
 Lots of authentication details.
 
@@ -6634,29 +6634,29 @@ Lots of authentication details.
 
 Import only the hook.
 
-```jsx
+-------------------code----------------------
 import useAuth from "../auth/useAuth";
-```
+-------------------code----------------------
 
 Use it.
 
-```jsx
+-------------------code----------------------
 const { user, logout } = useAuth();
-```
+-------------------code----------------------
 
 Display user info.
 
-```jsx
+-------------------code----------------------
 <ListItem
     title={user.name}
     subTitle={user.email}
     image={require("../assets/mosh.jpg")}
 />
-```
+-------------------code----------------------
 
 Logout.
 
-```jsx
+-------------------code----------------------
 <ListItem
     title="Log Out"
     IconComponent={
@@ -6667,7 +6667,7 @@ Logout.
     }
     onPress={logout}
 />
-```
+-------------------code----------------------
 
 The screen is now responsible only for the UI.
 
@@ -6679,13 +6679,13 @@ The screen is now responsible only for the UI.
 
 The screen contained business logic.
 
-```jsx
+-------------------code----------------------
 const user = jwtDecode(result.data);
 
 setUser(user);
 
 authStorage.storeToken(result.data);
-```
+-------------------code----------------------
 
 This mixes UI and authentication.
 
@@ -6695,21 +6695,21 @@ This mixes UI and authentication.
 
 Import the hook.
 
-```jsx
+-------------------code----------------------
 import useAuth from "../auth/useAuth";
-```
+-------------------code----------------------
 
 Get the login function.
 
-```jsx
+-------------------code----------------------
 const { login } = useAuth();
-```
+-------------------code----------------------
 
 After a successful API call simply write:
 
-```jsx
+-------------------code----------------------
 login(result.data);
-```
+-------------------code----------------------
 
 That's all.
 
@@ -6721,7 +6721,7 @@ The hook handles everything internally.
 
 ## Before
 
-```
+-------------------code----------------------
 LoginScreen
     Login API
     Decode JWT
@@ -6731,7 +6731,7 @@ LoginScreen
 AccountScreen
     Update Context
     Remove Token
-```
+-------------------code----------------------
 
 Authentication logic is scattered.
 
@@ -6739,7 +6739,7 @@ Authentication logic is scattered.
 
 ## After
 
-```
+-------------------code----------------------
 LoginScreen
     UI only
 
@@ -6752,7 +6752,7 @@ useAuth
     Decode JWT
     Store Token
     Remove Token
-```
+-------------------code----------------------
 
 One place for all authentication logic.
 
@@ -6764,18 +6764,18 @@ One place for all authentication logic.
 
 Instead of many imports:
 
-```jsx
+-------------------code----------------------
 useContext
 AuthContext
 jwtDecode
 authStorage
-```
+-------------------code----------------------
 
 Only:
 
-```jsx
+-------------------code----------------------
 useAuth
-```
+-------------------code----------------------
 
 ---
 
@@ -6798,9 +6798,9 @@ Screens stay untouched.
 
 Any screen can simply do:
 
-```jsx
+-------------------code----------------------
 const { user, login, logout } = useAuth();
-```
+-------------------code----------------------
 
 No duplicated code.
 
@@ -6821,7 +6821,7 @@ No duplicated code.
 
 ## `auth/useAuth.js`
 
-```jsx
+-------------------code----------------------
 import { useContext } from "react";
 import jwtDecode from "jwt-decode";
 
@@ -6851,13 +6851,13 @@ export default function useAuth() {
     logout,
   };
 }
-```
+-------------------code----------------------
 
 ---
 
 ## Updated `LoginScreen.js`
 
-```jsx
+-------------------code----------------------
 import React, { useState } from "react";
 
 import authApi from "../api/auth";
@@ -6918,13 +6918,13 @@ function LoginScreen() {
 }
 
 export default LoginScreen;
-```
+-------------------code----------------------
 
 ---
 
 ## Updated `AccountScreen.js`
 
-```jsx
+-------------------code----------------------
 import React from "react";
 import { StyleSheet, View, FlatList } from "react-native";
 
@@ -7013,7 +7013,7 @@ const styles = StyleSheet.create({
 });
 
 export default AccountScreen;
-```
+-------------------code----------------------
 
 ---
 
@@ -7031,3 +7031,509 @@ Key improvements:
 * Simplified `LoginScreen` and `AccountScreen`.
 * Improved separation of concerns.
 * Made the authentication code easier to maintain, extend, and reuse.
+
+*** 14- Calling Protected APIs ***
+# Authentication - Calling Protected API Endpoints with JWT
+
+## 1. Overview
+
+Many backend endpoints should only be accessible to authenticated users.
+
+Examples:
+
+* Get current user's listings
+* Create a listing
+* Update a profile
+* Delete an account
+* Upload images
+
+These endpoints require the client to send a **JSON Web Token (JWT)** with every request.
+
+---
+
+# 2. What Happens Without a Token?
+
+Suppose we call a protected endpoint:
+
+-------------------code----------------------http
+GET /api/listings/mine
+-------------------code----------------------
+
+Without an authentication token, the server responds with:
+
+-------------------code----------------------http
+401 Unauthorized
+-------------------code----------------------
+
+Response body:
+
+-------------------code----------------------json
+{
+  "error": "Access denied. No token provided."
+}
+-------------------code----------------------
+
+This means:
+
+* The request reached the server.
+* The endpoint requires authentication.
+* No JWT was included.
+
+---
+
+# 3. Passing the Token Manually
+
+In Postman, add a request header.
+
+-------------------code----------------------http
+Key:
+x-auth-token
+-------------------code----------------------
+
+-------------------code----------------------http
+Value:
+<your JWT token>
+-------------------code----------------------
+
+Example:
+
+-------------------code----------------------http
+GET /api/listings/mine
+
+Headers:
+x-auth-token: eyJhbGciOiJIUzI1NiIs...
+-------------------code----------------------
+
+Now the server recognizes the user and returns the requested data.
+
+---
+
+# 4. Problem with Manual Headers
+
+Imagine an app with:
+
+* 20 API files
+* 100 requests
+
+Adding this header manually every time:
+
+-------------------code----------------------
+headers: {
+    "x-auth-token": token
+}
+-------------------code----------------------
+
+would become repetitive and error-prone.
+
+Instead, add the token automatically for **every request**.
+
+---
+
+# 5. Solution: Request Transformation
+
+Since **every API request** goes through `client.js`, this is the perfect place to inject the authentication token.
+
+Flow:
+
+-------------------code----------------------
+Screen
+      ↓
+API Module
+      ↓
+client.js
+      ↓
+Add JWT Header
+      ↓
+Server
+-------------------code----------------------
+
+Now every request automatically includes the token.
+
+---
+
+# 6. Import Authentication Storage
+
+First, import the storage module.
+
+-------------------code----------------------
+import authStorage from "../auth/storage";
+-------------------code----------------------
+
+This module stores and retrieves the JWT securely.
+
+---
+
+# 7. Add an Async Request Transform
+
+Apisauce provides a hook that runs before every request.
+
+-------------------code----------------------
+apiClient.addAsyncRequestTransform(async (request) => {
+
+});
+-------------------code----------------------
+
+This function executes automatically before the request is sent.
+
+---
+
+# 8. Read the Stored Token
+
+Inside the transform:
+
+-------------------code----------------------
+const authToken =
+    await authStorage.getToken();
+-------------------code----------------------
+
+This retrieves the JWT from secure storage.
+
+---
+
+# 9. Handle Missing Tokens
+
+If the user is not logged in:
+
+-------------------code----------------------
+if (!authToken)
+    return;
+-------------------code----------------------
+
+The request proceeds normally without authentication.
+
+This allows public endpoints to continue working.
+
+---
+
+# 10. Attach the Token
+
+If a token exists:
+
+-------------------code----------------------
+request.headers["x-auth-token"] =
+    authToken;
+-------------------code----------------------
+
+Every outgoing request now contains:
+
+-------------------code----------------------http
+x-auth-token: eyJhbGciOiJIUzI1Ni...
+-------------------code----------------------
+
+No screen has to remember to send it.
+
+---
+
+# 11. Export `getToken()`
+
+Earlier, `storage.js` only exposed higher-level methods.
+
+Now export `getToken()` so `client.js` can retrieve the raw JWT.
+
+-------------------code----------------------
+export default {
+    storeToken,
+    getToken,
+    getUser,
+    removeToken,
+};
+-------------------code----------------------
+
+This is the only change required in `storage.js`.
+
+---
+
+# 12. Request Flow
+
+The complete request lifecycle now becomes:
+
+-------------------code----------------------
+User logs in
+        │
+        ▼
+JWT stored securely
+        │
+        ▼
+User opens a screen
+        │
+        ▼
+API request starts
+        │
+        ▼
+client.js executes request transform
+        │
+        ▼
+Read JWT from Secure Store
+        │
+        ▼
+Add x-auth-token header
+        │
+        ▼
+Send request
+        │
+        ▼
+Server validates token
+        │
+        ▼
+Return protected data
+-------------------code----------------------
+
+Everything happens automatically.
+
+---
+
+# 13. How the Server Validates the Token
+
+### Step 1
+
+Read the request header.
+
+-------------------code----------------------
+x-auth-token
+-------------------code----------------------
+
+---
+
+### Step 2
+
+If no token exists:
+
+Return:
+
+-------------------code----------------------http
+401 Unauthorized
+-------------------code----------------------
+
+-------------------code----------------------json
+{
+    "error": "Access denied. No token provided."
+}
+-------------------code----------------------
+
+---
+
+### Step 3
+
+If a token exists:
+
+Verify it using the JWT library.
+
+-------------------code----------------------
+jsonwebtoken.verify(...)
+-------------------code----------------------
+
+The server also uses its **private secret key**.
+
+---
+
+### Step 4
+
+If verification succeeds:
+
+The server extracts the payload.
+
+Example:
+
+-------------------code----------------------json
+{
+    "_id": "...",
+    "name": "Mosh",
+    "email": "mosh@domain.com"
+}
+-------------------code----------------------
+
+The payload is attached to the request.
+
+-------------------code----------------------
+request.user
+-------------------code----------------------
+
+Now every route can access the current authenticated user.
+
+---
+
+### Step 5
+
+If verification fails:
+
+Return:
+
+-------------------code----------------------http
+400 Bad Request
+-------------------code----------------------
+
+-------------------code----------------------json
+{
+    "error": "Invalid token."
+}
+-------------------code----------------------
+
+---
+
+# 14. Status Codes
+
+| Status Code | Meaning      | Reason                     |
+| ----------- | ------------ | -------------------------- |
+| **200**     | Success      | Valid token                |
+| **400**     | Bad Request  | Invalid or corrupted token |
+| **401**     | Unauthorized | No token provided          |
+
+---
+
+# 15. Why This Design Is Better
+
+Instead of doing this everywhere:
+
+-------------------code----------------------
+authStorage.getToken()
+
+headers["x-auth-token"] = token
+-------------------code----------------------
+
+every API request becomes simply:
+
+-------------------code----------------------
+client.get("/listings");
+-------------------code----------------------
+
+or
+
+-------------------code----------------------
+client.post("/listings", listing);
+-------------------code----------------------
+
+The authentication header is added automatically.
+
+---
+
+# 16. Best Practices
+
+### Keep authentication inside the API layer
+
+`client.js` should be responsible for adding authentication headers.
+
+---
+
+### Never hard-code secret keys
+
+The server's JWT signing key should be stored as an **environment variable**, not inside the source code.
+
+---
+
+### Use Secure Storage
+
+On Expo, store JWTs using **SecureStore**, not AsyncStorage.
+
+---
+
+### Keep UI components simple
+
+Screens should never worry about:
+
+* Reading tokens
+* Sending headers
+* Verifying authentication
+
+Those responsibilities belong to the API and authentication layers.
+
+---
+
+# 17. Full Final Code
+
+## `auth/storage.js`
+
+-------------------code----------------------
+import * as SecureStore from "expo-secure-store";
+import jwtDecode from "jwt-decode";
+
+const key = "authToken";
+
+const storeToken = async (authToken) => {
+  try {
+    await SecureStore.setItemAsync(key, authToken);
+  } catch (error) {
+    console.log("Error storing the auth token", error);
+  }
+};
+
+const getToken = async () => {
+  try {
+    return await SecureStore.getItemAsync(key);
+  } catch (error) {
+    console.log("Error getting the auth token", error);
+  }
+};
+
+const getUser = async () => {
+  const token = await getToken();
+  return token ? jwtDecode(token) : null;
+};
+
+const removeToken = async () => {
+  try {
+    await SecureStore.deleteItemAsync(key);
+  } catch (error) {
+    console.log("Error removing the auth token", error);
+  }
+};
+
+export default {
+  storeToken,
+  getToken,
+  getUser,
+  removeToken,
+};
+-------------------code----------------------
+
+---
+
+## `api/client.js`
+
+-------------------code----------------------
+import { create } from "apisauce";
+import cache from "../utility/cache";
+import authStorage from "../auth/storage";
+
+const apiClient = create({
+  baseURL: "http://192.168.0.14:9000/api",
+});
+
+apiClient.addAsyncRequestTransform(async (request) => {
+  const authToken = await authStorage.getToken();
+
+  if (!authToken) return;
+
+  request.headers["x-auth-token"] = authToken;
+});
+
+const get = apiClient.get;
+apiClient.get = async (url, params, axiosConfig) => {
+  const response = await get(url, params, axiosConfig);
+
+  if (response.ok) {
+    cache.store(url, response.data);
+    return response;
+  }
+
+  const data = await cache.get(url);
+  return data ? { ok: true, data } : response;
+};
+
+export default apiClient;
+-------------------code----------------------
+
+---
+
+# 18. Summary
+
+This lecture adds automatic authentication to every API request.
+
+Key concepts covered:
+
+* Protected endpoints require a JWT.
+* Without a token, the server returns **401 Unauthorized**.
+* `client.js` automatically attaches the JWT before each request.
+* `storage.js` now exports `getToken()` so the client can retrieve it.
+* The server validates the JWT using its secret key.
+* If valid, the server extracts the user and makes it available to protected routes.
+* This approach centralizes authentication logic, eliminates duplicate code, and keeps screens focused only on the user interface.
