@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import jwtDecode from "jwt-decode";
 
 import authApi from "../api/auth";
 
@@ -29,7 +30,9 @@ function LoginScreen() {
 
     setLoginFailed(false);
 
-    console.log(result.data);
+    const user = jwtDecode(result.data);
+
+    console.log(user);
   };
 
   return (
