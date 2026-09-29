@@ -15,6 +15,9 @@ import {
   ErrorMessage,
 } from "../components/forms";
 
+import authStorage from "../auth/storage";
+import jwtDecode from "jwt-decode";
+
 function LoginScreen() {
   const [loginFailed, setLoginFailed] =
     useState(false);
@@ -22,14 +25,8 @@ function LoginScreen() {
   const authContext =
     useContext(AuthContext);
 
-  const handleSubmit = async ({
-    email,
-    password,
-  }) => {
-    const result = await authApi.login(
-      email,
-      password
-    );
+  const handleSubmit = async ({ email, password }) => {
+    const result = await authApi.login(email, password);
 
     if (!result.ok) {
       setLoginFailed(true);
@@ -38,9 +35,9 @@ function LoginScreen() {
 
     setLoginFailed(false);
 
-    const user = jwtDecode(
-      result.data
-    );
+    await authStorage.storeToken(result.data);
+
+    const user = jwtDecode(result.data);
 
     authContext.setUser(user);
   };
