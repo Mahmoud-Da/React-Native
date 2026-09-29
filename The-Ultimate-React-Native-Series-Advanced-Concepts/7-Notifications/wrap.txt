@@ -1621,7 +1621,7 @@ Your API client already handles this automatically.
 
 ### Request body
 
--------------------code----------------------on
+-------------------code----------------------
 {
   "token": "ExponentPushToken[xxxxxxxxxxxxxxxxxxxx]"
 }
@@ -1831,7 +1831,7 @@ This is why the endpoint can identify **which user** owns the push token.
 
 Suppose John sends:
 
--------------------code----------------------on
+-------------------code----------------------
 {
   "token": "ExponentPushToken[ABC]"
 }
@@ -1853,7 +1853,7 @@ John.expoPushToken = ABC
 
 This is much safer than allowing the client to specify:
 
--------------------code----------------------on
+-------------------code----------------------
 {
   "userId": 123,
   "token": "..."
@@ -2132,7 +2132,7 @@ expoPushTokensApi.register(token);
 
 And the backend receives:
 
--------------------code----------------------on
+-------------------code----------------------
 {
   "token": "ExponentPushToken[...]"
 }
@@ -2141,3 +2141,491 @@ And the backend receives:
 Because your `client.js` automatically adds the JWT authentication header, the backend knows **which logged-in user owns that push token**.
 
 The next logical step is to use the stored token to actually **send a notification from the server to that user's device**.
+
+*** 6- Sending Test Notifications ***
+# Push Notifications — Sending a Test Notification
+
+## 1. Goal of This Lecture
+
+Now that we have:
+
+1. Requested notification permission.
+2. Generated an Expo Push Token.
+3. Stored the token on the backend.
+
+We need to test whether the device can actually receive a notification.
+
+Expo provides a web-based tool that allows us to send a **test push notification** directly to an Expo Push Token.
+
+The basic flow is:
+
+-------------------code----------------------
+Expo Push Token
+      ↓
+Expo Notification Tool
+      ↓
+Expo Push Notification Service
+      ↓
+User's Device
+      ↓
+Notification
+-------------------code----------------------
+
+---
+
+# 2. Expo's Notification Testing Tool
+
+During development, Expo provides a notification tool where you can enter your Expo Push Token and send a test notification.
+
+You provide:
+
+* Push token
+* Notification title
+* Notification body
+* Optional JSON data
+
+The JSON data becomes especially useful later because we can attach information such as:
+
+-------------------code----------------------
+{
+  "listingId": 123
+}
+-------------------code----------------------
+
+Then, when the user taps the notification, the app can use that `listingId` to navigate to the correct listing.
+
+---
+
+# 3. Basic Notification
+
+A notification can contain a title:
+
+-------------------code----------------------
+Mosh says
+-------------------code----------------------
+
+and a body:
+
+-------------------code----------------------
+Is your jacket still available?
+-------------------code----------------------
+
+Conceptually:
+
+-------------------code----------------------
+Title:
+Mosh says
+
+Body:
+Is your jacket still available?
+-------------------code----------------------
+
+The device then displays this as a push notification.
+
+---
+
+# 4. Sending Additional Data
+
+One of the most important concepts in this lecture is that a notification can contain a **data object**.
+
+For example:
+
+-------------------code----------------------
+{
+  "listingId": 123
+}
+-------------------code----------------------
+
+The notification itself might say:
+
+-------------------code----------------------
+Mosh says
+
+Is your jacket still available?
+-------------------code----------------------
+
+while the hidden data contains:
+
+-------------------code----------------------
+{
+  "listingId": 123
+}
+-------------------code----------------------
+
+The application can later read this data.
+
+This is extremely useful for navigation.
+
+For example:
+
+-------------------code----------------------
+Notification
+     ↓
+User taps notification
+     ↓
+Read listingId
+     ↓
+Navigate to Listing Details
+     ↓
+Open listing #123
+-------------------code----------------------
+
+---
+
+# 5. Showing Notifications While the App Is Open
+
+Normally, when the application is in the foreground, the operating system may not display the notification in the same way as when the app is in the background.
+
+For this demonstration, the lecture uses:
+
+-------------------code----------------------
+{
+  "_displayInForeground": true
+}
+-------------------code----------------------
+
+This tells the notification system to display the notification even while the application is currently open.
+
+Conceptually:
+
+-------------------code----------------------
+App in foreground
+       +
+_displayInForeground: true
+       ↓
+Notification is displayed
+-------------------code----------------------
+
+Without it, you may not see the notification while actively using the application.
+
+### Important note
+
+The exact foreground-notification API has changed across Expo versions. The lecture uses the older `_displayInForeground` payload property, so if you're following this course with a modern Expo SDK, don't assume every old notification property works unchanged.
+
+---
+
+# 6. iOS Notification Options
+
+The notification payload can also contain iOS-specific properties.
+
+For example:
+
+### Subtitle
+
+-------------------code----------------------
+{
+  "subtitle": "New message"
+}
+-------------------code----------------------
+
+### Badge count
+
+-------------------code----------------------
+{
+  "badge": 1
+}
+-------------------code----------------------
+
+The badge is the number displayed on the application's icon.
+
+For example:
+
+-------------------code----------------------
+App icon
+   ↓
+  [1]
+-------------------code----------------------
+
+---
+
+# 7. Notification Sound
+
+You can also specify a sound:
+
+-------------------code----------------------
+{
+  "sound": "default"
+}
+-------------------code----------------------
+
+This tells the device to play the default notification sound when the notification arrives.
+
+---
+
+# 8. Android Notification Channels
+
+Android supports the concept of **notification channels**.
+
+A notification can specify something like:
+
+-------------------code----------------------
+{
+  "channelId": "default"
+}
+-------------------code----------------------
+
+Channels allow Android applications to organize notifications into categories with different settings.
+
+For example:
+
+-------------------code----------------------
+Messages
+ ├── Sound
+ ├── Vibration
+ └── Importance
+
+Promotions
+ ├── Sound
+ ├── Vibration
+ └── Importance
+-------------------code----------------------
+
+The exact configuration depends on the Android/Expo implementation.
+
+---
+
+# 9. Example Notification Payload
+
+A useful conceptual notification payload could look like this:
+
+-------------------code----------------------
+{
+  "to": "ExponentPushToken[...]",
+  "title": "Mosh says",
+  "body": "Is your jacket still available?",
+  "data": {
+    "listingId": 123
+  },
+  "_displayInForeground": true,
+  "sound": "default"
+}
+-------------------code----------------------
+
+The important distinction is:
+
+### Notification content
+
+-------------------code----------------------
+{
+  "title": "Mosh says",
+  "body": "Is your jacket still available?"
+}
+-------------------code----------------------
+
+### Application data
+
+-------------------code----------------------
+{
+  "listingId": 123
+}
+-------------------code----------------------
+
+The `data` section is information intended for your application to process.
+
+---
+
+# 10. Testing Step-by-Step
+
+### Step 1
+
+Run the application on a **real physical device**.
+
+### Step 2
+
+Get the Expo Push Token.
+
+For example:
+
+-------------------code----------------------
+ExponentPushToken[xxxxxxxxxxxxxxxxxxxx]
+-------------------code----------------------
+
+### Step 3
+
+Copy the token.
+
+### Step 4
+
+Open Expo's notification testing tool.
+
+### Step 5
+
+Enter the token.
+
+### Step 6
+
+Enter:
+
+-------------------code----------------------
+Title:
+Mosh says
+-------------------code----------------------
+
+and:
+
+-------------------code----------------------
+Body:
+Is your jacket still available?
+-------------------code----------------------
+
+### Step 7
+
+Optionally add notification data:
+
+-------------------code----------------------
+{
+  "listingId": 123
+}
+-------------------code----------------------
+
+### Step 8
+
+Send the notification.
+
+The physical device should receive it.
+
+---
+
+# 11. Why the `data` Property Is Important
+
+This is one of the most important concepts to remember from this lecture.
+
+The notification isn't only a message.
+
+It can carry **application-specific information**.
+
+For example, imagine the user receives:
+
+-------------------code----------------------
+John says
+
+Is your jacket still available?
+-------------------code----------------------
+
+The notification could contain:
+
+-------------------code----------------------
+{
+  "listingId": 42,
+  "senderId": 10
+}
+-------------------code----------------------
+
+When the user taps the notification, your application could eventually do:
+
+-------------------code----------------------
+navigation.navigate(routes.LISTING_DETAILS, {
+  listingId: 42,
+});
+-------------------code----------------------
+
+So push notifications can become a way of directing users to specific parts of your application.
+
+---
+
+# 12. Important Notes
+
+### 12.1 Use a real device
+
+Push notifications cannot be properly tested using the standard:
+
+* Android Emulator
+* iOS Simulator
+
+Use a physical device.
+
+### 12.2 Don't hard-code tokens
+
+The Expo Push Token should come from:
+
+-------------------code----------------------
+Notifications.getExpoPushTokenAsync();
+-------------------code----------------------
+
+and then be stored on your backend.
+
+### 12.3 Don't put sensitive information in notification data
+
+Avoid putting things such as:
+
+-------------------code----------------------
+passwords
+credit card numbers
+private secrets
+authentication tokens
+-------------------code----------------------
+
+inside notification payloads.
+
+Use identifiers such as:
+
+-------------------code----------------------
+{
+  "listingId": 123
+}
+-------------------code----------------------
+
+and retrieve the actual information securely from your backend when necessary.
+
+---
+
+# 13. What We Have Achieved So Far
+
+Our notification system is now progressing like this:
+
+-------------------code----------------------
+1. User logs in
+        ↓
+2. App requests notification permission
+        ↓
+3. Expo generates Push Token
+        ↓
+4. Token is sent to backend
+        ↓
+5. Backend stores token with user
+        ↓
+6. We can send a notification to that token
+        ↓
+7. Device receives notification
+-------------------code----------------------
+
+The next step is to **send these notifications programmatically from our application/backend**, rather than manually using Expo's testing tool.
+
+---
+
+# 14. Full Final Code
+
+There is **no new application code required in this lecture**. The lecture is demonstrating how to manually send a notification using Expo's testing tool.
+
+The notification payload we are conceptually testing is:
+
+-------------------code----------------------
+{
+  "to": "ExponentPushToken[...]",
+  "title": "Mosh says",
+  "body": "Is your jacket still available?",
+  "data": {
+    "listingId": 123
+  },
+  "_displayInForeground": true,
+  "sound": "default"
+}
+-------------------code----------------------
+
+Your existing `AppNavigator.js` remains responsible for obtaining and registering the push token; this lecture only tests sending a notification to that token.
+
+## Summary
+
+The key idea is:
+
+> **A push token identifies the app installation, and a notification can contain both visible content and hidden application data.**
+
+For example:
+
+-------------------code----------------------
+Title → Mosh says
+Body  → Is your jacket still available?
+Data  → { listingId: 123 }
+-------------------code----------------------
+
+Later, the `listingId` can be used to determine **which screen/listing should open when the user interacts with the notification**.
