@@ -10,6 +10,8 @@ import ListingEditScreen from "../screens/ListingEditScreen";
 import NewListingButton from "./NewListingButton";
 import routes from "./routes";
 
+import expoPushTokensApi from "../api/expoPushTokens";
+
 const Tab = createBottomTabNavigator();
 
 async function registerForPushNotificationsAsync() {
@@ -22,13 +24,13 @@ async function registerForPushNotificationsAsync() {
       return;
     }
 
-    // Check existing notification permission.
+    // Check existing permission.
     const { status: existingStatus } =
       await Notifications.getPermissionsAsync();
 
     let finalStatus = existingStatus;
 
-    // Ask the user for permission if we don't have it yet.
+    // Ask for permission if necessary.
     if (existingStatus !== "granted") {
       const { status } =
         await Notifications.requestPermissionsAsync();
@@ -36,21 +38,22 @@ async function registerForPushNotificationsAsync() {
       finalStatus = status;
     }
 
-    // Permission was denied.
+    // Permission denied.
     if (finalStatus !== "granted") {
-      console.log("Notification permission not granted.");
+      console.log(
+        "Notification permission not granted."
+      );
       return;
     }
 
-    // Get the Expo push notification token.
+    // Get Expo push token.
     const tokenData =
       await Notifications.getExpoPushTokenAsync();
 
     const token = tokenData.data;
 
-    console.log("Expo Push Token:", token);
-
-    return token;
+    // Send token to the backend.
+    expoPushTokensApi.register(token);
   } catch (error) {
     console.log(
       "Error getting a push notification token:",
