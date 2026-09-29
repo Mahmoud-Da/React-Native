@@ -7919,3 +7919,451 @@ Key tasks include:
 * Reuse the existing `authApi` and `useAuth` logic instead of creating a separate authentication flow.
 
 By following this approach, the registration process remains simple, avoids duplicated code, and provides a seamless experience where users are taken directly into the application after creating their account.
+
+*** 16- Implementing the Registration ***
+# React Native Authentication - Registration Implementation Notes
+
+## 1. Overview
+
+This lecture implements **user registration**.
+
+After a user successfully registers:
+
+1. Create a new account.
+2. Automatically log the user in.
+3. Receive an authentication token.
+4. Save the token.
+5. Navigate to the main application.
+
+The lecture also demonstrates a better API design by passing **objects instead of multiple parameters**.
+
+---
+
+# 2. Registration Flow
+
+-------------------code----------------------
+User fills registration form
+        │
+        ▼
+handleSubmit(userInfo)
+        │
+        ▼
+usersApi.register(userInfo)
+        │
+        ├── Failed
+        │      │
+        │      ├── Server error
+        │      └── Display error message
+        │
+        ▼
+Success
+        │
+        ▼
+authApi.login(email, password)
+        │
+        ▼
+Receive JWT token
+        │
+        ▼
+auth.login(authToken)
+        │
+        ▼
+Store token
+        │
+        ▼
+Navigate to Home Screen
+-------------------code----------------------
+
+---
+
+# 3. Step 1 - Create the Users API
+
+Instead of sending multiple parameters, send one object.
+
+## Why?
+
+Instead of this:
+
+-------------------code----------------------
+register(name, email, password)
+-------------------code----------------------
+
+Use:
+
+-------------------code----------------------
+register(userInfo)
+-------------------code----------------------
+
+If you later add:
+
+* birthday
+* phone
+* address
+
+you don't need to change every function signature.
+
+### API
+
+-------------------code----------------------
+// api/users.js
+
+import client from "./client";
+
+const register = (userInfo) =>
+  client.post("/users", userInfo);
+
+export default {
+  register,
+};
+-------------------code----------------------
+
+---
+
+# 4. Step 2 - Handle Form Submission
+
+The form already provides an object.
+
+Instead of destructuring:
+
+-------------------code----------------------
+const handleSubmit = ({
+    name,
+    email,
+    password,
+}) => {}
+-------------------code----------------------
+
+Simply receive:
+
+-------------------code----------------------
+const handleSubmit = async (
+    userInfo
+) => {}
+-------------------code----------------------
+
+This keeps the code flexible.
+
+---
+
+# 5. Step 3 - Register the User
+
+Call the registration API.
+
+-------------------code----------------------
+const result =
+    await usersApi.register(userInfo);
+-------------------code----------------------
+
+If successful:
+
+* continue
+* login the user automatically
+
+---
+
+# 6. Step 4 - Handle Registration Errors
+
+Registration can fail.
+
+Example:
+
+* Email already exists
+
+The backend returns:
+
+-------------------code----------------------json
+{
+    "error":
+    "A user with the given email already exists."
+}
+-------------------code----------------------
+
+Show this error to the user.
+
+-------------------code----------------------
+if (!result.ok) {
+    setError(result.data.error);
+    return;
+}
+-------------------code----------------------
+
+---
+
+# 7. Step 5 - Handle Unexpected Errors
+
+Sometimes the request fails before the server even responds.
+
+Examples:
+
+* No internet
+* Server offline
+* Timeout
+
+In that case:
+
+-------------------code----------------------
+if (!result.data) {
+    setError(
+        "An unexpected error occurred."
+    );
+
+    console.log(result);
+
+    return;
+}
+-------------------code----------------------
+
+In production:
+
+Use an error logging service instead of `console.log`.
+
+Examples:
+
+* Sentry
+* Bugsnag
+* Crashlytics
+
+---
+
+# 8. Step 6 - Automatically Log In
+
+After registration:
+
+Use the same credentials.
+
+-------------------code----------------------
+const { data: authToken } =
+    await authApi.login(
+        userInfo.email,
+        userInfo.password
+    );
+-------------------code----------------------
+
+Now you have the JWT.
+
+---
+
+# 9. Step 7 - Login with the JWT
+
+Use the custom authentication hook.
+
+-------------------code----------------------
+auth.login(authToken);
+-------------------code----------------------
+
+Internally it:
+
+* decodes JWT
+* stores token securely
+* updates user context
+
+The Register Screen doesn't need to know those implementation details.
+
+---
+
+# 10. Complete Registration Flow
+
+-------------------code----------------------
+Submit Form
+      │
+      ▼
+usersApi.register()
+      │
+      ▼
+Registration Success?
+      │
+ ┌────┴────┐
+ │         │
+No        Yes
+ │          │
+ ▼          ▼
+Show Error  authApi.login()
+             │
+             ▼
+       Receive JWT
+             │
+             ▼
+      auth.login(token)
+             │
+             ▼
+      Save token
+             │
+             ▼
+     Navigate to Home
+-------------------code----------------------
+
+---
+
+# 11. Full Example Code
+
+-------------------code----------------------
+const handleSubmit = async (userInfo) => {
+  const result =
+    await usersApi.register(userInfo);
+
+  if (!result.ok) {
+    if (result.data)
+      setError(result.data.error);
+    else {
+      setError(
+        "An unexpected error occurred."
+      );
+
+      console.log(result);
+    }
+
+    return;
+  }
+
+  const {
+    data: authToken,
+  } = await authApi.login(
+    userInfo.email,
+    userInfo.password
+  );
+
+  auth.login(authToken);
+};
+-------------------code----------------------
+
+---
+
+# 12. Why Pass Objects Instead of Multiple Parameters?
+
+Instead of:
+
+-------------------code----------------------
+register(
+    name,
+    email,
+    password
+)
+-------------------code----------------------
+
+Imagine adding:
+
+-------------------code----------------------
+birthday
+-------------------code----------------------
+
+You would need to change:
+
+-------------------code----------------------
+register(
+    name,
+    email,
+    password,
+    birthday
+)
+-------------------code----------------------
+
+Then every place that calls this function must also change.
+
+Instead:
+
+-------------------code----------------------
+register(userInfo)
+-------------------code----------------------
+
+works automatically:
+
+-------------------code----------------------
+{
+    name,
+    email,
+    password,
+    birthday
+}
+-------------------code----------------------
+
+No API changes required.
+
+This approach scales much better.
+
+---
+
+# 13. Important Notes
+
+### Pass objects instead of many arguments
+
+Makes APIs easier to maintain.
+
+---
+
+### Display server error messages
+
+If the server returns:
+
+-------------------code----------------------json
+{
+    "error": "..."
+}
+-------------------code----------------------
+
+Display that message instead of a generic one.
+
+---
+
+### Handle unexpected failures
+
+Not every failure comes from your backend.
+
+Network problems should show a generic error.
+
+---
+
+### Automatically log users in
+
+Good user experience.
+
+No need for users to manually login after registration.
+
+---
+
+### Keep business logic inside hooks
+
+The Register Screen should only:
+
+* collect user input
+* display errors
+
+Authentication logic belongs inside your custom auth hook.
+
+---
+
+### Use secure token storage
+
+Never store JWTs in plain AsyncStorage if your project requires stronger security.
+
+Expo Secure Store is a better choice.
+
+---
+
+# 14. Best Practices
+
+* Pass objects instead of multiple parameters.
+* Keep API methods simple.
+* Show meaningful server errors.
+* Handle unexpected network failures.
+* Automatically log users in after registration.
+* Store JWT securely.
+* Move authentication logic into custom hooks.
+* Keep UI components focused only on presentation.
+
+---
+
+# 15. Summary
+
+In this lecture you learned how to implement a complete registration flow:
+
+* Created a `users` API for registering users.
+* Passed a single `userInfo` object instead of multiple parameters.
+* Submitted registration data to the backend.
+* Displayed backend validation errors (e.g., duplicate email).
+* Handled unexpected network or server failures.
+* Automatically logged the user in after successful registration.
+* Received a JWT authentication token.
+* Used the custom authentication hook to store the token and update the user context.
+* Kept the registration screen clean by separating UI from authentication business logic.
+
+This approach produces code that is easier to maintain, easier to extend, and follows good separation of concerns.
