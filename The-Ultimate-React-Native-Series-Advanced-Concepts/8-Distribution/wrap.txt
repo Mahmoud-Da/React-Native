@@ -2851,3 +2851,472 @@ Correct backend
 6. Standalone builds create native iOS/Android applications.
 7. Publishing through Expo and building standalone apps serve different purposes.
 8. The lecture uses an older Expo workflow; modern Expo commands and APIs may be different.
+
+*** 8- Building Standalone Apps ***
+# Building Standalone Apps with Expo Build Service
+
+## 1. Why Do We Need Standalone Apps?
+
+Publishing an application to Expo is convenient for **development and testing**.
+
+However, it is not ideal for the final users of the application because they would need the Expo client to run the app.
+
+For a real production application, we want users to install:
+
+* An iOS application
+* An Android application
+
+directly on their devices.
+
+Therefore:
+
+-------------------code----------------------
+Expo Publishing
+      ↓
+Development / Testing
+      ↓
+Expo client
+
+Standalone Build
+      ↓
+Production
+      ↓
+iOS / Android app
+-------------------code----------------------
+
+---
+
+# 2. What Is a Standalone Binary?
+
+A standalone binary is a native application package that can be installed on a device.
+
+Conceptually:
+
+-------------------code----------------------
+React Native / Expo project
+          ↓
+     Build process
+       /       \
+      ↓         ↓
+    iOS      Android
+      ↓         ↓
+   iOS app   Android app
+-------------------code----------------------
+
+These builds can then be submitted to the appropriate app stores.
+
+### iOS
+
+The application can eventually be submitted to:
+
+-------------------code----------------------
+Apple App Store
+-------------------code----------------------
+
+### Android
+
+The application can eventually be submitted to:
+
+-------------------code----------------------
+Google Play Store
+-------------------code----------------------
+
+---
+
+# 3. Expo Build Service
+
+Instead of manually building the native applications ourselves, the lecture introduces **Expo's build service**.
+
+The basic idea is:
+
+-------------------code----------------------
+Your computer
+     ↓
+Run Expo build command
+     ↓
+Expo Build Service
+     ↓
+Expo's build infrastructure
+     ↓
+Native application binary
+-------------------code----------------------
+
+This means we don't need to perform the entire native build process locally.
+
+The service handles much of the complicated native build process for us.
+
+---
+
+# 4. Why Use Expo's Build Service?
+
+Building native applications manually can involve many configuration steps.
+
+For example, native development may require configuring:
+
+* iOS build tools
+* Android build tools
+* Certificates
+* Provisioning
+* Native project settings
+* Signing
+* Platform-specific configuration
+
+Expo's build service abstracts much of this complexity.
+
+The workflow becomes approximately:
+
+-------------------code----------------------
+1. Configure project
+        ↓
+2. Run build command
+        ↓
+3. Expo receives project
+        ↓
+4. Expo performs native build
+        ↓
+5. Wait for build to finish
+        ↓
+6. Receive build result
+-------------------code----------------------
+
+The important concept is that the build happens on Expo's infrastructure.
+
+---
+
+# 5. Managed Workflow
+
+At the time of this lecture, Expo's build service was available only for the **managed workflow**.
+
+The lecture describes the situation as:
+
+-------------------code----------------------
+Managed workflow
+      ↓
+Expo Build Service
+      ↓
+Supported
+-------------------code----------------------
+
+The instructor also mentions that Expo planned to support the bare workflow in the future.
+
+---
+
+# 6. Managed vs Bare Workflow
+
+The lecture distinguishes between two Expo approaches.
+
+### Managed workflow
+
+Expo manages much of the native configuration for you.
+
+-------------------code----------------------
+Your code
+   ↓
+Expo
+   ↓
+Native build
+-------------------code----------------------
+
+### Bare workflow
+
+You have much more direct control over the native iOS and Android projects.
+
+-------------------code----------------------
+Your code
+   ↓
+Native iOS/Android projects
+   ↓
+Manual configuration
+   ↓
+Native build
+-------------------code----------------------
+
+The trade-off is:
+
+-------------------code----------------------
+Managed
+→ Easier
+→ Less native configuration
+
+Bare
+→ More control
+→ More manual configuration
+-------------------code----------------------
+
+---
+
+# 7. What Happens If You Eject?
+
+The lecture uses the older term **"eject"**.
+
+In that workflow, ejecting meant moving away from Expo's managed environment and obtaining more direct access to native projects.
+
+The instructor warns that doing so can make the build process considerably more complicated.
+
+The important lesson is:
+
+> Don't leave the managed workflow unless you actually need native-level control or functionality that requires it.
+
+For a course project that can remain managed, staying managed makes the build process simpler.
+
+---
+
+# 8. Building iOS Apps
+
+One major problem with traditional iOS development is that Apple development normally requires macOS/Xcode for local native builds.
+
+The lecture points out:
+
+-------------------code----------------------
+Traditional local iOS build
+        ↓
+Requires Mac
+-------------------code----------------------
+
+But Expo's build service changes this workflow.
+
+Instead:
+
+-------------------code----------------------
+Your computer
+      ↓
+Expo Build Service
+      ↓
+Expo's Mac build infrastructure
+      ↓
+iOS application
+-------------------code----------------------
+
+Therefore, at the time of the lecture, you could initiate an iOS build without personally owning a Mac.
+
+This is one of the major advantages discussed in the lecture.
+
+---
+
+# 9. iOS Build Workflow
+
+The lecture is preparing us for the next step, where the actual iOS build will be performed.
+
+The general workflow is:
+
+-------------------code----------------------
+Expo project
+     ↓
+Configure iOS settings
+     ↓
+Run Expo build command
+     ↓
+Expo Build Service
+     ↓
+Build on Mac infrastructure
+     ↓
+iOS binary
+     ↓
+Submit to App Store
+-------------------code----------------------
+
+The actual command and signing configuration are covered in the following video according to the lecture.
+
+---
+
+# 10. Important Notes
+
+## 10.1 Expo Publishing and Standalone Builds Are Different
+
+Don't confuse these two workflows.
+
+### Expo publishing
+
+-------------------code----------------------
+expo publish
+     ↓
+Expo-hosted update
+     ↓
+Development/testing
+-------------------code----------------------
+
+### Standalone build
+
+-------------------code----------------------
+expo build
+     ↓
+Native binary
+     ↓
+App Store / Google Play
+-------------------code----------------------
+
+The terminology and commands have changed in modern Expo, but this distinction remains important.
+
+---
+
+## 10.2 You Don't Need to Build Everything Locally
+
+The major idea behind the build service is:
+
+-------------------code----------------------
+Local computer
+     ↓
+Send build request
+     ↓
+Cloud build infrastructure
+     ↓
+Native binary
+-------------------code----------------------
+
+The developer doesn't have to manually perform every native compilation step.
+
+---
+
+## 10.3 iOS Builds Are Special
+
+iOS development traditionally requires Apple's ecosystem and macOS for local native builds.
+
+A cloud build service can perform the build on macOS infrastructure instead.
+
+However, Apple still requires appropriate developer credentials, signing, and App Store configuration for real distribution.
+
+---
+
+## 10.4 Course-Era Information
+
+This lecture uses older Expo terminology such as:
+
+-------------------code----------------------
+expo build
+eject
+managed workflow
+bare workflow
+-------------------code----------------------
+
+Modern Expo uses **EAS Build (Expo Application Services)** for cloud builds, and the exact commands and workflow are different.
+
+So when following this course today, remember the **concept**, but don't assume the old commands are still valid.
+
+---
+
+# 11. Code / Commands From This Lecture
+
+The lecture does not yet provide the actual iOS build command. It only explains that a command will be used to start the cloud build.
+
+The important conceptual command flow is:
+
+-------------------code----------------------
+expo <build-command>
+-------------------code----------------------
+
+The next lecture is expected to introduce the actual iOS build command and configuration.
+
+Because the provided transcript does not contain that command, it would be incorrect to invent one here.
+
+---
+
+# 12. Full Final Code
+
+There is no application source-code change introduced in this lecture.
+
+The lecture is explaining the build architecture and preparing for the iOS build.
+
+The project therefore remains structurally the same:
+
+-------------------code----------------------
+project/
+├── config/
+│   └── settings.js
+├── api/
+│   └── client.js
+├── screens/
+├── navigation/
+├── assets/
+├── App.js
+└── app.json
+-------------------code----------------------
+
+The key configuration from the previous environment-settings lecture remains conceptually:
+
+## `config/settings.js`
+
+-------------------code----------------------js
+import Constants from "expo-constants";
+
+const settings = {
+  dev: {
+    API_URL: "http://localhost:9000/api",
+  },
+
+  staging: {
+    API_URL: "https://staging.example.com/api",
+  },
+
+  prod: {
+    API_URL: "https://api.example.com/api",
+  },
+};
+
+const getCurrentSettings = () => {
+  if (__DEV__) {
+    return settings.dev;
+  }
+
+  if (Constants.manifest.releaseChannel === "staging") {
+    return settings.staging;
+  }
+
+  return settings.prod;
+};
+
+export default getCurrentSettings();
+-------------------code----------------------
+
+## `api/client.js`
+
+-------------------code----------------------js
+import axios from "axios";
+import settings from "../config/settings";
+
+const client = axios.create({
+  baseURL: settings.API_URL,
+});
+
+export default client;
+-------------------code----------------------
+
+No new React Native component or JavaScript functionality is added in this particular lecture.
+
+---
+
+# Summary
+
+The main purpose of this lecture is to introduce **cloud-based standalone builds**.
+
+### The key concepts
+
+1. **Expo publishing** is convenient for development and testing.
+2. Real users shouldn't need the Expo client to use the production application.
+3. Therefore, we need **standalone native builds**.
+4. Expo provides a cloud build service to simplify this process.
+5. The lecture's build service performs native builds on Expo's infrastructure.
+6. At the time of the course, the service was focused on the **managed workflow**.
+7. Leaving the managed workflow ("ejecting") introduces more native configuration and complexity.
+8. iOS builds traditionally require a Mac for local native compilation.
+9. Cloud building can perform the iOS build on Expo's Mac infrastructure.
+10. The next step is to configure and build the **iOS standalone application**.
+
+### Remember this
+
+-------------------code----------------------
+Development
+     ↓
+Expo Publishing
+     ↓
+Fast testing/sharing
+
+Production
+     ↓
+Cloud/Standalone Build
+     ↓
+Native iOS/Android App
+     ↓
+App Store / Google Play
+-------------------code----------------------
+
+The most important takeaway is: **Expo publishing is for quickly sharing/testing the app, while a standalone build produces the native application that can be distributed to end users.**
