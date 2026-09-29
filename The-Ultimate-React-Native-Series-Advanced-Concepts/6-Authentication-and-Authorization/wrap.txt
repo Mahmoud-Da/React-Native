@@ -8897,3 +8897,423 @@ In this lecture, you improved the registration flow by:
 * Providing better user feedback during slow network connections.
 
 The next lecture improves the UX further by displaying the loading indicator as a full-screen overlay, preventing users from interacting with the UI while requests are in progress.
+
+*** 18- Adding an Overlay ***
+# React Native Authentication - Full-Screen Loading Overlay
+
+## 1. Overview
+
+In this lecture, the loading indicator is improved by displaying it as a **full-screen overlay**.
+
+Previously:
+
+* The activity indicator appeared above the form.
+* Users could still press buttons while loading.
+
+Now:
+
+* The loading animation covers the entire screen.
+* User interaction is blocked during API requests.
+* The UI looks cleaner and more professional.
+
+---
+
+# 2. Problem
+
+Current UI:
+
+-------------------code----------------------
+-------------------------
+Loading Animation
+
+Register Form
+
+[ Register Button ]   ← Still clickable
+-------------------------
+-------------------code----------------------
+
+Problems:
+
+* Users can press the Register button multiple times.
+* The form is still interactive.
+* This may create duplicate requests.
+
+---
+
+# 3. Goal
+
+Display a loading overlay that:
+
+* Covers the whole screen.
+* Prevents user interaction.
+* Shows the loading animation in the center.
+
+Result:
+
+-------------------code----------------------
++--------------------------------+
+|                                |
+|      Loading Animation         |
+|                                |
+|--------------------------------|
+|  Registration Form (Disabled)  |
+|--------------------------------|
++--------------------------------+
+-------------------code----------------------
+
+---
+
+# 4. Update the ActivityIndicator Component
+
+Previously the component only rendered the Lottie animation.
+
+Instead of:
+
+-------------------code----------------------
+<LottieView ... />
+-------------------code----------------------
+
+Wrap it inside a `View`.
+
+-------------------code----------------------
+<View style={styles.overlay}>
+    <LottieView ... />
+</View>
+-------------------code----------------------
+
+The overlay will control the layout.
+
+---
+
+# 5. Import StyleSheet
+
+-------------------code----------------------
+import { StyleSheet, View } from "react-native";
+-------------------code----------------------
+
+---
+
+# 6. Create Overlay Style
+
+The overlay should occupy the entire screen.
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  overlay: {
+    width: "100%",
+    height: "100%",
+  },
+});
+-------------------code----------------------
+
+Initially the instructor temporarily used:
+
+-------------------code----------------------
+backgroundColor: "black"
+-------------------code----------------------
+
+only for testing.
+
+---
+
+# 7. Prevent Layout Shifting
+
+Without positioning:
+
+-------------------code----------------------
+Overlay
+Registration Form
+-------------------code----------------------
+
+the overlay pushes the form downward.
+
+Instead use:
+
+-------------------code----------------------
+position: "absolute"
+-------------------code----------------------
+
+-------------------code----------------------
+overlay: {
+    width: "100%",
+    height: "100%",
+    position: "absolute",
+}
+-------------------code----------------------
+
+Now the overlay floats above the screen.
+
+---
+
+# 8. Place the Overlay Above Everything
+
+Use:
+
+-------------------code----------------------
+zIndex: 1
+-------------------code----------------------
+
+-------------------code----------------------
+overlay: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    zIndex: 1,
+}
+-------------------code----------------------
+
+Now it completely covers the form.
+
+---
+
+# 9. Make the Background Semi-Transparent
+
+Instead of a solid background:
+
+-------------------code----------------------
+backgroundColor: "black"
+-------------------code----------------------
+
+Use:
+
+-------------------code----------------------
+backgroundColor: "white",
+opacity: 0.8,
+-------------------code----------------------
+
+This lets users see the screen underneath while preventing interaction.
+
+---
+
+# 10. Final Overlay Style
+
+-------------------code----------------------
+const styles = StyleSheet.create({
+  overlay: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    backgroundColor: "white",
+    opacity: 0.8,
+    zIndex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
+-------------------code----------------------
+
+This creates a centered loading overlay.
+
+---
+
+# 11. Move ActivityIndicator Outside `<Screen>`
+
+Initially:
+
+-------------------code----------------------
+<Screen>
+    <ActivityIndicator />
+    ...
+</Screen>
+-------------------code----------------------
+
+The `Screen` component adds padding.
+
+This causes layout issues.
+
+Instead:
+
+-------------------code----------------------
+<>
+    <ActivityIndicator />
+
+    <Screen>
+        ...
+    </Screen>
+</>
+-------------------code----------------------
+
+The overlay becomes an independent layer.
+
+---
+
+# 12. Restore Dynamic Visibility
+
+During testing the instructor temporarily used:
+
+-------------------code----------------------
+visible={true}
+-------------------code----------------------
+
+After finishing:
+
+-------------------code----------------------
+<ActivityIndicator
+    visible={
+        registerApi.loading ||
+        loginApi.loading
+    }
+/>
+-------------------code----------------------
+
+Now it only appears during API requests.
+
+---
+
+# 13. Apply the Same Fix Everywhere
+
+The Listings screen also had:
+
+-------------------code----------------------
+<Screen>
+    <ActivityIndicator />
+</Screen>
+-------------------code----------------------
+
+Move it outside as well.
+
+-------------------code----------------------
+<>
+    <ActivityIndicator />
+
+    <Screen>
+        ...
+    </Screen>
+</>
+-------------------code----------------------
+
+This keeps the overlay consistent across the app.
+
+---
+
+# 14. Final ActivityIndicator Component
+
+-------------------code----------------------
+import React from "react";
+import { View, StyleSheet } from "react-native";
+import LottieView from "lottie-react-native";
+
+function ActivityIndicator({ visible = false }) {
+  if (!visible) return null;
+
+  return (
+    <View style={styles.overlay}>
+      <LottieView
+        autoPlay
+        loop
+        source={require("../assets/loader.json")}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  overlay: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    backgroundColor: "white",
+    opacity: 0.8,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1,
+  },
+});
+
+export default ActivityIndicator;
+-------------------code----------------------
+
+---
+
+# 15. Register Screen Example
+
+-------------------code----------------------
+<>
+  <ActivityIndicator
+    visible={
+      registerApi.loading ||
+      loginApi.loading
+    }
+  />
+
+  <Screen>
+    {/* Registration Form */}
+  </Screen>
+</>
+-------------------code----------------------
+
+---
+
+# 16. Before vs After
+
+| Before                 | After                     |
+| ---------------------- | ------------------------- |
+| Loading animation only | Full-screen overlay       |
+| Form still clickable   | Form completely blocked   |
+| Layout shifts          | No layout movement        |
+| Less polished UI       | Modern loading experience |
+
+---
+
+# 17. Important Notes
+
+### Use `position: "absolute"`
+
+Without it, the overlay becomes part of the normal layout and pushes other components.
+
+---
+
+### Use `zIndex`
+
+Ensures the overlay appears above the rest of the UI.
+
+---
+
+### Keep the background semi-transparent
+
+-------------------code----------------------
+opacity: 0.8
+-------------------code----------------------
+
+This gives users visual context while indicating the app is busy.
+
+---
+
+### Place overlays outside `Screen`
+
+The `Screen` component often adds safe-area padding or margins.
+
+Overlays should sit above the entire screen, not inside its layout.
+
+---
+
+### Use one reusable component
+
+Instead of creating a different loading indicator for every screen, reuse the same `ActivityIndicator` component.
+
+---
+
+# 18. Best Practices
+
+* Build loading overlays as reusable components.
+* Position overlays absolutely.
+* Use `zIndex` so overlays cover all content.
+* Make overlays semi-transparent.
+* Move overlays outside layout containers like `Screen`.
+* Keep the loading state controlled by `useApi`.
+
+---
+
+# 19. Summary
+
+In this lecture, you improved the loading experience by:
+
+* Wrapping the Lottie animation inside a full-screen overlay.
+* Styling the overlay with `position: "absolute"` so it doesn't affect the layout.
+* Using `zIndex` to place the overlay above all UI elements.
+* Applying a semi-transparent white background for a cleaner appearance.
+* Moving the `ActivityIndicator` outside the `Screen` component to eliminate unwanted padding.
+* Restoring dynamic visibility using `registerApi.loading || loginApi.loading`.
+* Applying the same overlay pattern to other screens, such as the Listings screen.
+
+The result is a reusable, professional loading overlay that blocks user interaction during network requests while maintaining a clean and responsive interface.
